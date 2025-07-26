@@ -124,27 +124,19 @@ Action: `broadcast`
 **Payload Format:**
 ```
 k:1:broadcast:message_body
+k:1:broadcast:sender_pubkey:sender_signature:base64_encoded_message
 ```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": ""
-}
-```
+### Field Descriptions
+- `sender_pubkey`: The public key of the message sender
+- `sender_signature`: Digital signature for consistency verification
+- `base64_encoded_message`: The message to broadcast, encoded in Base64
 
 ### Example Usage
 ```
-k:1:broadcast:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I'm Alice, I'm new here!"}
+k:1:post:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h
 ```
 
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The message to broadcast
-
+---
 
 ###  Posting a message
 - User A posts a message on K network, to let everyone know how exciting decentralization and Kaspa are.
@@ -163,36 +155,129 @@ Action: `post`
 
 **Payload Format:**
 ```
-k:1:post:message_body
+k:1:post:sender_pubkey:sender_signature:base64_encoded_message:mentioned_pubkeys
 ```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": ""
-}
-```
+### Field Descriptions
+- `sender_pubkey`: The public key of the message sender
+- `sender_signature`: Digital signature for consistency verification
+- `base64_encoded_message`: The message to post, encoded in Base64
+- `mentioned_pubkeys`: Comma separated list of user pubkeys mentioned on the post
 
 ### Example Usage
 ```
-k:1:post:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I love decentralization!"}
+k:1:post:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h:0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798,03f028892cf44c055f49c2c8b6fbdd4c56c54eae8dfaf4babe8a411d563bb0df3e
+```
+
+---
+
+###  Commenting user contents (posts or comments)
+- User B can freely comment User A content (whether he support User A or not).
+
+```mermaid
+sequenceDiagram
+    actor A as Alice (front-end)
+    participant Alice's indexer
+    A->>Alice Kaspa node: This is my new post!
+    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
+    Bob Kaspa node->>Bob's indexer: This is my new post!
+    actor B as Bob (front-end)
+    Bob's indexer->>B: This is my new post!
+    B->>Bob Kaspa node: Here is my comment!
+    Bob Kaspa node-->>Alice Kaspa node: Here is my comment!
+    Alice Kaspa node->>Alice's indexer: Here is my comment!
+    Alice's indexer->>A: Here is my comment!
+```
+
+**Protocol Specifications**
+
+Action: `comment`
+
+**Payload Format:**
+```
+k:1:comment:sender_pubkey:sender_signature:post_id:base64_encoded_message:mentioned_pubkeys
 ```
 
 ### Field Descriptions
 - `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The message to post
+- `sender_signature`: Digital signature for consistency verification
+- `post_id`: The reference to the post being commented
+- `base64_encoded_message`: The message to post, encoded in Base64
+- `mentioned_pubkeys`: Comma separated list of user pubkeys mentioned on the comment
+
+### Example Usage
+```
+k:1:post:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h:0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798,03f028892cf44c055f49c2c8b6fbdd4c56c54eae8dfaf4babe8a411d563bb0df3e
+
+```
+
+---
+
+###  Mentioning other users in posts or comment
+- User B can freely mention User A on its posts or comments (whether he support User A or not).
+
+```mermaid
+sequenceDiagram
+    actor B as Bob (front-end)
+    B->>Bob Kaspa node: I mention @Alice on this post!
+    Bob Kaspa node-->>Alice Kaspa node: I mention @Alice on this post!
+    Alice Kaspa node->>Alice's indexer: I mention @Alice on this post!
+    actor A as Alice (front-end)
+    Alice's indexer->>A: I mention @Alice on this post!
+```
+
+**Protocol specifications**
+See previous paragraphs ("Posting a message" and "Commenting user contents")
+
+---
+
+###  Upvoting user contents
+- User B can freely upvote/downvote a User A content (whether he support User A or not).
+
+```mermaid
+sequenceDiagram
+    actor A as Alice (front-end)
+    participant Alice's indexer
+    A->>Alice Kaspa node: This is my new post!
+    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
+    Bob Kaspa node->>Bob's indexer: This is my new post!
+    actor B as Bob (front-end)
+    Bob's indexer->>B: This is my new post!
+    B->>Bob Kaspa node: I like Alice's post!
+    Bob Kaspa node-->>Alice Kaspa node: I like Alice's post!
+    Alice Kaspa node->>Alice's indexer: I like Alice's post!
+    Alice's indexer->>A: I like Alice's post!
+```
+
+**Protocol Specifications**
+
+Action: `vote`
+
+**Payload Format:**
+```
+k:1:vote:sender_pubkey:sender_signature:post_id:is_liked
+```
+
+### Field Descriptions
+- `sender_pubkey`: The public key of the message sender
+- `sender_signature`: Digital signature for consistency verification
+- `post_id`: The reference to the post being voted
+- `is_liked`: The value defining the user likes the content (true or false)
 
 
-###  Following a user
-- User B activates the "following" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page;
+### Example Usage
+```
+k:1:vote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:true
+``````
+
+---
+
+###  Watching a user
+- User B activates the "watching" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page;
 
  ```mermaid
 sequenceDiagram
     actor B as Bob (front-end)
-    B->>Bob's indexer: I want to follow Alice!
+    B->>Bob's indexer: I want to watch Alice!
     actor A as Alice (front-end)
     A->>Alice Kaspa node: I love Kaspa!
     Alice Kaspa node-->>Bob Kaspa node: I love Kaspa!
@@ -201,6 +286,70 @@ sequenceDiagram
 ```
 **Protocol specifications**
 No protocol definition is required.
+
+---
+
+###  Suggesting a users
+- User A broadcast an "endorsement" message to all his supporting users, suggesting to watch and support User B;
+
+```mermaid
+sequenceDiagram
+    actor A as Alice (front-end)
+    A->>Alice Kaspa node: Hey guys, please support Bob!
+    Alice Kaspa node-->>Carl's Kaspa node: Hey guys, please support Bob!
+    Carl's Kaspa node->>Carl's indexer: Hey guys, please support Bob!
+    create actor C as Carl (front-end)
+    Carl's indexer->>C: Hey guys, please support Bob!
+    create participant Dereck's Kaspa node
+    Alice Kaspa node-->>Dereck's Kaspa node: Hey guys, please support Bob!
+    create participant Dereck's indexer
+    Dereck's Kaspa node->>Dereck's indexer: Hey guys, please support Bob!
+    create actor D as Dereck (front-end)
+    Dereck's indexer->>D: Hey guys, please support Bob!
+```
+
+**Protocol Specifications**
+
+Action: `suggest`
+
+**Payload Format:**
+```
+k:1:suggest:sender_pubkey:sender_signature:suggested_pubkey:base64_encoded_message
+```
+
+### Field Descriptions
+- `sender_pubkey`: The public key of the message sender
+- `sender_signature`: Digital signature for consistency verification
+- `suggested_pubkey`: The public key of the user to suggest
+- `base64_encoded_message`: The message to attach to user suggestion, encoded in Base64
+
+### Example Usage
+```
+k:1:suggest:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h
+
+```
+
+---
+
+###  Blocking users
+- Even if User B follow or support User A, User A can freely decide to block User B, blocking notifications related to all main actions (comments, mentions, retweek, quotes).
+
+ ```mermaid
+sequenceDiagram
+    actor A as Alice (front-end)
+    A->>Alice's indexer: I want to block Bob!
+    participant Alice Kaspa node
+    participant Bob Kaspa node
+    actor B as Bob (front-end)
+    B->>Bob Kaspa node: I'm trying to comment Alice's post!
+    Bob Kaspa node-->>Alice Kaspa node: I'm trying to comment Alice's post!
+    Alice Kaspa node->>Alice's indexer: I'm trying to comment Alice's post!
+```
+
+---
+
+###  Next paragraphs to be reviewed
+
 
 ###  Supporting a user
 - When activating the supporting process, User B is sending a certain amount of KAS to User A and User A is notified.
@@ -245,114 +394,7 @@ k:1:support:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I s
 - `message`: The message to post when supporting someone
 - `recipient_pubkey`: The pubkey of the user being supported
 
-###  Commenting user contents
-- User B can freely comment User A content (whether he support User A or not).
-
-```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    participant Alice's indexer
-    A->>Alice Kaspa node: This is my new post!
-    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
-    Bob Kaspa node->>Bob's indexer: This is my new post!
-    actor B as Bob (front-end)
-    Bob's indexer->>B: This is my new post!
-    B->>Bob Kaspa node: Here is my comment!
-    Bob Kaspa node-->>Alice Kaspa node: Here is my comment!
-    Alice Kaspa node->>Alice's indexer: Here is my comment!
-    Alice's indexer->>A: Here is my comment!
-```
-
-**Protocol Specifications**
-
-Action: `comment`
-
-**Payload Format:**
-```
-k:1:comment:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": "",
-  "tx_id": ""
-}
-```
-
-### Example Usage
-```
-k:1:comment:{"sender_pubkey":"abc123","sender_signature":"def456","message":"Here is my comment!","tx_id": "123456789"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The comment
-- `tx_id`: The reference to the user's post being commented
-
-
-###  Replying other users comments
-- User B can freely reply to User A comment (whether he support User A or not).
-
-**Protocol Specifications**
-
-Action: `reply`
-
-**Payload Format:**
-```
-k:1:reply:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": "",
-  "tx_id": ""
-}
-```
-
-### Example Usage
-```
-k:1:reply:{"sender_pubkey":"abc123","sender_signature":"def456","message":"Here is my reply!","tx_id": "123456789"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The reply
-- `tx_id`: The reference to the user's comment being replied to
-
-###  Mentioning other users in posts or comment
-- User B can freely mention User A on its posts or comments (whether he support User A or not).
-
-```mermaid
-sequenceDiagram
-    actor B as Bob (front-end)
-    B->>Bob Kaspa node: I mention @Alice on this post!
-    Bob Kaspa node-->>Alice Kaspa node: I mention @Alice on this post!
-    Alice Kaspa node->>Alice's indexer: I mention @Alice on this post!
-    actor A as Alice (front-end)
-    Alice's indexer->>A: I mention @Alice on this post!
-```
-TO BE FIXED
-**Protocol specifications**
-
-| Action | Parameters | Body |
-|--------|------------|------|
-| post | user addresses[] | message |
-| comment | post ID (tx ID), user addresses[] | message |
-| reply | comment ID (tx ID), user addresses[] | message |
-
-Payload examples:
-- k:1:post:sender_pubkey:sender_signature:body
-- k:1:comment:sender_pubkey:sender_signature:body
-- k:1:reply:sender_pubkey:sender_signature:body
-
+---
 
 ###  Reposting/quoting user contents
 - User B can freely repost and quote a User A content in it's own profile (whether he support User A or not).
@@ -431,122 +473,8 @@ k:1:quote:{"sender_pubkey":"abc123","sender_signature":"def456","message":"This 
 - `message`: The comment on the post being quoted
 - `tx_id`: The reference to the user's post being quoted
 
-###  Upvoting user contents
-- User B can freely upvote a User A content (whether he support User A or not).
-
-```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    participant Alice's indexer
-    A->>Alice Kaspa node: This is my new post!
-    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
-    Bob Kaspa node->>Bob's indexer: This is my new post!
-    actor B as Bob (front-end)
-    Bob's indexer->>B: This is my new post!
-    B->>Bob Kaspa node: I like Alice's post!
-    Bob Kaspa node-->>Alice Kaspa node: I like Alice's post!
-    Alice Kaspa node->>Alice's indexer: I like Alice's post!
-    Alice's indexer->>A: I like Alice's post!
-```
-
-**Protocol Specifications**
-
-Action: `vote`
-
-**Payload Format:**
-```
-k:1:vote:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "tx_id": "",
-  "isLiked": true
-}
-```
-
-### Example Usage
-```
-k:1:vote:{"sender_pubkey":"abc123","sender_signature":"def456","tx_id": "123456789","isLiked": true}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `tx_id`: The reference to the user's content being liked
-- `isLiked`: The value defining the user likes the content
+---
 
 ### User history
 - When User B starts following or supporting (TBD) User A, he'll receive all past contents posted by User A in the past.
-
 TBD
-
-###  Blocking users
-- Even if User B follow or support User A, User A can freely decide to block User B, blocking notifications related to all main actions (comments, mentions, retweek, quotes).
-
- ```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    A->>Alice's indexer: I want to block Bob!
-    participant Alice Kaspa node
-    participant Bob Kaspa node
-    actor B as Bob (front-end)
-    B->>Bob Kaspa node: I'm trying to comment Alice's post!
-    Bob Kaspa node-->>Alice Kaspa node: I'm trying to comment Alice's post!
-    Alice Kaspa node->>Alice's indexer: I'm trying to comment Alice's post!
-```
-
-###  Endorsing (suggesting) users
-- User A broadcast an "endorsement" message to all his supporting users, suggesting to follow and support User B;
-
-```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    A->>Alice Kaspa node: Hey guys, please support Bob!
-    Alice Kaspa node-->>Carl's Kaspa node: Hey guys, please support Bob!
-    Carl's Kaspa node->>Carl's indexer: Hey guys, please support Bob!
-    create actor C as Carl (front-end)
-    Carl's indexer->>C: Hey guys, please support Bob!
-    create participant Dereck's Kaspa node
-    Alice Kaspa node-->>Dereck's Kaspa node: Hey guys, please support Bob!
-    create participant Dereck's indexer
-    Dereck's Kaspa node->>Dereck's indexer: Hey guys, please support Bob!
-    create actor D as Dereck (front-end)
-    Dereck's indexer->>D: Hey guys, please support Bob!
-```
-
-**Protocol Specifications**
-
-Action: `suggest`
-
-**Payload Format:**
-```
-k:1:suggest:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": "",
-  "recipient_pubkey": ""
-}
-```
-
-### Example Usage
-```
-k:1:repost:{"sender_pubkey":"abc123","sender_signature":"def456","message":"Hey guys, please support Bob!","recipient_pubkey":"xyz987"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The message to post when endorsing someone
-- `recipient_pubkey`: The pubkey of the user being endorsed
-
-
-
