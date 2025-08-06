@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/Kaspa-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your voice. Your ideas.</title>
+    <style>
+      /* Splash screen styles - inline to show immediately */
+      #initial-splash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      #initial-splash * {
+        box-sizing: border-box;
+      }
+      
+      #initial-splash .splash-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.4rem !important; /* reduced by 30% from 2rem - keep this stable */
+        margin: 0;
+        padding: 0;
+      }
+      
+      #initial-splash .splash-logo {
+        animation: pulse 2s infinite;
+        margin: 0;
+        padding: 0;
+      }
+      
+      #initial-splash .splash-logo svg {
+        height: 8rem; /* h-32 w-32 */
+        width: 8rem;
+        display: block;
+      }
+      
+      @media (min-width: 640px) {
+        #initial-splash .splash-logo svg {
+          height: 10rem; /* sm:h-40 sm:w-40 */
+          width: 10rem;
+        }
+      }
+      
+      @media (min-width: 768px) {
+        #initial-splash .splash-logo svg {
+          height: 12rem; /* md:h-48 md:w-48 */
+          width: 12rem;
+        }
+      }
+      
+      #initial-splash .splash-text {
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+      
+      #initial-splash .splash-title {
+        font-size: 1.25rem; /* text-xl */
+        font-weight: 600; /* font-semibold */
+        color: #1f2937; /* text-gray-800 */
+        margin: 0 0 0.5rem 0 !important; /* mb-2 - keep this stable */
+        padding: 0;
+        line-height: 1.2;
+      }
+      
+      @media (min-width: 640px) {
+        #initial-splash .splash-title {
+          font-size: 1.5rem; /* sm:text-2xl */
+        }
+      }
+      
+      @media (min-width: 768px) {
+        #initial-splash .splash-title {
+          font-size: 1.875rem; /* md:text-3xl */
+        }
+      }
+      
+      #initial-splash .splash-subtitle {
+        font-size: 1rem; /* text-base */
+        color: #4b5563; /* text-gray-600 */
+        margin: 0;
+        padding: 0;
+        line-height: 1.2;
+      }
+      
+      @media (min-width: 640px) {
+        #initial-splash .splash-subtitle {
+          font-size: 1.125rem; /* sm:text-lg */
+        }
+      }
+      
+      @media (min-width: 768px) {
+        #initial-splash .splash-subtitle {
+          font-size: 1.25rem; /* md:text-xl */
+        }
+      }
+      
+      #initial-splash .splash-dots {
+        display: flex;
+        gap: 0.5rem; /* space-x-2 */
+        margin: 0;
+        padding: 0;
+      }
+      
+      #initial-splash .splash-dot {
+        width: 0.5rem; /* w-2 h-2 */
+        height: 0.5rem;
+        background: #9ca3af; /* bg-gray-400 */
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out;
+        margin: 0;
+        padding: 0;
+      }
+      
+      #initial-splash .splash-dot:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      
+      #initial-splash .splash-dot:nth-child(3) {
+        animation-delay: 0.2s;
+      }
+      
+      @keyframes pulse {
+        0%, 100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+      
+      @keyframes bounce {
+        0%, 80%, 100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+      
+      /* Hide splash when React loads - must override all other styles */
+      #initial-splash.splash-hidden {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Static splash screen that shows immediately -->
+    <div id="initial-splash">
+      <div class="splash-content">
+        <div class="splash-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 197.05 196.86">
+            <defs>
+              <style>.cls-1{fill:none;}.cls-2{fill:none;}.cls-3{fill:#1a1a1a;}</style>
+            </defs>
+            <g>
+              <g>
+                <circle class="cls-2" cx="98.52" cy="98.43" r="41.03"></circle>
+                <path class="cls-3" d="m149.42,76.34c-2.8-6.76-7.22-13.03-12.32-18.12-5.08-5.1-11.61-8.91-18.38-11.71-6.51-2.71-13.78-4.07-21.28-4.07s-15.21.27-21.72,2.98c-6.76,2.8-12.42,8.12-17.51,13.22-5.1,5.1-11.02,10.51-13.82,17.26-2.71,6.53-1.83,14.48-1.83,21.99s.55,14.85,3.26,21.38c2.8,6.76,8.52,11.54,13.6,16.64,5.1,5.1,9.71,11.18,16.47,13.98,6.53,2.71,14.04,4.55,21.54,4.55s14.87-2.22,21.4-4.94c6.75-2.8,12.86-7.18,17.96-12.27,5.1-5.1,9.19-11.32,12.01-18.08,2.7-6.51,5.79-13.76,5.79-21.26s-2.48-15-5.19-21.53Zm-36.26,53.49l-11.88-1.75,3.39-23-24.87,19.16-7.32-9.56,21.82-16.8-21.82-16.81,7.32-9.56,24.87,19.16-3.39-22.99,11.88-1.77,4.73,31.98-4.73,31.96Z"></path>
+              </g>
+              <rect class="cls-1" x=".09" y="-.09" width="196.86" height="197.05" transform="translate(196.96 -.09) rotate(90)"></rect>
+            </g>
+          </svg>
+        </div>
+        
+        <div class="splash-text">
+          <p class="splash-title">K is loading...</p>
+          <p class="splash-subtitle">Get ready to be free</p>
+        </div>
+        
+        <div class="splash-dots">
+          <div class="splash-dot"></div>
+          <div class="splash-dot"></div>
+          <div class="splash-dot"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "name": "K",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc -b && vite build",
+    "build:prod": "NODE_ENV=production tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "serve": "vite preview --host 0.0.0.0 --port 3000"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/vite": "^4.1.11",
+    "@types/crypto-js": "^4.2.2",
+    "@types/react-router-dom": "^5.3.3",
+    "buffer": "^6.0.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
+    "emoji-picker-react": "^4.13.2",
+    "jdenticon": "^3.3.0",
+    "js-base64": "^3.7.7",
+    "lucide-react": "^0.525.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.7.1",
+    "sonner": "^2.0.6",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.1.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/node": "^24.1.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
+    "tw-animate-css": "^1.3.5",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^7.0.0"
+  }
+}
