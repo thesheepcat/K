@@ -38,6 +38,7 @@ const LoginForm: React.FC = () => {
     }
   };
 
+  /*
   const handlePasteFromClipboard = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -47,6 +48,7 @@ const LoginForm: React.FC = () => {
       setError('Failed to read from clipboard');
     }
   };
+  */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +132,7 @@ const LoginForm: React.FC = () => {
                     <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                     Generate New Key
                   </Button>
+                  {/* 
                   <Button
                     type="button"
                     onClick={handlePasteFromClipboard}
@@ -138,6 +141,7 @@ const LoginForm: React.FC = () => {
                     <Copy className="h-4 w-4 mr-2" />
                     Paste from Clipboard
                   </Button>
+                  */}
                 </div>
               </div>
 
@@ -152,7 +156,7 @@ const LoginForm: React.FC = () => {
                     type={showPrivateKey ? 'text' : 'password'}
                     value={privateKey}
                     onChange={(e) => setPrivateKey(e.target.value)}
-                    placeholder="Enter your private key"
+                    placeholder="Enter your private key - Don't use your wallet private key"
                     className={`rounded-none ${generatedKeys ? 'pr-20' : 'pr-10'}`}
                     required
                   />

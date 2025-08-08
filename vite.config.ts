@@ -2,12 +2,41 @@ import * as path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(), 
-    tailwindcss()
+    tailwindcss(),
+    VitePWA({
+      registerType: "autoUpdate",
+      manifest: {
+        name: "K",
+        short_name: "K",
+        description: "K: Your voice. Your ideas. Uncensored.",
+        theme_color: "#ffffffff",
+        background_color: "#ffffffff",
+        display: "standalone",
+        start_url: "/",
+        icons: [
+          {
+            src: "/Kaspa-logo.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/Kaspa-logo.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ],
+      },
+      workbox: {
+        // 20 mb
+        maximumFileSizeToCacheInBytes: 20000000,
+      },
+    }),
   ],
   resolve: {
     alias: {
@@ -17,10 +46,9 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
-  build: {
-    // Production optimizations
-    minify: 'esbuild',
-    sourcemap: false, // Set to true if you need source maps in production
+   build: {
+    outDir: "dist",
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -30,8 +58,10 @@ export default defineConfig({
         },
       },
     },
-    // Optimize chunk size
     chunkSizeWarningLimit: 1000,
+  },
+  esbuild: {
+    keepNames: true,
   },
   server: {
     fs: {
@@ -42,3 +72,5 @@ export default defineConfig({
     exclude: ['buffer']
   }
 })
+
+

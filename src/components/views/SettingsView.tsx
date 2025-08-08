@@ -157,9 +157,10 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleNetworkChange(e.target.value as KaspaNetwork)}
                     className="w-full"
                   >
-                    <SelectOption value="mainnet">Mainnet</SelectOption>
+                    {/* Temporary deactivation of mainnet
+                    <SelectOption value="mainnet">Mainnet</SelectOption>}
+                    */}
                     <SelectOption value="testnet-10">Testnet 10</SelectOption>
-                    <SelectOption value="testnet-11">Testnet 11</SelectOption>
                   </Select>
                   <p className="text-xs text-gray-500">
                     Choose which Kaspa network to use for transactions and wallet operations.

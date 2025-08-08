@@ -9,7 +9,11 @@
     "build:prod": "NODE_ENV=production tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "serve": "vite preview --host 0.0.0.0 --port 3000"
+    "serve": "vite preview --host 0.0.0.0 --port 3000",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write ./src",
+    "format:check": "prettier --check ./src",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -31,7 +35,8 @@
     "react-router-dom": "^7.7.1",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "vite-plugin-pwa": "^1.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

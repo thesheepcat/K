@@ -38,7 +38,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [apiBaseUrl, setApiBaseUrlState] = useState<string>(
       // Use relative path in production, localhost in development
       typeof window !== 'undefined' && window.location.protocol === 'https:' 
-        ? '/api' 
+        ? 'https://kaspatalk.duckdns.org' 
         : 'http://localhost:3000'
     );
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');

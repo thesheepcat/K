@@ -13,7 +13,7 @@ export const isDevelopment = (): boolean => {
 export const getDefaultApiUrl = (): string => {
   // This matches the logic used in UserSettingsContext
   if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    return '/api';
+    return 'https://kaspatalk.duckdns.org';
   }
   return 'http://localhost:3000';
 };
