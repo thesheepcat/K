@@ -136,22 +136,51 @@ const loadMoreUsers = useCallback(async () => {
             return;
           }
 
-          // Only update if we got new posts (compare with first post timestamp)
-          if ((response.posts || []).length > 0 && postsRef.current.length > 0) {
-            const newestExistingTimestamp = postsRef.current[0]?.timestamp;
-            const newestServerPost = response.posts[0];
+          // Check if server data has any changes compared to local data
+          const serverPosts = response.posts || [];
+          const localPosts = postsRef.current;
+          
+          let hasChanges = false;
+          
+          // Check if post count differs
+          if (serverPosts.length !== localPosts.length) {
+            hasChanges = true;
+          } else {
+            // Compare each post for changes in timestamps or other properties
+            for (let i = 0; i < Math.min(serverPosts.length, localPosts.length); i++) {
+              const serverPost = serverPosts[i];
+              const localPost = localPosts[i];
+              
+              if (
+                serverPost.id !== localPost.id ||
+                serverPost.timestamp !== localPost.timestamp ||
+                serverPost.content !== localPost.content
+              ) {
+                hasChanges = true;
+                break;
+              }
+            }
+          }
+          
+          if (hasChanges) {
+            // Only update the first page of posts to preserve infinite scroll state
+            const currentPosts = postsRef.current;
             
-            if (newestServerPost && newestServerPost.timestamp !== newestExistingTimestamp) {
-              // Reset the list with fresh data from server
-              onServerPostsUpdateRef.current(response.posts || []);
+            if (currentPosts.length <= 10) {
+              // If we only have first page loaded, replace all
+              onServerPostsUpdateRef.current(serverPosts);
               setHasMore(response.pagination.hasMore);
               setNextCursor(response.pagination.nextCursor);
+            } else {
+              // If we have more than first page, only update the first 10 posts
+              // to preserve the user's scroll position and additional loaded content
+              const updatedPosts = [
+                ...serverPosts.slice(0, Math.min(serverPosts.length, 10)),
+                ...currentPosts.slice(10)
+              ];
+              onServerPostsUpdateRef.current(updatedPosts);
+              // Don't update pagination state as it would affect infinite scroll
             }
-          } else if (postsRef.current.length === 0) {
-            // If no posts exist locally, update with server data
-            onServerPostsUpdateRef.current(response.posts || []);
-            setHasMore(response.pagination.hasMore);
-            setNextCursor(response.pagination.nextCursor);
           }
           
           setLastFetchTime(new Date());

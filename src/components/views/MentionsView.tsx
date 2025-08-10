@@ -185,10 +185,24 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
           }
           
           if (hasChanges) {
-            // Update with fresh data from server
-            onServerPostsUpdateRef.current(serverPosts);
-            setHasMore(response.pagination.hasMore);
-            setNextCursor(response.pagination.nextCursor);
+            // Only update the first page of posts to preserve infinite scroll state
+            const currentPosts = postsRef.current;
+            
+            if (currentPosts.length <= 10) {
+              // If we only have first page loaded, replace all
+              onServerPostsUpdateRef.current(serverPosts);
+              setHasMore(response.pagination.hasMore);
+              setNextCursor(response.pagination.nextCursor);
+            } else {
+              // If we have more than first page, only update the first 10 posts
+              // to preserve the user's scroll position and additional loaded content
+              const updatedPosts = [
+                ...serverPosts.slice(0, Math.min(serverPosts.length, 10)),
+                ...currentPosts.slice(10)
+              ];
+              onServerPostsUpdateRef.current(updatedPosts);
+              // Don't update pagination state as it would affect infinite scroll
+            }
           }
           
           setLastFetchTime(new Date());
