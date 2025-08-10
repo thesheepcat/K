@@ -116,13 +116,14 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 ## Additional API Endpoints
 
 ### Get Following Posts
-Fetch posts from users you follow with pagination support:
+Fetch posts from users you follow with pagination support and voting status:
 
 ```bash
-curl "http://localhost:3000/get-posts-following?limit=10"
+curl "http://localhost:3000/get-posts-following?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 **Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of posts to return (max: 100, min: 1)
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
@@ -142,7 +143,9 @@ curl "http://localhost:3000/get-posts-following?limit=10"
       "downVotesCount": 3,
       "repostsCount": 5,
       "parentPostId": null,
-      "mentionedPubkeys": []
+      "mentionedPubkeys": [],
+      "isUpvoted": true,
+      "isDownvoted": false
     }
   ],
   "pagination": {
@@ -155,20 +158,40 @@ curl "http://localhost:3000/get-posts-following?limit=10"
 
 ### Get Watching Posts
 
-Fetch posts from users you're watching. This endpoint requires pagination parameters:
+Fetch posts from users you're watching with voting status. This endpoint requires pagination parameters:
 
 ```bash
 # First page (latest 10 posts)
-curl "http://localhost:3000/get-posts-watching?limit=10"
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 
 # Next page (older posts)
-curl "http://localhost:3000/get-posts-watching?limit=10&before=1703185000"
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
 
 # Check for newer posts
-curl "http://localhost:3000/get-posts-watching?limit=10&after=1703190000"
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
 ```
 
 **Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of posts to return (max: 100, min: 1)
+- `before` (optional): Return posts created before this timestamp (for pagination to older posts)
+- `after` (optional): Return posts created after this timestamp (for fetching newer posts)
+
+Fetch posts from users you're watching with voting status. This endpoint requires pagination parameters:
+
+```bash
+# First page (latest 10 posts)
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+
+# Next page (older posts)
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
+
+# Check for newer posts
+curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of posts to return (max: 100, min: 1)
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
@@ -190,7 +213,9 @@ curl "http://localhost:3000/get-posts-watching?limit=10&after=1703190000"
       "downVotesCount": 1,
       "repostsCount": 2,
       "parentPostId": null,
-      "mentionedPubkeys": []
+      "mentionedPubkeys": [],
+      "isUpvoted": false,
+      "isDownvoted": false
     }
   ],
   "pagination": {
@@ -209,21 +234,22 @@ curl "http://localhost:3000/get-posts-watching?limit=10&after=1703190000"
 
 ### Get Mentions
 
-Fetch posts where a specific user has been mentioned. This endpoint requires pagination parameters:
+Fetch posts where a specific user has been mentioned with voting status. This endpoint requires pagination parameters:
 
 ```bash
 # First page (latest 10 mentions)
-curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 
 # Next page (older mentions)
-curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
+curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
 
 # Check for newer mentions
-curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
+curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
 ```
 
 **Query Parameters:**
 - `user` (required): User's public key (66-character hex string with 02/03 prefix)
+- `requesterPubkey` (required): Public key of the user requesting the mentions (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of posts to return (max: 100, min: 1)
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
@@ -243,7 +269,9 @@ curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bc
       "downVotesCount": 0,
       "repostsCount": 1,
       "parentPostId": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1",
-      "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"]
+      "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"],
+      "isUpvoted": false,
+      "isDownvoted": false
     }
   ],
   "pagination": {
@@ -299,14 +327,15 @@ This endpoint is specifically designed for displaying user introduction posts wi
 ## Posts API
 
 ### Get User Posts
-Fetch posts for a specific user with pagination support:
+Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
-curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 **Query Parameters:**
 - `user` (required): User's public key (66-character hex string with 02/03 prefix)
+- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of posts to return (max: 100, min: 1)
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
@@ -326,7 +355,9 @@ curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce95
       "downVotesCount": 2,
       "repostsCount": 3,
       "parentPostId": null,
-      "mentionedPubkeys": []
+      "mentionedPubkeys": [],
+      "isUpvoted": false,
+      "isDownvoted": true
     }
   ],
   "pagination": {
@@ -356,14 +387,15 @@ curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce95
 ## Replies API
 
 ### Get Post Replies
-Fetch replies for a specific post with pagination support:
+Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
-curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&limit=10"
+curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 **Query Parameters:**
 - `post` (required): Post ID (64-character hex string cryptographic hash)
+- `requesterPubkey` (required): Public key of the user requesting the replies (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of replies to return (max: 100, min: 1)
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
@@ -383,7 +415,9 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
       "downVotesCount": 1,
       "repostsCount": 2,
       "parentPostId": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1",
-      "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"]
+      "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"],
+      "isUpvoted": true,
+      "isDownvoted": false
     }
   ],
   "pagination": {
@@ -395,14 +429,15 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 ```
 
 ### Get Post Details
-Fetch details for a specific post or reply:
+Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
-curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1"
+curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"
 ```
 
 **Query Parameters:**
 - `id` (required): Post or reply ID (64-character hex string cryptographic hash)
+- `requesterPubkey` (required): Public key of the user requesting the post details (66-character hex string with 02/03 prefix)
 
 **Response:**
 ```json
@@ -418,7 +453,9 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
     "downVotesCount": 2,
     "repostsCount": 3,
     "parentPostId": null,
-    "mentionedPubkeys": []
+    "mentionedPubkeys": [],
+    "isUpvoted": true,
+    "isDownvoted": false
   }
 }
 ```
@@ -428,6 +465,19 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
 - Refreshing interaction counts (likes, reposts, replies)
 - Getting updated post information for real-time updates
 - Verifying post existence before displaying reply forms
+- Checking user's voting status on specific posts/replies
+
+**New Fields:**
+- `isUpvoted`: Boolean indicating if the requesting user has upvoted this post/reply
+- `isDownvoted`: Boolean indicating if the requesting user has downvoted this post/reply
+- Both fields are mutually exclusive (only one can be true at a time)
+- If the user hasn't voted, both fields will be false
+
+**Backend Implementation Requirements:**
+- The backend must maintain a voting database/table tracking user votes
+- For each request, query the voting data using `requesterPubkey` and post `id`
+- Return appropriate boolean values for `isUpvoted` and `isDownvoted`
+- Ensure mutual exclusivity: a user cannot have both upvoted and downvoted the same post
 
 **Error Responses:**
 ```json
@@ -437,12 +487,19 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
 }
 ```
 
+```json
+{
+  "error": "Missing required parameter: requesterPubkey",
+  "code": "MISSING_PARAMETER"
+}
+```
+
 ### Nested Replies
 
-Replies can have nested replies. To get replies to a reply, use the reply's ID with pagination:
+Replies can have nested replies. To get replies to a reply, use the reply's ID with pagination and voting status:
 
 ```bash
-curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9&limit=10"
+curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 ## Data Structure
@@ -461,6 +518,8 @@ curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a
     repostsCount: number; // Number of reposts
     parentPostId?: string; // ID of the post being replied to (null for original posts)
     mentionedPubkeys: string[]; // Array of pubkeys mentioned in this post/reply
+    isUpvoted: boolean; // Whether the requesting user has upvoted this post (only for get-post-details)
+    isDownvoted: boolean; // Whether the requesting user has downvoted this post (only for get-post-details)
   }
   ```
 
@@ -490,6 +549,8 @@ curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a
     repostsCount: number; // Number of reposts
     parentPostId?: string; // ID of the post being replied to
     mentionedPubkeys: string[]; // Array of pubkeys mentioned in this reply
+    isUpvoted: boolean; // Whether the requesting user has upvoted this reply (only for get-post-details)
+    isDownvoted: boolean; // Whether the requesting user has downvoted this reply (only for get-post-details)
   }
   ```
 
@@ -513,6 +574,26 @@ All IDs are 32-byte cryptographic hashes represented as 64-character hexadecimal
 - `repostsCount`: Number of reposts (integer)
 - `parentPostId`: ID of parent post (`null` for original posts, post ID for replies)
 - `mentionedPubkeys`: Array of mentioned user public keys (empty `[]` for original posts)
+
+### Voting Status Fields (for all APIs with requesterPubkey)
+**When `requesterPubkey` parameter is provided, these fields are included in all post/reply responses:**
+
+- `isUpvoted`: Boolean indicating if the requesting user has upvoted this post/reply
+- `isDownvoted`: Boolean indicating if the requesting user has downvoted this post/reply
+
+**Important Notes:**
+- These fields are mutually exclusive (only one can be `true` at a time)
+- If the user hasn't voted on the post/reply, both fields will be `false`
+- The backend must query the voting database using `requesterPubkey` and post `id` to determine these values
+- All APIs now require `requesterPubkey` parameter except `get-users` (user introductions don't support voting)
+
+**APIs that now include voting status:**
+- `get-post-details`
+- `get-posts`
+- `get-posts-following`
+- `get-posts-watching`
+- `get-mentions`
+- `get-replies`
 
 ### Post IDs
 All post and reply IDs should be 32-byte cryptographic hashes represented as 64-character hexadecimal strings. These IDs are derived from the transaction data and ensure uniqueness across the system.
@@ -636,13 +717,15 @@ All post and reply navigation uses cryptographic hash IDs:
 The "Post Detail" view displays individual posts and their reply threads:
 
 - **Purpose**: Show detailed view of a single post with all its replies
-- **Main Post Loading**: Uses `get-post-details` API to fetch the specific post
+- **Main Post Loading**: Uses `get-post-details` API to fetch the specific post with voting status
+- **Authentication Required**: Requires user to be logged in to pass `requesterPubkey` parameter
 - **Reply Loading**: Uses `get-replies` API with pagination for the reply thread
-- **Real-time Updates**: Polls the main post details every 5 seconds for updated interaction counts
+- **Real-time Updates**: Polls the main post details every 5 seconds for updated interaction counts and voting status
 - **Reply Threading**: Supports nested replies with proper conversation threading
 - **Infinite Scroll**: Automatically loads more replies as user scrolls
 - **Reply Composition**: Integrated reply form with mention handling
 - **Navigation**: Supports navigation to parent posts for reply chains
+- **Voting UI**: Shows green highlighting for upvoted/downvoted posts with disabled opposite button
 
 ### Real-time Updates
 
@@ -666,6 +749,18 @@ curl "http://localhost:3000/get-posts"
 ```json
 {
   "error": "Missing required parameter: user",
+  "code": "MISSING_PARAMETER"
+}
+```
+
+```bash
+curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Missing required parameter: requesterPubkey",
   "code": "MISSING_PARAMETER"
 }
 ```

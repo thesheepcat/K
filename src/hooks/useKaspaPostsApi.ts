@@ -40,9 +40,9 @@ export const useKaspaPostsApi = () => {
     return convertServerUserPostsToClientPosts(serverUserPosts, currentUserPubkey, getNetworkRPCId(selectedNetwork));
   }, [selectedNetwork, getNetworkRPCId]);
 
-  const fetchAndConvertMyPosts = useCallback(async (userPublicKey: string, options?: PaginationOptions, currentUserPubkey?: string): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
+  const fetchAndConvertMyPosts = useCallback(async (userPublicKey: string, currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
     try {
-      const response = await fetchMyPosts(userPublicKey, options, apiBaseUrl);
+      const response = await fetchMyPosts(userPublicKey, currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -69,8 +69,8 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertFollowingPosts = useCallback(async (currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
-    const response = await fetchFollowingPosts(options, apiBaseUrl);
+  const fetchAndConvertFollowingPosts = useCallback(async (currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
+    const response = await fetchFollowingPosts(currentUserPubkey, options, apiBaseUrl);
     const convertedPosts = await networkAwareConvertServerPostsToClientPosts(response.posts, currentUserPubkey);
     return {
       posts: convertedPosts,
@@ -78,9 +78,9 @@ export const useKaspaPostsApi = () => {
     };
   }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertWatchingPosts = useCallback(async (currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedWatchingPostsResponse['pagination'] }> => {
+  const fetchAndConvertWatchingPosts = useCallback(async (currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedWatchingPostsResponse['pagination'] }> => {
     try {
-      const response = await fetchWatchingPosts(options, apiBaseUrl);
+      const response = await fetchWatchingPosts(currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -106,9 +106,9 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertMentions = useCallback(async (userPublicKey: string, options?: PaginationOptions, currentUserPubkey?: string): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
+  const fetchAndConvertMentions = useCallback(async (userPublicKey: string, currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedPostsResponse['pagination'] }> => {
     try {
-      const response = await fetchMentions(userPublicKey, options, apiBaseUrl);
+      const response = await fetchMentions(userPublicKey, currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -163,9 +163,9 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertPostDetails = useCallback(async (postId: string, currentUserPubkey?: string): Promise<Post> => {
+  const fetchAndConvertPostDetails = useCallback(async (postId: string, currentUserPubkey: string): Promise<Post> => {
     try {
-      const response = await fetchPostDetails(postId, apiBaseUrl);
+      const response = await fetchPostDetails(postId, currentUserPubkey, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -187,9 +187,9 @@ export const useKaspaPostsApi = () => {
     }
   }, [apiBaseUrl, selectedNetwork, getNetworkRPCId]);
 
-  const fetchAndConvertPostReplies = useCallback(async (postId: string, currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedRepliesResponse['pagination'] }> => {
+  const fetchAndConvertPostReplies = useCallback(async (postId: string, currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedRepliesResponse['pagination'] }> => {
     try {
-      const response = await fetchPostReplies(postId, options, apiBaseUrl);
+      const response = await fetchPostReplies(postId, currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -215,9 +215,9 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerRepliesToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertPostComments = useCallback(async (postId: string, currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedCommentsResponse['pagination'] }> => {
+  const fetchAndConvertPostComments = useCallback(async (postId: string, currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedCommentsResponse['pagination'] }> => {
     try {
-      const response = await fetchPostComments(postId, options, apiBaseUrl);
+      const response = await fetchPostComments(postId, currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -244,22 +244,22 @@ export const useKaspaPostsApi = () => {
   }, [networkAwareConvertServerRepliesToClientPosts, apiBaseUrl]);
 
   // Create bound versions of the raw API functions with apiBaseUrl pre-filled
-  const boundFetchMyPosts = useCallback((userPublicKey: string, options?: PaginationOptions) => 
-    fetchMyPosts(userPublicKey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchFollowingPosts = useCallback((options?: PaginationOptions) => 
-    fetchFollowingPosts(options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchWatchingPosts = useCallback((options?: PaginationOptions) => 
-    fetchWatchingPosts(options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchMentions = useCallback((userPublicKey: string, options?: PaginationOptions) => 
-    fetchMentions(userPublicKey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchMyPosts = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+    fetchMyPosts(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchFollowingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) => 
+    fetchFollowingPosts(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchWatchingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) => 
+    fetchWatchingPosts(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchMentions = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+    fetchMentions(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
   const boundFetchUsers = useCallback((options?: PaginationOptions) => 
     fetchUsers(options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostDetails = useCallback((postId: string) => 
-    fetchPostDetails(postId, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostReplies = useCallback((postId: string, options?: PaginationOptions) => 
-    fetchPostReplies(postId, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostComments = useCallback((postId: string, options?: PaginationOptions) => 
-    fetchPostComments(postId, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchPostDetails = useCallback((postId: string, requesterPubkey: string) => 
+    fetchPostDetails(postId, requesterPubkey, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchPostReplies = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
+    fetchPostReplies(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchPostComments = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
+    fetchPostComments(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
 
   return {
     // Core API functions (all paginated) - bound with current apiBaseUrl

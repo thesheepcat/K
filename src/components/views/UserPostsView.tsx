@@ -90,7 +90,7 @@ const loadUserPosts = useCallback(async (reset: boolean = true) => {
       
       // Use the same API endpoint as "My Posts" but with the specific user's pubkey
       // Pass the current user's public key for proper "You" display logic
-      const response = await fetchFunctionRef.current(userPubkeyRef.current, options, publicKeyRef.current ?? undefined);
+      const response = await fetchFunctionRef.current(userPubkeyRef.current, publicKeyRef.current ?? '', options);
       
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -163,7 +163,7 @@ const loadMorePosts = useCallback(async () => {
             limit: 10
           };
           
-          const response = await fetchFunctionRef.current(userPubkeyRef.current, options, publicKeyRef.current ?? undefined);
+          const response = await fetchFunctionRef.current(userPubkeyRef.current, publicKeyRef.current ?? '', options);
           
           // Defensive check for response structure
           if (!response || !response.pagination) {

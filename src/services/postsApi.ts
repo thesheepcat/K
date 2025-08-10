@@ -5,12 +5,15 @@ import { Base64 } from 'js-base64';
 /**
  * Fetch posts from the server for a specific user with pagination
  */
-export const fetchMyPosts = async (userPublicKey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
+export const fetchMyPosts = async (userPublicKey: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-posts`);
     
     // User parameter is mandatory
     url.searchParams.append('user', userPublicKey);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
     
     // Limit is mandatory for paginated endpoints
     const limit = options?.limit || 10; // Default to 10 if not provided
@@ -46,9 +49,12 @@ export const fetchMyPosts = async (userPublicKey: string, options?: PaginationOp
 /**
  * Fetch following posts from the server with pagination
  */
-export const fetchFollowingPosts = async (options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
+export const fetchFollowingPosts = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-posts-following`);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
     
     // Limit is mandatory for paginated endpoints
     const limit = options?.limit || 10; // Default to 10 if not provided
@@ -84,9 +90,12 @@ export const fetchFollowingPosts = async (options?: PaginationOptions, apiBaseUr
 /**
  * Fetch watching posts from the server with pagination
  */
-export const fetchWatchingPosts = async (options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedWatchingPostsResponse> => {
+export const fetchWatchingPosts = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedWatchingPostsResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-posts-watching`);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
     
     // Limit is mandatory for get-posts-watching endpoint
     const limit = options?.limit || 10; // Default to 10 if not provided
@@ -122,12 +131,15 @@ export const fetchWatchingPosts = async (options?: PaginationOptions, apiBaseUrl
 /**
  * Fetch mentions for a specific user with pagination
  */
-export const fetchMentions = async (userPublicKey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
+export const fetchMentions = async (userPublicKey: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-mentions`);
     
     // User parameter is mandatory
     url.searchParams.append('user', userPublicKey);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
     
     // Limit is mandatory for paginated endpoints
     const limit = options?.limit || 10; // Default to 10 if not provided
@@ -247,8 +259,8 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
     downVotes: serverPost.downVotesCount || 0, // Default to 0 if not provided
     reposts: serverPost.repostsCount,
     replies: serverPost.repliesCount,
-    upVoted: false, // Default to not up-voted
-    downVoted: false, // Default to not down-voted
+    upVoted: serverPost.isUpvoted ?? false, // Use server data or default to false
+    downVoted: serverPost.isDownvoted ?? false, // Use server data or default to false
     reposted: false, // Default to not reposted
     nestedReplies: [], // Replies will be empty for server posts initially
     parentPostId: serverPost.parentPostId,
@@ -334,12 +346,15 @@ export const convertServerUserPostsToClientPosts = async (serverUserPosts: Serve
 /**
  * Fetch details for a specific post/reply
  */
-export const fetchPostDetails = async (postId: string, apiBaseUrl: string = 'http://localhost:3000'): Promise<{ post: ServerPost }> => {
+export const fetchPostDetails = async (postId: string, requesterPubkey: string, apiBaseUrl: string = 'http://localhost:3000'): Promise<{ post: ServerPost }> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-post-details`);
     
     // Post ID parameter is mandatory
     url.searchParams.append('id', postId);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
 
     const response = await fetch(url.toString(), {
       method: 'GET',
@@ -363,12 +378,15 @@ export const fetchPostDetails = async (postId: string, apiBaseUrl: string = 'htt
 /**
  * Fetch replies for a specific post with pagination
  */
-export const fetchPostReplies = async (postId: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedRepliesResponse> => {
+export const fetchPostReplies = async (postId: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedRepliesResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-replies`);
     
     // Post parameter is mandatory
     url.searchParams.append('post', postId);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
     
     // Limit is mandatory for paginated endpoints
     const limit = options?.limit || 10; // Default to 10 if not provided
@@ -405,9 +423,9 @@ export const fetchPostReplies = async (postId: string, options?: PaginationOptio
  * Fetch comments for a specific post with pagination
  * @deprecated Use fetchPostReplies instead - comments and replies are the same in this system
  */
-export const fetchPostComments = async (postId: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedCommentsResponse> => {
+export const fetchPostComments = async (postId: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedCommentsResponse> => {
   // Comments and replies are the same in our system, so we can reuse the replies endpoint
-  const repliesResponse = await fetchPostReplies(postId, options, apiBaseUrl);
+  const repliesResponse = await fetchPostReplies(postId, requesterPubkey, options, apiBaseUrl);
   
   // Transform the response to match PaginatedCommentsResponse structure
   return {
@@ -469,8 +487,8 @@ export const convertServerReplyToClientPost = async (serverReply: ServerReply, c
     downVotes: serverReply.downVotesCount || 0, // Default to 0 if not provided
     reposts: serverReply.repostsCount,
     replies: serverReply.repliesCount,
-    upVoted: false,
-    downVoted: false,
+    upVoted: serverReply.isUpvoted ?? false, // Use server data or default to false
+    downVoted: serverReply.isDownvoted ?? false, // Use server data or default to false
     reposted: false,
     nestedReplies: [],
     parentPostId: serverReply.parentPostId,

@@ -33,6 +33,8 @@ export interface ServerPost {
   repostsCount: number;
   parentPostId?: string; // ID of the post/reply being replied to (only for replies)
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
+  isUpvoted?: boolean; // Whether the requesting user has upvoted this post
+  isDownvoted?: boolean; // Whether the requesting user has downvoted this post
 }
 
 export interface ServerReply {
@@ -47,6 +49,8 @@ export interface ServerReply {
   repostsCount: number;
   parentPostId?: string; // ID of the post/reply being replied to
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
+  isUpvoted?: boolean; // Whether the requesting user has upvoted this reply
+  isDownvoted?: boolean; // Whether the requesting user has downvoted this reply
 }
 
 // Server response types for Users API

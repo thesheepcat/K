@@ -152,7 +152,7 @@ See previous paragraphs ("Posting a message" and "Replying to user contents")
 
 ---
 
-### ❌ Upvoting/downvoting user contents (not yet confirmed)
+### ✅ Upvoting/downvoting user contents
 - User A can setup his own account to:
   - Gets notified if someone upvote/downvote its content;
   - Gets notified if someone quotes upvote/downvote its content;
@@ -178,17 +178,18 @@ sequenceDiagram
   Action: `vote`
   **Payload Format:**
   ```
-  k:1:vote:sender_pubkey:sender_signature:post_id:is_upvoted
+  k:1:vote:sender_pubkey:sender_signature:post_id:vote
   ```
 
-### Field Descriptions- `sender_pubkey`: The public key of the message sender
+### Field Descriptions- 
+  - `sender_pubkey`: The public key of the message sender
   - `sender_signature`: Digital signature for consistency verification
   - `post_id`: The reference to the post being voted
-  - `is_upvoted`: The value defining the user upvotes the content (true or false)
+  - `vote`: The value defining the user vote the content (upvote/downvote)
  
 ### Example Usage
   ```
-  k:1:vote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:true
+  k:1:vote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:upvote
   ```
 
 ---

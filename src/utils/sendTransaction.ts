@@ -10,9 +10,10 @@ function encodeToBase64(text: string): string {
 export interface TransactionOptions {
   privateKey: string;
   userMessage: string;
-  type: 'post' | 'reply' | 'broadcast';
-  postId?: string; // Required for replies
+  type: 'post' | 'reply' | 'broadcast' | 'vote';
+  postId?: string; // Required for replies and votes
   mentionedPubkeys?: string[]; // Array of pubkeys to mention
+  vote?: 'upvote' | 'downvote'; // Required for vote type
   networkId?: string; // Optional network override, defaults to context network
 }
 
@@ -23,7 +24,7 @@ export interface TransactionResult {
 }
 
 export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {    
-    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], networkId: overrideNetworkId } = options;
+    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, networkId: overrideNetworkId } = options;
     
     try {
         // Ensure Kaspa SDK is loaded
@@ -132,6 +133,24 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             });
             
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}broadcast:${userPublicKey}:${messageSignature}:${encodedMessage}`;
+        } else if (type === 'vote') {
+            // Format: k:1:vote:sender_pubkey:sender_signature:post_id:vote
+            if (!postId) {
+                throw new Error('Post ID is required for votes');
+            }
+            if (!vote || (vote !== 'upvote' && vote !== 'downvote')) {
+                throw new Error('Valid vote type (upvote/downvote) is required for votes');
+            }
+            // Sign the string: post_id:vote
+            signatureData = `${postId}:${vote}`;
+            
+            messageSignature = signMessage({
+                message: signatureData, 
+                privateKey: privateKeyObject, 
+                noAuxRand: false
+            });
+            
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}vote:${userPublicKey}:${messageSignature}:${postId}:${vote}`;
         } else {
             throw new Error(`Unsupported transaction type: ${type}`);
         }

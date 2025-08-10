@@ -43,13 +43,13 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
 
   // Load the main post details using the new API
   const loadPostDetails = useCallback(async () => {
-    if (!postId) return;
+    if (!postId || !publicKey) return;
     
     setIsLoadingPost(true);
     setPostError(null);
     
     try {
-      const post = await fetchAndConvertPostDetails(postId, publicKey ?? undefined);
+      const post = await fetchAndConvertPostDetails(postId, publicKey);
       setCurrentPost(post);
     } catch (error) {
       console.error('Error loading post details:', error);
@@ -61,7 +61,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
 
   // Load replies for the current post
   const loadReplies = useCallback(async (reset: boolean = true) => {
-    if (!postId) return;
+    if (!postId || !publicKey) return;
     
     if (reset) {
       setIsLoadingReplies(true);
@@ -76,7 +76,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         ...(reset ? {} : { before: nextCursor })
       };
       
-      const response = await fetchAndConvertPostReplies(postId, publicKey ?? undefined, options);
+      const response = await fetchAndConvertPostReplies(postId, publicKey, options);
       
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -126,17 +126,19 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     let interval: NodeJS.Timeout;
     
     const pollPostDetails = async () => {
-      if (!postId) return;
+      if (!postId || !publicKey) return;
       
       try {
-        const updatedPost = await fetchAndConvertPostDetails(postId, publicKey ?? undefined);
+        const updatedPost = await fetchAndConvertPostDetails(postId, publicKey);
         setCurrentPost(prev => {
           // Only update if there are actual changes to avoid unnecessary re-renders
           if (!prev || 
               prev.upVotes !== updatedPost.upVotes || 
               prev.downVotes !== updatedPost.downVotes || 
               prev.reposts !== updatedPost.reposts || 
-              prev.replies !== updatedPost.replies) {
+              prev.replies !== updatedPost.replies ||
+              prev.upVoted !== updatedPost.upVoted ||
+              prev.downVoted !== updatedPost.downVoted) {
             return updatedPost;
           }
           return prev;
@@ -165,11 +167,11 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     let interval: NodeJS.Timeout;
     
     const pollReplies = async () => {
-      if (!postId || isLoadingReplies) return;
+      if (!postId || !publicKey || isLoadingReplies) return;
       
       try {
         // Only poll the first page of replies to check for new ones
-        const response = await fetchAndConvertPostReplies(postId, publicKey ?? undefined, { limit: 10 });
+        const response = await fetchAndConvertPostReplies(postId, publicKey, { limit: 10 });
         
         if (!response || !response.pagination) {
           console.error('Invalid response structure in replies polling:', response);
@@ -189,7 +191,9 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
                 prev[index].upVotes !== reply.upVotes ||
                 prev[index].downVotes !== reply.downVotes ||
                 prev[index].reposts !== reply.reposts ||
-                prev[index].replies !== reply.replies
+                prev[index].replies !== reply.replies ||
+                prev[index].upVoted !== reply.upVoted ||
+                prev[index].downVoted !== reply.downVoted
               )) {
             // Update pagination info as well
             setNextCursor(response.pagination.nextCursor);
@@ -262,10 +266,10 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     
     // Refresh replies after a delay to allow the transaction to be processed
     const refreshReplies = async (retryCount = 0) => {
-      if (!postId) return;
+      if (!postId || !publicKey) return;
       
       try {
-        const response = await fetchAndConvertPostReplies(postId, publicKey ?? undefined, { limit: 10 });
+        const response = await fetchAndConvertPostReplies(postId, publicKey, { limit: 10 });
         
         if (!response || !response.pagination) {
           console.error('Invalid response structure in reply refresh:', response);
@@ -314,6 +318,34 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     
     return [];
   };
+
+  // Show error if no public key is available
+  if (!publicKey) {
+    return (
+      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-gray-200 flex flex-col h-full">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg sm:text-xl font-bold">Authentication Required</h1>
+            </div>
+          </div>
+          <div className="text-center px-4">
+            <p className="text-gray-500 mb-4 text-sm sm:text-base">
+              Please log in to view post details.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Loading state
   if (isLoadingPost) {

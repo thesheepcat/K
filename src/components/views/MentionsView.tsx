@@ -66,7 +66,7 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
         ...(reset ? {} : { before: nextCursorRef.current })
       };
       
-      const response = await fetchFunctionRef.current(publicKeyRef.current, options, publicKeyRef.current);
+      const response = await fetchFunctionRef.current(publicKeyRef.current, publicKeyRef.current, options);
       
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -144,7 +144,7 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
             limit: 10
           };
           
-          const response = await fetchFunctionRef.current(publicKeyRef.current, options, publicKeyRef.current);
+          const response = await fetchFunctionRef.current(publicKeyRef.current, publicKeyRef.current, options);
           
           // Defensive check for response structure
           if (!response || !response.pagination) {
@@ -152,21 +152,41 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
             return;
           }
 
-          // Only update if we got new posts (compare with first post timestamp)
-          if ((response.posts || []).length > 0 && postsRef.current.length > 0) {
-            const newestExistingTimestamp = postsRef.current[0]?.timestamp;
-            const newestServerPost = response.posts[0];
-            
-            // Simple string comparison should work for timestamps
-            if (newestServerPost && newestServerPost.timestamp !== newestExistingTimestamp) {
-              // Reset the list with fresh data from server
-              onServerPostsUpdateRef.current(response.posts || []);
-              setHasMore(response.pagination.hasMore);
-              setNextCursor(response.pagination.nextCursor);
+          // Check if server data has any changes compared to local data
+          const serverPosts = response.posts || [];
+          const localPosts = postsRef.current;
+          
+          let hasChanges = false;
+          
+          // Check if post count differs
+          if (serverPosts.length !== localPosts.length) {
+            hasChanges = true;
+          } else {
+            // Compare each post for changes in vote counts, timestamps, or other properties
+            for (let i = 0; i < Math.min(serverPosts.length, localPosts.length); i++) {
+              const serverPost = serverPosts[i];
+              const localPost = localPosts[i];
+              
+              if (
+                serverPost.id !== localPost.id ||
+                serverPost.upVotes !== localPost.upVotes ||
+                serverPost.downVotes !== localPost.downVotes ||
+                serverPost.replies !== localPost.replies ||
+                serverPost.reposts !== localPost.reposts ||
+                serverPost.timestamp !== localPost.timestamp ||
+                serverPost.upVoted !== localPost.upVoted ||
+                serverPost.downVoted !== localPost.downVoted ||
+                serverPost.reposted !== localPost.reposted
+              ) {
+                hasChanges = true;
+                break;
+              }
             }
-          } else if (postsRef.current.length === 0) {
-            // If no posts exist locally, update with server data
-            onServerPostsUpdateRef.current(response.posts || []);
+          }
+          
+          if (hasChanges) {
+            // Update with fresh data from server
+            onServerPostsUpdateRef.current(serverPosts);
             setHasMore(response.pagination.hasMore);
             setNextCursor(response.pagination.nextCursor);
           }

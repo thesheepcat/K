@@ -1,18 +1,21 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, Loader2 } from "lucide-react";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { truncateKaspaAddress } from "@/utils/postUtils";
+import { toast } from "sonner";
+import { useAuth } from '@/contexts/AuthContext';
+import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 
 interface PostCardProps {
   post: Post;
-  onUpVote: (id: string) => void;
-  onDownVote: (id: string) => void;
-  onRepost: (id: string) => void;
+  onUpVote?: (id: string) => void;
+  onDownVote?: (id: string) => void;
+  onRepost?: (id: string) => void;
   isDetailView?: boolean;
   isComment?: boolean;
   onClick?: () => void;
@@ -22,26 +25,112 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ 
   post, 
-  onUpVote, // Currently disabled - TO BE IMPLEMENTED
-  onDownVote, // Currently disabled - TO BE IMPLEMENTED
+  onUpVote,
+  onDownVote,
   onRepost, // Currently disabled - TO BE IMPLEMENTED
   isDetailView = false, 
   isComment = false, 
   onClick,
   onReply,
   context = 'list'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 }) => {
   // Suppress TypeScript warnings for temporarily disabled parameters
-  void onUpVote;
-  void onDownVote;
   void onRepost;
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
+  const [isSubmittingVote, setIsSubmittingVote] = useState(false);
+  const { privateKey } = useAuth();
+  const { sendTransaction } = useKaspaTransactions();
   
   // Generate dynamic avatar based on pubkey for consistency
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
   const jdenticonAvatar = useJdenticonAvatar(post.author.pubkey || post.author.username, avatarSizePixels);
+
+  const handleUpVote = async () => {
+    if (!privateKey || isSubmittingVote) return;
+    
+    try {
+      setIsSubmittingVote(true);
+      
+      // Send vote transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for votes
+        type: 'vote' as any, // Cast as any since it's not in the official types yet
+        postId: post.id,
+        vote: 'upvote'
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success("Upvote transaction successful!", {
+          description: (
+            <div className="space-y-1">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+            </div>
+          ),
+          duration: 5000,
+        });
+        
+        // Call the parent handler if provided
+        if (onUpVote) {
+          onUpVote(post.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting upvote:', error);
+      toast.error("Error submitting upvote", {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingVote(false);
+    }
+  };
+
+  const handleDownVote = async () => {
+    if (!privateKey || isSubmittingVote) return;
+    
+    try {
+      setIsSubmittingVote(true);
+      
+      // Send vote transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for votes
+        type: 'vote' as any, // Cast as any since it's not in the official types yet
+        postId: post.id,
+        vote: 'downvote'
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success("Downvote transaction successful!", {
+          description: (
+            <div className="space-y-1">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+            </div>
+          ),
+          duration: 5000,
+        });
+        
+        // Call the parent handler if provided
+        if (onDownVote) {
+          onDownVote(post.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting downvote:', error);
+      toast.error("Error submitting downvote", {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingVote(false);
+    }
+  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -133,23 +222,41 @@ const PostCard: React.FC<PostCardProps> = ({
             <Button 
               variant="ghost"
               size="sm"
-              className={`p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0 ${post.upVoted ? 'text-blue-500' : 'text-gray-500'}`}
-              // TO BE IMPLEMENTED - Up-vote count click functionality and hover effects
-              // className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${post.upVoted ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-50'}`}
-              // onClick={() => onUpVote(post.id)}
+              disabled={post.downVoted || post.upVoted || isSubmittingVote || !privateKey}
+              className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
+                post.downVoted || !privateKey
+                  ? 'text-gray-500' 
+                  : post.upVoted 
+                  ? 'text-green-500' 
+                  : 'text-gray-500 hover:text-green-500'
+              }`}
+              onClick={handleUpVote}
             >
-              <ThumbsUp className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.upVoted ? 'fill-current' : ''}`} />
+              {isSubmittingVote ? (
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+              ) : (
+                <ThumbsUp className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.upVoted ? 'fill-current' : ''}`} />
+              )}
               <span className="text-xs sm:text-sm">{post.upVotes || 0}</span>
             </Button>
             <Button 
               variant="ghost"
               size="sm"
-              className={`p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0 ${post.downVoted ? 'text-red-500' : 'text-gray-500'}`}
-              // TO BE IMPLEMENTED - Down-vote count click functionality and hover effects
-              // className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${post.downVoted ? 'text-red-500' : 'text-gray-500 hover:text-red-500 hover:bg-red-50'}`}
-              // onClick={() => onDownVote(post.id)}
+              disabled={post.upVoted || post.downVoted || isSubmittingVote || !privateKey}
+              className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
+                post.upVoted || !privateKey
+                  ? 'text-gray-500' 
+                  : post.downVoted 
+                  ? 'text-red-500' 
+                  : 'text-gray-500 hover:text-red-500'
+              }`}
+              onClick={handleDownVote}
             >
-              <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.downVoted ? 'fill-current' : ''}`} />
+              {isSubmittingVote ? (
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+              ) : (
+                <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.downVoted ? 'fill-current' : ''}`} />
+              )}
               <span className="text-xs sm:text-sm">{post.downVotes || 0}</span>
             </Button>
             <Button
