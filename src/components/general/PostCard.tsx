@@ -10,6 +10,7 @@ import { truncateKaspaAddress } from "@/utils/postUtils";
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
+import { LinkifiedText } from '@/utils/linkUtils';
 
 interface PostCardProps {
   post: Post;
@@ -199,7 +200,9 @@ const PostCard: React.FC<PostCardProps> = ({
             </div>
             <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
-          <p className={`mt-1 text-black ${contentTextSize} break-words whitespace-pre-wrap`}>{displayContent}</p>
+          <div className={`mt-1 text-black ${contentTextSize} break-words whitespace-pre-wrap`}>
+            <LinkifiedText>{displayContent}</LinkifiedText>
+          </div>
           {isLongMessage && !isDetailView && (
             <div className="mt-2 p-2 bg-gray-100 border-l-4 border-blue-500 rounded-r">
               <p className="text-sm text-gray-600">

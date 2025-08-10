@@ -5,6 +5,7 @@ import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { truncateKaspaAddress } from "@/utils/postUtils";
+import { LinkifiedText } from '@/utils/linkUtils';
 
 interface UserPostCardProps {
   post: Post;
@@ -87,7 +88,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
             </div>
             <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
-          <p className={`mt-1 text-black ${contentTextSize} break-words`}>{post.content}</p>
+          <div className={`mt-1 text-black ${contentTextSize} break-words`}>
+            <LinkifiedText>{post.content}</LinkifiedText>
+          </div>
           {/* No interaction buttons (likes, reposts, replies) for Users view */}
         </div>
       </div>
