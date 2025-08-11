@@ -9,6 +9,24 @@ import { buildMentionedPubkeysForReply } from '@/utils/replyChainUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 
+// Utility function to deduplicate posts by ID
+const deduplicatePostsById = (posts: Post[]): Post[] => {
+  const seen = new Set<string>();
+  return posts.filter(post => {
+    if (seen.has(post.id)) {
+      return false;
+    }
+    seen.add(post.id);
+    return true;
+  });
+};
+
+// Utility function to safely merge posts arrays
+const mergePostsSafely = (existing: Post[], newPosts: Post[]): Post[] => {
+  const merged = [...existing, ...newPosts];
+  return deduplicatePostsById(merged);
+};
+
 interface PostDetailViewProps {
   onUpVote: (id: string) => void;
   onDownVote: (id: string) => void;
@@ -73,7 +91,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     try {
       const options = {
         limit: 10,
-        ...(reset ? {} : { before: nextCursor })
+        ...(reset ? {} : { before: nextCursorRef.current })
       };
       
       const response = await fetchAndConvertPostReplies(postId, publicKey, options);
@@ -84,13 +102,15 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         throw new Error('Invalid response from server');
       }
 
+      // Note: fetchAndConvertPostReplies already converts the raw API response.replies to response.posts
+      // So we should use response.posts here, not response.replies
       if (reset) {
-        setReplies(response.posts || []);
+        setReplies(deduplicatePostsById(response.posts || []));
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       } else {
-        // Append new replies to existing ones
-        setReplies(prev => [...prev, ...(response.posts || [])]);
+        // Append new replies to existing ones, avoiding duplicates
+        setReplies(prev => mergePostsSafely(prev, response.posts || []));
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       }
@@ -105,13 +125,28 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         setIsLoadingMore(false);
       }
     }
-  }, [postId, nextCursor, fetchAndConvertPostReplies, publicKey]);
+  }, [postId, fetchAndConvertPostReplies, publicKey]);
 
-  // Load more replies
+  // Use refs to store the latest values to avoid dependency issues in infinite scroll
+  const repliesRef = useRef(replies);
+  const nextCursorRef = useRef(nextCursor);
+  const hasMoreRef = useRef(hasMore);
+  const isLoadingMoreRef = useRef(isLoadingMore);
+  
+  // Update refs when values change
+  repliesRef.current = replies;
+  nextCursorRef.current = nextCursor;
+  hasMoreRef.current = hasMore;
+  isLoadingMoreRef.current = isLoadingMore;
+
+  // Load more replies with stable references
   const loadMoreReplies = useCallback(async () => {
-    if (!hasMore || isLoadingMore) return;
+    if (!hasMoreRef.current || isLoadingMoreRef.current) {
+      return;
+    }
+    
     await loadReplies(false);
-  }, [loadReplies, hasMore, isLoadingMore]);
+  }, [loadReplies]);
 
   // Initial load when component mounts or postId changes
   useEffect(() => {
@@ -162,12 +197,12 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     };
   }, [postId, currentPost, fetchAndConvertPostDetails, publicKey]);
 
-  // Set up polling for replies (every 5 seconds)
+  // Set up polling for replies (every 5 seconds) with stable references to avoid disrupting infinite scroll
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     const pollReplies = async () => {
-      if (!postId || !publicKey || isLoadingReplies) return;
+      if (!postId || !publicKey || isLoadingReplies || isLoadingMoreRef.current) return;
       
       try {
         // Only poll the first page of replies to check for new ones
@@ -179,29 +214,55 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         }
 
         const newReplies = response.posts || [];
+        const currentReplies = repliesRef.current;
         
-        // Update replies state if we have new data
-        setReplies(prev => {
-          // Only update if there are actual changes to avoid unnecessary re-renders
-          if (prev.length === 0 || 
-              newReplies.length !== prev.length ||
-              newReplies.some((reply, index) => 
-                !prev[index] || 
-                prev[index].id !== reply.id ||
-                prev[index].upVotes !== reply.upVotes ||
-                prev[index].downVotes !== reply.downVotes ||
-                prev[index].reposts !== reply.reposts ||
-                prev[index].replies !== reply.replies ||
-                prev[index].upVoted !== reply.upVoted ||
-                prev[index].downVoted !== reply.downVoted
-              )) {
-            // Update pagination info as well
-            setNextCursor(response.pagination.nextCursor);
-            setHasMore(response.pagination.hasMore);
-            return newReplies;
+        // Check if server data has any changes compared to local data
+        let hasChanges = false;
+        
+        // First check if there are new replies (count increased)
+        if (newReplies.length > Math.min(currentReplies.length, 10)) {
+          hasChanges = true;
+        } else {
+          // Compare first 10 replies for changes in vote counts or other properties
+          for (let i = 0; i < Math.min(newReplies.length, currentReplies.length, 10); i++) {
+            const serverReply = newReplies[i];
+            const localReply = currentReplies[i];
+            
+            if (
+              serverReply.id !== localReply.id ||
+              serverReply.upVotes !== localReply.upVotes ||
+              serverReply.downVotes !== localReply.downVotes ||
+              serverReply.replies !== localReply.replies ||
+              serverReply.reposts !== localReply.reposts ||
+              serverReply.upVoted !== localReply.upVoted ||
+              serverReply.downVoted !== localReply.downVoted ||
+              serverReply.reposted !== localReply.reposted
+            ) {
+              hasChanges = true;
+              break;
+            }
           }
-          return prev;
-        });
+        }
+        
+        if (hasChanges) {
+          setReplies(prev => {
+            if (prev.length <= 10) {
+              // If we only have first page loaded, replace all
+              setNextCursor(response.pagination.nextCursor);
+              setHasMore(response.pagination.hasMore);
+              return deduplicatePostsById(newReplies);
+            } else {
+              // If we have more than first page, only update the first 10 replies
+              // to preserve the user's scroll position and additional loaded content
+              const updatedReplies = [
+                ...newReplies.slice(0, Math.min(newReplies.length, 10)),
+                ...prev.slice(10)
+              ];
+              // Don't update pagination state as it would affect infinite scroll
+              return deduplicatePostsById(updatedReplies);
+            }
+          });
+        }
       } catch (error) {
         console.error('Error polling replies:', error);
         // Don't update error state for polling failures to avoid disruption
@@ -221,27 +282,69 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
     };
   }, [postId, isLoadingReplies, repliesError, fetchAndConvertPostReplies, publicKey]);
 
-  // Infinite scroll for replies
+  // Infinite scroll for replies using stable references
   useEffect(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer) return;
+    // Use setTimeout to ensure DOM is ready
+    const setupScrollListener = () => {
+      const scrollContainer = scrollContainerRef.current;
+      
+      if (!scrollContainer) {
+        // Retry after a short delay if container isn't ready yet
+        setTimeout(setupScrollListener, 100);
+        return;
+      }
+
+      const handleScroll = () => {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+        const shouldLoadMore = distanceFromBottom < 300; // Load when within 300px of bottom
+
+        // Always log scroll events to see if they're being detected
+
+        if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {          
+          loadMoreReplies();
+        }
+      };
+
+      // Test if the scroll container is properly set up
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // Test scroll detection immediately
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      };
+    };
+
+    // Start setup process
+    const cleanup = setupScrollListener();
+    
+    return cleanup;
+  }, [loadMoreReplies, replies.length]); // Added replies.length to re-setup after content changes
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;    
+    if (!scrollContainer) {
+      return;
+    }
 
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
       const shouldLoadMore = distanceFromBottom < 300; // Load when within 300px of bottom
 
-      if (shouldLoadMore && hasMore && !isLoadingMore) {
+      if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
         loadMoreReplies();
       }
     };
 
+    // Test if the scroll container is properly set up
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Test scroll detection immediately
 
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [loadMoreReplies, hasMore, isLoadingMore]);
+  }, [loadMoreReplies]);
 
   // Handle reply intent from navigation state
   useEffect(() => {
@@ -280,7 +383,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         
         // If we got new replies or this is not a retry, update state
         if (newReplies.length > replies.length || retryCount === 0) {
-          setReplies(newReplies);
+          setReplies(deduplicatePostsById(newReplies));
           setNextCursor(response.pagination.nextCursor);
           setHasMore(response.pagination.hasMore);
         } else if (retryCount < 3) {
@@ -458,10 +561,21 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
 
       <div 
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-scroll" 
+        className="flex-1 overflow-y-auto" 
         style={{
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch'
+        }}
+        onScroll={(e) => {
+          const target = e.currentTarget;
+          const { scrollTop, scrollHeight, clientHeight } = target;
+          const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+          const shouldLoadMore = distanceFromBottom < 300;
+    
+          if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
+            loadMoreReplies();
+          }
         }}
       >
         {/* Main Post/Comment - Larger version */}
