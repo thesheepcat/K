@@ -2,15 +2,36 @@
 
 This document provides comprehensive technical specifications for the REST API endpoints used by K webapp to communicate with K-indexer.
 
-## Authentication
+## Introduction
 
-All API calls require a valid user public key (66-character hexadecimal string with 02/03 prefix).
+The K webapp API provides the following endpoints for social media functionality:
 
-Example public key: `02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f`
+### Available API Endpoints
 
-## Pagination
+1. **`get-posts`** - Retrieve posts from a specific user
+   - Scope: Fetch all posts created by a particular user with pagination support
 
-The API uses cursor-based pagination for efficient handling of large datasets. Pagination is implemented across all major endpoints: `get-posts`, `get-posts-following`, `get-posts-watching`, `get-users`, and `get-replies`.
+2. **`get-posts-following`** - Retrieve posts from followed users
+   - Scope: Fetch posts from users that the requester is following
+
+3. **`get-posts-watching`** - Retrieve posts from watched users
+   - Scope: Fetch posts from users that the requester is watching
+
+4. **`get-mentions`** - Retrieve posts where a user is mentioned
+   - Scope: Fetch posts and replies that mention a specific user
+
+5. **`get-users`** - Retrieve user introduction posts
+   - Scope: Fetch user introduction posts (max 100 characters) for community discovery
+
+6. **`get-replies`** - Retrieve replies to a specific post
+   - Scope: Fetch all replies (including nested replies) for a given post
+
+7. **`get-post-details`** - Retrieve details for a specific post
+   - Scope: Fetch complete details for a single post or reply with voting status
+
+## General Pagination Rules
+
+The API uses cursor-based pagination for efficient handling of large datasets. Pagination is implemented across all major endpoints.
 
 ### Pagination Parameters
 
@@ -50,7 +71,6 @@ All paginated endpoints include a `pagination` object in the response:
 
 ### Pagination Usage Examples
 
-#### Get Posts Watching (Paginated)
 ```bash
 # Get first page (10 posts)
 curl "http://localhost:3000/get-posts-watching?limit=10"
@@ -65,57 +85,9 @@ curl "http://localhost:3000/get-posts-watching?after=1703190000&limit=10"
 curl "http://localhost:3000/get-posts-watching?limit=5"
 ```
 
-#### Get User Posts (Paginated)
-```bash
-# Get first page of user posts (10 posts)
-curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+## API Endpoint Details
 
-# Get next page (older posts)
-curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
-
-# Check for new posts since last fetch
-curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&after=1703190000&limit=10"
-```
-
-#### Get Following Posts (Paginated)
-```bash
-# Get first page of following posts (10 posts)
-curl "http://localhost:3000/get-posts-following?limit=10"
-
-# Get next page (older posts)
-curl "http://localhost:3000/get-posts-following?limit=10&before=1703185000"
-
-# Check for new posts since last fetch
-curl "http://localhost:3000/get-posts-following?after=1703190000&limit=10"
-```
-
-#### Get Users (Paginated)
-```bash
-# Get first page of users (10 users)
-curl "http://localhost:3000/get-users?limit=10"
-
-# Get next page (older user introductions)
-curl "http://localhost:3000/get-users?limit=10&before=1703185000"
-
-# Check for new user introductions
-curl "http://localhost:3000/get-users?after=1703190000&limit=10"
-```
-
-#### Get Replies (Paginated)
-```bash
-# Get first page of replies (10 replies)
-curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&limit=10"
-
-# Get next page (older replies)
-curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&limit=10&before=1703185000"
-
-# Check for new replies
-curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1&after=1703190000&limit=10"
-```
-
-## Additional API Endpoints
-
-### Get Following Posts
+### 1. Get Following Posts
 Fetch posts from users you follow with pagination support and voting status:
 
 ```bash
@@ -156,7 +128,7 @@ curl "http://localhost:3000/get-posts-following?requesterPubkey=02218b3732df2353
 }
 ```
 
-### Get Watching Posts
+### 2. Get Watching Posts
 
 Fetch posts from users you're watching with voting status. This endpoint requires pagination parameters:
 
@@ -232,7 +204,7 @@ curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df23539
 - `prevCursor`: Timestamp cursor for fetching newer posts (use with `after` parameter)
 - Both cursors are `null` when no more posts are available in that direction
 
-### Get Mentions
+### 3. Get Mentions
 
 Fetch posts where a specific user has been mentioned with voting status. This endpoint requires pagination parameters:
 
@@ -284,7 +256,7 @@ curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bc
 
 **Note:** This endpoint returns posts and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
-### Get Users
+### 4. Get Users
 Fetch user introduction posts with pagination support:
 
 ```bash
@@ -324,9 +296,7 @@ curl "http://localhost:3000/get-users?limit=10"
 
 This endpoint is specifically designed for displaying user introduction posts with a character limit of 100 characters.
 
-## Posts API
-
-### Get User Posts
+### 5. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
@@ -384,9 +354,7 @@ curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce95
   // Result: "Hello 世界 🌍"
   ```
 
-## Replies API
-
-### Get Post Replies
+### 6. Get Post Replies
 Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
@@ -428,7 +396,7 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 }
 ```
 
-### Get Post Details
+### 7. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
@@ -494,7 +462,7 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
 }
 ```
 
-### Nested Replies
+#### Nested Replies
 
 Replies can have nested replies. To get replies to a reply, use the reply's ID with pagination and voting status:
 
@@ -502,7 +470,7 @@ Replies can have nested replies. To get replies to a reply, use the reply's ID w
 curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
-## Data Structure
+## Data Structures and Field Descriptions
 
 ### Post Object
   ```typescript
