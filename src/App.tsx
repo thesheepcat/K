@@ -7,6 +7,7 @@ import UnlockSession from "./components/auth/UnlockSession";
 import SessionTimeoutWarning from "./components/auth/SessionTimeoutWarning";
 import ResponsiveLayout from "./components/layout/ResponsiveLayout";
 import MyPosts from "./components/views/MyPostsView.tsx";
+import MyReplies from "./components/views/MyRepliesView.tsx";
 import Watching from "./components/views/WatchingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
@@ -22,6 +23,7 @@ import kaspaService from "./services/kaspaService";
 const MainApp: React.FC = () => {
   const { isAuthenticated, hasStoredKey } = useAuth();
   const [myPostsData, setMyPostsData] = useState<Post[]>([]); // Only server posts, no local posts
+  const [myRepliesData, setMyRepliesData] = useState<Post[]>([]);
   const [watchingData, setWatchingData] = useState<Post[]>([]);
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
@@ -83,6 +85,7 @@ const MainApp: React.FC = () => {
 
     // Update in all arrays with recursive search
     setMyPostsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
+    setMyRepliesData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
   };
@@ -99,6 +102,7 @@ const MainApp: React.FC = () => {
 
     // Update in all arrays with recursive search
     setMyPostsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
+    setMyRepliesData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
   };
@@ -112,12 +116,17 @@ const MainApp: React.FC = () => {
 
     // Update in all arrays with recursive search
     setMyPostsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
+    setMyRepliesData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
   };
 
   const handleServerPostsUpdate = (serverPosts: Post[]) => {
     setMyPostsData(serverPosts); // My posts are only server posts
+  };
+
+  const handleMyRepliesPostsUpdate = (serverPosts: Post[]) => {
+    setMyRepliesData(serverPosts);
   };
 
   const handleWatchingPostsUpdate = (serverPosts: Post[]) => {
@@ -163,6 +172,18 @@ const MainApp: React.FC = () => {
                 onRepost={handleRepost}
                 onPost={handlePost}
                 onServerPostsUpdate={handleServerPostsUpdate}
+              />
+            } 
+          />
+          <Route 
+            path="/my-replies" 
+            element={
+              <MyReplies 
+                posts={myRepliesData}
+                onUpVote={handleUpVote}
+                onDownVote={handleDownVote}
+                onRepost={handleRepost}
+                onServerPostsUpdate={handleMyRepliesPostsUpdate}
               />
             } 
           /><Route 

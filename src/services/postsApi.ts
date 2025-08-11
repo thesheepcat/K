@@ -420,6 +420,50 @@ export const fetchPostReplies = async (postId: string, requesterPubkey: string, 
 };
 
 /**
+ * Fetch user replies with pagination (replies made by a specific user)
+ */
+export const fetchUserReplies = async (userPublicKey: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedRepliesResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-replies`);
+    
+    // User parameter (instead of post) for user replies
+    url.searchParams.append('user', userPublicKey);
+    
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+    
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+    
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user replies: ${response.status} ${response.statusText}`);
+    }
+
+    const data: PaginatedRepliesResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user replies:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch comments for a specific post with pagination
  * @deprecated Use fetchPostReplies instead - comments and replies are the same in this system
  */
