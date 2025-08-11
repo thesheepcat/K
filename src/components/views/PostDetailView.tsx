@@ -636,7 +636,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-gray-700 flex items-center">
                     <div className="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
-                    Replies ({replies.length})
+                    Replies
                   </h3>
                   <Button
                     onClick={() => loadReplies(true)}
