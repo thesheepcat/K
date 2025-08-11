@@ -8,6 +8,7 @@ import {
   fetchUsers,
   fetchPostDetails,
   fetchPostReplies,
+  fetchUserReplies,
   fetchPostComments,
   convertServerPostsToClientPosts,
   convertServerUserPostsToClientPosts,
@@ -243,6 +244,34 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerRepliesToClientPosts, apiBaseUrl]);
 
+  const fetchAndConvertUserReplies = useCallback(async (userPublicKey: string, currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedRepliesResponse['pagination'] }> => {
+    try {
+      const response = await fetchUserReplies(userPublicKey, currentUserPubkey, options, apiBaseUrl);
+      
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchUserReplies returned null/undefined response');
+        throw new Error('No response from fetchUserReplies');
+      }
+      
+      if (!response.pagination) {
+        console.error('fetchUserReplies response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const replies = response.replies || [];
+      const convertedPosts = await networkAwareConvertServerRepliesToClientPosts(replies, currentUserPubkey);
+      
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertUserReplies:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerRepliesToClientPosts, apiBaseUrl]);
+
   // Create bound versions of the raw API functions with apiBaseUrl pre-filled
   const boundFetchMyPosts = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
     fetchMyPosts(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
@@ -258,6 +287,8 @@ export const useKaspaPostsApi = () => {
     fetchPostDetails(postId, requesterPubkey, apiBaseUrl), [apiBaseUrl]);
   const boundFetchPostReplies = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
     fetchPostReplies(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchUserReplies = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+    fetchUserReplies(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
   const boundFetchPostComments = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
     fetchPostComments(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
 
@@ -270,6 +301,7 @@ export const useKaspaPostsApi = () => {
     fetchUsers: boundFetchUsers,
     fetchPostDetails: boundFetchPostDetails,
     fetchPostReplies: boundFetchPostReplies,
+    fetchUserReplies: boundFetchUserReplies,
     fetchPostComments: boundFetchPostComments,
     
     // Enhanced conversion functions with network awareness (all paginated)
@@ -280,6 +312,7 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertUsers,
     fetchAndConvertPostDetails,
     fetchAndConvertPostReplies,
+    fetchAndConvertUserReplies,
     fetchAndConvertPostComments,
     
     // Network info

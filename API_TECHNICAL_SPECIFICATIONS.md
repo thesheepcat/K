@@ -23,8 +23,8 @@ The K webapp API provides the following endpoints for social media functionality
 5. **`get-users`** - Retrieve user introduction posts
    - Scope: Fetch user introduction posts (max 100 characters) for community discovery
 
-6. **`get-replies`** - Retrieve replies to a specific post
-   - Scope: Fetch all replies (including nested replies) for a given post
+6. **`get-replies`** - Retrieve replies to a specific post or by a specific user
+   - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
 
 7. **`get-post-details`** - Retrieve details for a specific post
    - Scope: Fetch complete details for a single post or reply with voting status
@@ -362,11 +362,31 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 ```
 
 **Query Parameters:**
-- `post` (required): Post ID (64-character hex string cryptographic hash)
+- `post` (required for post replies): Post ID (64-character hex string cryptographic hash)
 - `requesterPubkey` (required): Public key of the user requesting the replies (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of replies to return (max: 100, min: 1)
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
+
+### 6b. Get User Replies
+Fetch all replies made by a specific user with pagination support and voting status:
+
+```bash
+curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+```
+
+**Query Parameters:**
+- `user` (required for user replies): User's public key (66-character hex string with 02/03 prefix)
+- `requesterPubkey` (required): Public key of the user requesting the replies (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of replies to return (max: 100, min: 1)
+- `before` (optional): Return replies created before this timestamp (for pagination to older replies)
+- `after` (optional): Return replies created after this timestamp (for fetching newer replies)
+
+**Note:** The `get-replies` endpoint now supports two modes:
+1. **Post Replies Mode**: Use `post` parameter to get replies to a specific post
+2. **User Replies Mode**: Use `user` parameter to get all replies made by a specific user
+
+Exactly one of `post` or `user` must be provided, but not both.
 
 **Response:**
 ```json
@@ -468,6 +488,14 @@ Replies can have nested replies. To get replies to a reply, use the reply's ID w
 
 ```bash
 curl "http://localhost:3000/get-replies?post=a7f9c2e5b8d1f4a6e9c3d7f0a2b5c8e1f4a7b0c3d6e9f2a5b8c1d4e7f0a3b6c9&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+```
+
+#### User Replies
+
+To get all replies made by a specific user (for "My Replies" view), use the user parameter:
+
+```bash
+curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 ## Data Structures and Field Descriptions
@@ -648,6 +676,19 @@ The `mentionedPubkeys` field contains an array of user public keys that are ment
 ### My Posts View
 
 The "My Posts" view only displays posts and replies fetched from the REST API. No local/client-side posts are shown.
+
+### My Replies View
+
+The "My Replies" view displays all replies made by the current user:
+
+- **Purpose**: Allow users to see all their replies across all conversations
+- **Content**: Shows replies made by the user to any posts, sorted by newest first
+- **Full Interactions**: Displays all interaction counts (likes, reposts, replies) and allows full interaction
+- **No Compose Box**: Does not include a compose box since this is a read-only view of existing replies
+- **Real-time Updates**: Automatically refreshes every 5 seconds to show updated interaction counts
+- **Navigation**: Clicking on a reply navigates to the full post/reply detail view
+- **Polling**: Uses the same polling mechanism as other post views for consistent user experience
+- **API Integration**: Uses the modified `get-replies` endpoint with `user` parameter instead of `post` parameter
 
 ### Mentions View
 
