@@ -223,6 +223,16 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
     decodedContent = '[Unable to decode content]';
   }
 
+  // Decode nickname if available
+  let decodedNickname: string | undefined;
+  if (serverPost.userNickname) {
+    try {
+      decodedNickname = Base64.decode(serverPost.userNickname);
+    } catch (error) {
+      console.error('Error decoding base64 nickname:', error);
+    }
+  }
+
   // Convert unix timestamp to relative time string
   const now = Date.now();
   const postTime = serverPost.timestamp * 1000; // Convert to milliseconds
@@ -247,8 +257,14 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
   // Use the cryptographic hash ID from server
   const postId = serverPost.id;
 
-  // Generate proper author info with display formatting
-  const authorInfo = await generateAuthorInfo(serverPost.userPublicKey, currentUserPubkey, networkId);
+  // Generate proper author info with display formatting and optional nickname
+  const authorInfo = await generateAuthorInfo(
+    serverPost.userPublicKey, 
+    currentUserPubkey, 
+    networkId,
+    decodedNickname,
+    serverPost.userProfileImage
+  );
 
   return {
     id: postId,
@@ -290,6 +306,16 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
     decodedContent = '[Unable to decode content]';
   }
 
+  // Decode nickname if available
+  let decodedNickname: string | undefined;
+  if (serverUserPost.userNickname) {
+    try {
+      decodedNickname = Base64.decode(serverUserPost.userNickname);
+    } catch (error) {
+      console.error('Error decoding base64 nickname:', error);
+    }
+  }
+
   // Convert unix timestamp to relative time string
   const now = Date.now();
   const postTime = serverUserPost.timestamp * 1000; // Convert to milliseconds
@@ -314,8 +340,14 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
   // Use the cryptographic hash ID from server
   const postId = serverUserPost.id;
 
-  // Generate proper author info with display formatting
-  const authorInfo = await generateAuthorInfo(serverUserPost.userPublicKey, currentUserPubkey, networkId);
+  // Generate proper author info with display formatting and optional nickname
+  const authorInfo = await generateAuthorInfo(
+    serverUserPost.userPublicKey, 
+    currentUserPubkey, 
+    networkId,
+    decodedNickname,
+    serverUserPost.userProfileImage
+  );
 
   return {
     id: postId,
@@ -516,11 +548,27 @@ export const convertServerReplyToClientPost = async (serverReply: ServerReply, c
     decodedContent = '[Content could not be decoded]';
   }
 
+  // Decode nickname if available
+  let decodedNickname: string | undefined;
+  if (serverReply.userNickname) {
+    try {
+      decodedNickname = Base64.decode(serverReply.userNickname);
+    } catch (error) {
+      console.error('Error decoding base64 nickname:', error);
+    }
+  }
+
   // Convert timestamp to relative time
   const timestamp = formatTimestamp(serverReply.timestamp);
 
-  // Generate proper author info with display formatting
-  const authorInfo = await generateAuthorInfo(serverReply.userPublicKey, currentUserPubkey, networkId);
+  // Generate proper author info with display formatting and optional nickname
+  const authorInfo = await generateAuthorInfo(
+    serverReply.userPublicKey, 
+    currentUserPubkey, 
+    networkId,
+    decodedNickname,
+    serverReply.userProfileImage
+  );
 
   return {
     id: serverReply.id, // Use the cryptographic hash ID from server

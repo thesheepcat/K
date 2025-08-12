@@ -100,6 +100,13 @@ curl "http://localhost:3000/get-posts-following?requesterPubkey=02218b3732df2353
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
 
+**User Profile Information:**
+The `get-posts-following` API includes optional user profile fields for each post:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
+
 **Response:**
 ```json
 {
@@ -117,7 +124,9 @@ curl "http://localhost:3000/get-posts-following?requesterPubkey=02218b3732df2353
       "parentPostId": null,
       "mentionedPubkeys": [],
       "isUpvoted": true,
-      "isDownvoted": false
+      "isDownvoted": false,
+      "userNickname": "TWFyeQ==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -170,6 +179,13 @@ curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df23539
 
 **Note:** This endpoint requires the `limit` parameter and always returns paginated results with pagination metadata.
 
+**User Profile Information:**
+The `get-posts-watching` API now includes optional user profile fields for each post:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
+
 **Response:**
 ```json
 {
@@ -187,7 +203,9 @@ curl "http://localhost:3000/get-posts-watching?requesterPubkey=02218b3732df23539
       "parentPostId": null,
       "mentionedPubkeys": [],
       "isUpvoted": false,
-      "isDownvoted": false
+      "isDownvoted": false,
+      "userNickname": "QWxpY2U=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -226,6 +244,13 @@ curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bc
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
 
+**User Profile Information:**
+The `get-mentions` API includes optional user profile fields for each post:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
+
 **Response:**
 ```json
 {
@@ -243,7 +268,9 @@ curl "http://localhost:3000/get-mentions?user=02218b3732df2353978154ec5323b745bc
       "parentPostId": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1",
       "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"],
       "isUpvoted": false,
-      "isDownvoted": false
+      "isDownvoted": false,
+      "userNickname": "Q2FybA==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -277,7 +304,9 @@ curl "http://localhost:3000/get-users?limit=10"
       "userPublicKey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
       "postContent": "SGkgZXZlcnlvbmUhIEknbSBhIEthc3BhIGVudGh1c2lhc3QgYW5kIGRldmVsb3Blci4=",
       "signature": "3045022100d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d20220333435363738393031323334353637383930313233343536373839303132333435",
-      "timestamp": 1703190000
+      "timestamp": 1703190000,
+      "userNickname": "QWxpY2U=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -285,7 +314,6 @@ curl "http://localhost:3000/get-users?limit=10"
     "nextCursor": "1703189000",
     "prevCursor": "1703191000"
   }
-}
 }
 ```
 
@@ -310,6 +338,13 @@ curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce95
 - `before` (optional): Return posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return posts created after this timestamp (for fetching newer posts)
 
+**User Profile Information:**
+The `get-posts` API includes optional user profile fields for each post:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
+
 **Response:**
 ```json
 {
@@ -327,7 +362,9 @@ curl "http://localhost:3000/get-posts?user=02218b3732df2353978154ec5323b745bce95
       "parentPostId": null,
       "mentionedPubkeys": [],
       "isUpvoted": false,
-      "isDownvoted": true
+      "isDownvoted": true,
+      "userNickname": "Sm9obg==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -405,7 +442,9 @@ Exactly one of `post` or `user` must be provided, but not both.
       "parentPostId": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1",
       "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"],
       "isUpvoted": true,
-      "isDownvoted": false
+      "isDownvoted": false,
+      "userNickname": "Qm9i",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
     }
   ],
   "pagination": {
@@ -427,11 +466,18 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
 - `id` (required): Post or reply ID (64-character hex string cryptographic hash)
 - `requesterPubkey` (required): Public key of the user requesting the post details (66-character hex string with 02/03 prefix)
 
+**User Profile Information:**
+The `get-post-details` API includes optional user profile fields for the post:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
+
 **Response:**
 ```json
 {
   "post": {
-    "id": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc07997f1",
+    "id": "d81d2b8ba4b71c2ecb7c07013fe200c5b3bdef2ea3e6ad7415abb89dc44f",
     "userPublicKey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
     "postContent": "SGVsbG8gV29ybGQhIFRoaXMgaXMgbXkgZmlyc3QgcG9zdCBmcm9tIHRoZSBzZXJ2ZXIu",
     "signature": "3045022100a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890022034567890123456789012345678901234567890123456789012345678901234567890",
@@ -443,7 +489,9 @@ curl "http://localhost:3000/get-post-details?id=d81d2b8ba4b71c2ecb7c07013fe200c5
     "parentPostId": null,
     "mentionedPubkeys": [],
     "isUpvoted": true,
-    "isDownvoted": false
+    "isDownvoted": false,
+    "userNickname": "Sm9obg==",
+    "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
   }
 }
 ```
@@ -514,8 +562,10 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
     repostsCount: number; // Number of reposts
     parentPostId?: string; // ID of the post being replied to (null for original posts)
     mentionedPubkeys: string[]; // Array of pubkeys mentioned in this post/reply
-    isUpvoted: boolean; // Whether the requesting user has upvoted this post (only for get-post-details)
-    isDownvoted: boolean; // Whether the requesting user has downvoted this post (only for get-post-details)
+    isUpvoted: boolean; // Whether the requesting user has upvoted this post (for APIs with requesterPubkey)
+    isDownvoted: boolean; // Whether the requesting user has downvoted this post (for APIs with requesterPubkey)
+    userNickname?: string; // Base64 encoded user nickname (optional)
+    userProfileImage?: string; // Base64 encoded profile image (optional)
   }
   ```
 
@@ -527,6 +577,8 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
     postContent: string; // Base64 encoded introduction content (max 100 chars when decoded)
     signature: string; // 64-byte Schnorr signature as hex string (130 characters)
     timestamp: number; // Unix timestamp
+    userNickname?: string; // Base64 encoded user nickname (optional)
+    userProfileImage?: string; // Base64 encoded profile image (optional)
     // Note: Users API omits repliesCount, upVotesCount, repostsCount, parentPostId, mentionedPubkeys
   }
   ```
@@ -545,8 +597,10 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
     repostsCount: number; // Number of reposts
     parentPostId?: string; // ID of the post being replied to
     mentionedPubkeys: string[]; // Array of pubkeys mentioned in this reply
-    isUpvoted: boolean; // Whether the requesting user has upvoted this reply (only for get-post-details)
-    isDownvoted: boolean; // Whether the requesting user has downvoted this reply (only for get-post-details)
+    isUpvoted: boolean; // Whether the requesting user has upvoted this reply (for APIs with requesterPubkey)
+    isDownvoted: boolean; // Whether the requesting user has downvoted this reply (for APIs with requesterPubkey)
+    userNickname?: string; // Base64 encoded user nickname (optional)
+    userProfileImage?: string; // Base64 encoded profile image (optional)
   }
   ```
 

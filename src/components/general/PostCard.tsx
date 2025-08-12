@@ -41,9 +41,12 @@ const PostCard: React.FC<PostCardProps> = ({
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
   
-  // Generate dynamic avatar based on pubkey for consistency
+  // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
   const jdenticonAvatar = useJdenticonAvatar(post.author.pubkey || post.author.username, avatarSizePixels);
+  
+  // Use profile image if available, otherwise use generated avatar
+  const displayAvatar = post.author.avatar || jdenticonAvatar;
 
   const handleUpVote = async () => {
     if (!privateKey || isSubmittingVote) return;
@@ -168,7 +171,7 @@ const PostCard: React.FC<PostCardProps> = ({
             setShowUserDetailsDialog(true);
           }}
         >
-          <AvatarImage src={jdenticonAvatar} />
+          <AvatarImage src={displayAvatar} />
           <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none">
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
@@ -299,6 +302,7 @@ const PostCard: React.FC<PostCardProps> = ({
         userPubkey={post.author.pubkey}
         userAddress={post.author.username}
         displayName={post.author.name}
+        userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
       />
     </div>

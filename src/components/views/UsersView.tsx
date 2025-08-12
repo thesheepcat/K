@@ -247,8 +247,8 @@ const loadMoreUsers = useCallback(async () => {
             </div>
           )}
         </div>
-        <IntroduceComposeBox onPost={onPost} />
       </div>
+      <IntroduceComposeBox onPost={onPost} />
       <div 
         ref={scrollContainerRef}
         className="flex-1 overflow-y-scroll" 
