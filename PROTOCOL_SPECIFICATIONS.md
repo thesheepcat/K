@@ -194,6 +194,49 @@ sequenceDiagram
 
 ---
 
+### ✅ Reposting user contents
+- User A can setup his own account to:
+  - Gets notified if someone repost its content (forwarding a post/reply);
+- User B can freely repost a User A content in it's own profile (whether he support User A or not);
+- Depending on User A settings (above), User A receive the repost, gets notified about the repost, read the repost or ignore it (not visualizing it).
+
+
+```mermaid
+sequenceDiagram
+    actor A as Alice (front-end)
+    participant Alice's indexer
+    A->>Alice Kaspa node: This is my new post!
+    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
+    Bob Kaspa node->>Bob's indexer: This is my new post!
+    actor B as Bob (front-end)
+    Bob's indexer->>B: This is my new post!
+    B->>Bob Kaspa node: I repost Alice's post!
+    Bob Kaspa node-->>Alice Kaspa node: I repost Alice's post!
+    Alice Kaspa node->>Alice's indexer: I repost Alice's post!
+    Alice's indexer->>A: I repost Alice's post!
+```
+
+**Protocol Specifications**
+
+Action: `repost`
+
+**Payload Format:**
+```
+k:1:repost:sender_pubkey:sender_signature:post_id
+```
+
+### Field Descriptions- 
+  - `sender_pubkey`: The public key of the message sender
+  - `sender_signature`: Digital signature for consistency verification
+  - `post_id`: The reference to the post/reply being reposted
+ 
+
+### Example Usage
+  ```
+  k:1:repost:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942
+  ```
+
+---
 
 ### ❌ Watching a user (not yet confirmed)
 - User B activates the "watching" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page.
@@ -309,94 +352,6 @@ k:1:support:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I s
 - `sender_signature`: Digital signature for message verification
 - `message`: The message to post when supporting someone
 - `recipient_pubkey`: The pubkey of the user being supported
-
----
-
-
-
-### ❌ Reposting/quoting user contents (not yet confirmed)
-- User A can setup his own account to:
-  - Gets notified if someone repost (forwarding a message, adding considerations) its content;
-  - Gets notified if someone quotes (forwarding a message) its content;
-- User B can freely repost and quote a User A content in it's own profile (whether he support User A or not);
-- Depending on User A settings (above), User A receive the repost/quote, gets notified about the repost/quote, read the repost/quote or ignore it (not visualizing it).
-
-
-```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    participant Alice's indexer
-    A->>Alice Kaspa node: This is my new post!
-    Alice Kaspa node-->>Bob Kaspa node: This is my new post!
-    Bob Kaspa node->>Bob's indexer: This is my new post!
-    actor B as Bob (front-end)
-    Bob's indexer->>B: This is my new post!
-    B->>Bob Kaspa node: I repost/quote Alice's post!
-    Bob Kaspa node-->>Alice Kaspa node: I repost/quote Alice's post!
-    Alice Kaspa node->>Alice's indexer: I repost/quote Alice's post!
-    Alice's indexer->>A: I repost/quote Alice's post!
-```
-
-**Protocol Specifications**
-
-Action: `repost`
-
-**Payload Format:**
-```
-k:1:repost:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "tx_id": ""
-}
-```
-
-### Example Usage
-```
-k:1:repost:{"sender_pubkey":"abc123","sender_signature":"def456","tx_id": "123456789"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: empty
-- `tx_id`: The reference to the user's post being reposted
-
------------------------------
-
-Action: `quote`
-
-**Payload Format:**
-```
-k:1:quote:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": "",
-  "tx_id": ""
-}
-```
-
-### Example Usage
-```
-k:1:quote:{"sender_pubkey":"abc123","sender_signature":"def456","message":"This is my comment!","tx_id": "123456789"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The comment on the post being quoted
-- `tx_id`: The reference to the user's post being quoted
-
----
 
 
 ---
