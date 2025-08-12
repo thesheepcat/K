@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, Loader2 } from "lucide-react";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
@@ -28,15 +28,13 @@ const PostCard: React.FC<PostCardProps> = ({
   post, 
   onUpVote,
   onDownVote,
-  onRepost, // Currently disabled - TO BE IMPLEMENTED
   isDetailView = false, 
   isComment = false, 
   onClick,
   onReply,
   context = 'list'
 }) => {
-  // Suppress TypeScript warnings for temporarily disabled parameters
-  void onRepost;
+  
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
@@ -211,13 +209,28 @@ const PostCard: React.FC<PostCardProps> = ({
             </div>
           )}
           <div className="flex items-center justify-between mt-3 w-full">
+            
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-500 p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
+              className="text-gray-500 hover:text-blue-500 p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
               // TO BE IMPLEMENTED - Reply count click functionality and hover effects
-              // className="text-gray-500 hover:text-blue-500 hover:bg-blue-50 p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
-              // onClick={() => handleReplyCountClick(post.id)}
+              //className="text-gray-500 hover:text-blue-500 hover:bg-blue-50 p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
+              onClick={() => {
+                if (context === 'list') {
+                  // Navigate to PostDetailView with reply intent
+                  navigate(`/post/${post.id}`, { 
+                    state: { 
+                      post, 
+                      shouldReply: true, 
+                      replyToId: post.id 
+                    } 
+                  });
+                } else if (onReply) {
+                  // Use current behavior for detail view
+                  onReply(post.id);
+                }
+              }}
             >
               <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               <span className="text-xs sm:text-sm">{post.replies}</span>
@@ -262,6 +275,7 @@ const PostCard: React.FC<PostCardProps> = ({
               )}
               <span className="text-xs sm:text-sm">{post.downVotes || 0}</span>
             </Button>
+            {/* TODO - Repost implementation
             <Button
               variant="ghost"
               size="sm"
@@ -273,28 +287,7 @@ const PostCard: React.FC<PostCardProps> = ({
               <Repeat2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               <span className="text-xs sm:text-sm">{post.reposts}</span>
             </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-gray-500 hover:text-blue-500 hover:bg-blue-50 p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
-              onClick={() => {
-                if (context === 'list') {
-                  // Navigate to PostDetailView with reply intent
-                  navigate(`/post/${post.id}`, { 
-                    state: { 
-                      post, 
-                      shouldReply: true, 
-                      replyToId: post.id 
-                    } 
-                  });
-                } else if (onReply) {
-                  // Use current behavior for detail view
-                  onReply(post.id);
-                }
-              }}
-            >
-              <span className="text-xs sm:text-sm">Reply</span>
-            </Button>
+            */}
           </div>
         </div>
       </div>
