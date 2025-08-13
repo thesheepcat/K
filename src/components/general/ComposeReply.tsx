@@ -1,12 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
-import { useJdenticonAvatar } from '@/hooks/useJdenticonAvatar';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import EmojiPickerButton from '@/components/ui/emoji-picker';
 
@@ -21,12 +19,9 @@ interface ComposeReplyProps {
 const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replyingToUser, postId, mentionedPubkeys }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { publicKey, privateKey } = useAuth();
+  const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  // Generate avatar for the current user
-  const userAvatar = useJdenticonAvatar(publicKey || '', 32);
 
   const handleEmojiSelect = (emoji: string) => {
     const textarea = textareaRef.current;
@@ -105,10 +100,12 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
           Replying to <span className="text-blue-500">@{replyingToUser}</span>
         </div>
         <div className="flex space-x-2">
+          {/* Removing avatar
           <Avatar className="h-8 w-8 rounded-none">
             <AvatarImage src={userAvatar} />
             <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none text-xs">You</AvatarFallback>
           </Avatar>
+          */}
           <div className="flex-1">
             <div className="flex items-start space-x-2">
               <Textarea
@@ -131,14 +128,14 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                   onClick={onCancel}
                   variant="ghost"
                   disabled={isSubmitting}
-                  className="text-gray-600 hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm rounded-none hover:rounded-none"
+                  className="text-gray-600 hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm rounded-lg hover:rounded-lg"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleReply}
                   disabled={!content.trim() || isSubmitting}
-                  className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm font-bold rounded-none hover:rounded-none"
+                  className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm font-bold rounded-lg hover:rounded-lg"
                 >
                   {isSubmitting ? (
                     <>

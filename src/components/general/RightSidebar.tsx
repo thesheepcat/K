@@ -18,16 +18,19 @@ interface UserItemProps {
 const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
   const jdenticonAvatar = useJdenticonAvatar(user.author.pubkey, 40);
   
+  // Use profile image if available, otherwise use generated avatar
+  const displayAvatar = user.author.avatar || jdenticonAvatar;
+  
   return (
     <div className="p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Avatar 
-            className="h-10 w-10 rounded-none cursor-pointer hover:opacity-80 transition-opacity"
+            className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => onUserClick(user.author.pubkey || '')}
           >
-            <AvatarImage src={jdenticonAvatar} />
-            <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none">
+            <AvatarImage src={displayAvatar} />
+            <AvatarFallback className="bg-gray-200 text-gray-700">
               {user.author.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>

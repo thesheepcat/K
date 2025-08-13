@@ -55,14 +55,14 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
     >
       <div className="flex space-x-2 sm:space-x-3">
         <Avatar 
-          className={`${avatarSize} rounded-none flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+          className={`${avatarSize} flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
           onClick={(e) => {
             e.stopPropagation();
             setShowUserDetailsDialog(true);
           }}
         >
           <AvatarImage src={displayAvatar} />
-          <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none">
+          <AvatarFallback className="bg-gray-200 text-gray-700">
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
