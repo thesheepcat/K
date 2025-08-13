@@ -118,12 +118,12 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                 style={{
                   outline: 'none',
                   boxShadow: 'none',
-                  border: 'none'
+                  border: '1px solid #d1d5db'
                 }}
                 onFocus={(e) => {
                   e.target.style.outline = 'none';
                   e.target.style.boxShadow = 'none';
-                  e.target.style.border = '1px solid #d1d5db';
+                  e.target.style.border = '1px solid #9ca3af';
                 }}
                 onBlur={(e) => {
                   e.target.style.border = '1px solid #d1d5db';
