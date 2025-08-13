@@ -114,8 +114,20 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 min-h-14 border-none resize-none text-sm placeholder-gray-500 focus:outline-none rounded-none bg-transparent"
-                autoFocus
+                className="flex-1 min-h-14 border-none resize-none text-sm placeholder-gray-500 focus:outline-none focus:ring-0 focus:shadow-none rounded-none bg-transparent"
+                style={{
+                  outline: 'none',
+                  boxShadow: 'none',
+                  border: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.border = '1px solid #d1d5db';
+                }}
+                onBlur={(e) => {
+                  e.target.style.border = '1px solid #d1d5db';
+                }}
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
