@@ -71,8 +71,7 @@ const UnlockSession: React.FC = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     className="pr-10 rounded-none"
-                    required
-                    autoFocus
+                    required                    
                   />
                   <button
                     type="button"

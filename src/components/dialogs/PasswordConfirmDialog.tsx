@@ -109,7 +109,6 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
               placeholder="Enter your password"
               className="pr-12 rounded-none"
               disabled={isLoading}
-              autoFocus
             />
             <button
               type="button"

@@ -96,7 +96,20 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
                 placeholder="What's happening?"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="flex-1 min-h-10 sm:min-h-12 border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none rounded-none"
+                className="flex-1 min-h-10 sm:min-h-12 border border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-400 focus:shadow-none rounded-none"
+                style={{
+                  outline: 'none',
+                  boxShadow: 'none',
+                  border: '1px solid #d1d5db'
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.border = '1px solid #9ca3af';
+                }}
+                onBlur={(e) => {
+                  e.target.style.border = '1px solid #d1d5db';
+                }}
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>

@@ -245,7 +245,20 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                 placeholder="Enter your nickname (max 20 characters)..."
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="rounded-none border-gray-300 focus:border-gray-500"
+                className="flex-1 min-h-10 sm:min-h-12 border resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-400 focus:shadow-none rounded-none"
+                style={{
+                  outline: 'none',
+                  boxShadow: 'none',
+                  border: '1px solid #d1d5db'
+                }}
+                onFocus={(e) => {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.border = '1px solid #9ca3af';
+                }}
+                onBlur={(e) => {
+                  e.target.style.border = '1px solid #d1d5db';
+                }}
                 maxLength={MAX_NICKNAME_CHARACTERS + 5}
               />
               <div className="flex justify-between items-center">
@@ -269,12 +282,6 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                 Message <span className="text-red-500">*</span>
               </label>
             <div className="flex space-x-2 sm:space-x-3">
-                {/* 
-                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 rounded-none flex-shrink-0">
-                  <AvatarImage src={userAvatar} />
-                  <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none text-xs sm:text-sm">You</AvatarFallback>
-                </Avatar>
-                */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start space-x-2">
                     <Textarea
@@ -283,7 +290,21 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                       placeholder="Share your message with the network (max 100 characters)..."
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      className="flex-1 min-h-10 sm:min-h-12 border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none rounded-none"
+                      //className="flex-1 min-h-10 sm:min-h-12 border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none rounded-none"
+                      className="flex-1 min-h-10 sm:min-h-12 border border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-400 focus:shadow-none rounded-none"
+                      style={{
+                        outline: 'none',
+                        boxShadow: 'none',
+                        border: '1px solid #d1d5db'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.outline = 'none';
+                        e.target.style.boxShadow = 'none';
+                        e.target.style.border = '1px solid #9ca3af';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.border = '1px solid #d1d5db';
+                      }}
                       maxLength={MAX_CHARACTERS + 10}
                     />
                     <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
