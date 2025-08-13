@@ -208,14 +208,43 @@ export const truncateKaspaAddress = (address: string, prefixLength: number = 8, 
  * Generate author info for posts and comments with proper display formatting
  * IMPORTANT: Always preserves the original pubkey for reply chain functionality
  */
-export const generateAuthorInfo = async (authorPubkey: string, currentUserPubkey?: string, networkId?: string) => {
-  const displayName = formatAuthorDisplayName(authorPubkey, currentUserPubkey);
+export const generateAuthorInfo = async (
+  authorPubkey: string, 
+  currentUserPubkey?: string, 
+  networkId?: string,
+  nickname?: string,
+  profileImage?: string
+) => {
+  // Determine display name: nickname if available, "You" for current user, or truncated pubkey
+  let displayName: string;
+  if (nickname && nickname.trim()) {
+    displayName = nickname;
+  } else {
+    displayName = formatAuthorDisplayName(authorPubkey, currentUserPubkey);
+  }
+  
   const kaspaAddress = await pubkeyToKaspaAddress(authorPubkey, networkId);
+  
+  // Avatar priority: profile image if available, otherwise empty (will use generated avatar)
+  let avatarSource = '';
+  if (profileImage && profileImage.trim()) {
+    // Convert base64 to data URL for display
+    avatarSource = `data:image/png;base64,${profileImage}`;
+  }
   
   return {
     name: displayName,
     username: kaspaAddress, // This will be the full Kaspa address
-    avatar: '',
-    pubkey: authorPubkey // CRITICAL: Always preserve the original pubkey for reply chains
+    avatar: avatarSource,
+    pubkey: authorPubkey, // CRITICAL: Always preserve the original pubkey for reply chains
+    nickname: nickname,
+    profileImage: profileImage
+  } as {
+    name: string;
+    username: string;
+    avatar: string;
+    pubkey: string;
+    nickname?: string;
+    profileImage?: string;
   };
 };

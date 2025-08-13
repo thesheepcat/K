@@ -1,10 +1,12 @@
 export interface Post {
   id: string;
   author: {
-    name: string; // Display name: "You" for current user, or "abcd...wxyz" format for others
+    name: string; // Display name: "You" for current user, nickname if available, or "abcd...wxyz" format for others
     username: string; // Full Kaspa address calculated from pubkey
-    avatar: string;
+    avatar: string; // Profile image if available, otherwise generated avatar
     pubkey: string; // Original pubkey - CRITICAL for reply chain functionality
+    nickname?: string; // Decoded nickname if available
+    profileImage?: string; // Base64 profile image if available
   };
   content: string;
   timestamp: string;
@@ -35,6 +37,8 @@ export interface ServerPost {
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
   isUpvoted?: boolean; // Whether the requesting user has upvoted this post
   isDownvoted?: boolean; // Whether the requesting user has downvoted this post
+  userNickname?: string; // Base64 encoded nickname (optional)
+  userProfileImage?: string; // Base64 encoded profile image (optional)
 }
 
 export interface ServerReply {
@@ -51,6 +55,8 @@ export interface ServerReply {
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
   isUpvoted?: boolean; // Whether the requesting user has upvoted this reply
   isDownvoted?: boolean; // Whether the requesting user has downvoted this reply
+  userNickname?: string; // Base64 encoded nickname (optional)
+  userProfileImage?: string; // Base64 encoded profile image (optional)
 }
 
 // Server response types for Users API
@@ -60,6 +66,8 @@ export interface ServerUserPost {
   postContent: string; // Base64 encoded
   signature: string; // 64 bytes schnorr signature
   timestamp: number; // Unix timestamp
+  userNickname?: string; // Base64 encoded nickname (optional)
+  userProfileImage?: string; // Base64 encoded profile image (optional)
   // Note: Users API doesn't include repliesCount, upVotesCount, downVotesCount, repostsCount, parentPostId, mentionedPubkeys
 }
 

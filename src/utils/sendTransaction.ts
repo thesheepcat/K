@@ -122,9 +122,10 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}reply:${userPublicKey}:${messageSignature}:${postId}:${encodedMessage}:${mentionedPubkeysStr}`;
         } else if (type === 'broadcast') {
-            // Format: k:1:broadcast:sender_pubkey:sender_signature:base64_encoded_message
-            // Sign the string: base64_encoded_message
-            signatureData = encodedMessage;
+            // Format: k:1:broadcast:sender_pubkey:sender_signature:base64_encoded_nickname:base64_encoded_profile_image:base64_encoded_message:
+            // userMessage contains: "base64_nickname:base64_profile_image:base64_message"
+            // Sign the entire data string
+            signatureData = userMessage;
             
             messageSignature = signMessage({
                 message: signatureData, 
@@ -132,7 +133,7 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
                 noAuxRand: false
             });
             
-            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}broadcast:${userPublicKey}:${messageSignature}:${encodedMessage}`;
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}broadcast:${userPublicKey}:${messageSignature}:${userMessage}`;
         } else if (type === 'vote') {
             // Format: k:1:vote:sender_pubkey:sender_signature:post_id:vote
             if (!postId) {

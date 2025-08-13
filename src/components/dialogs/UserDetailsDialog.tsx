@@ -9,6 +9,7 @@ interface UserDetailsDialogProps {
   userPubkey: string;
   userAddress: string;
   displayName: string;
+  userNickname?: string; // Optional user nickname
   onNavigateToUserPosts?: () => void;
 }
 
@@ -18,6 +19,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
   userPubkey,
   userAddress,
   displayName,
+  userNickname,
   onNavigateToUserPosts
 }) => {
   const [copyFeedback, setCopyFeedback] = React.useState<string | null>(null);
@@ -54,6 +56,37 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
             Displaying information for <span className="font-medium">{displayName}</span>
           </p>
         </div>
+
+        {/* User Nickname Section */}
+        {userNickname && (
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <User className="h-4 w-4 text-gray-600" />
+              <label className="block text-sm font-medium text-gray-700">
+                User Nickname
+              </label>
+            </div>
+            <div className="bg-gray-50 border border-gray-200 p-3 rounded-none">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-800 flex-1 mr-2">
+                  {userNickname}
+                </span>
+                <Button
+                  type="button"
+                  onClick={() => copyToClipboard(userNickname!, 'User nickname')}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-none flex-shrink-0"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500">
+              User's chosen display name
+            </p>
+          </div>
+        )}
 
         {/* Public Key Section */}
         <div className="space-y-3">

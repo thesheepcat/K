@@ -35,6 +35,8 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
     username: string;
     avatar: string;
     pubkey: string;
+    nickname?: string;
+    profileImage?: string;
   } | null>(null);
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
 
@@ -362,6 +364,7 @@ const loadMorePosts = useCallback(async () => {
           userPubkey={userPubkey || ''}
           userAddress={authorInfo.username}
           displayName={authorInfo.name}
+          userNickname={authorInfo.nickname}
           onNavigateToUserPosts={
             // Show button if viewing another user's posts, hide if viewing own posts
             !isCurrentUser ? () => navigate(`/user/${userPubkey}`) : undefined

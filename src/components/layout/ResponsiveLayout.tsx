@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-import { X } from 'lucide-react';
+import { X, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LeftSidebar from '../general/LeftSidebar';
 import RightSidebar from '../general/RightSidebar';
-import { useJdenticonAvatar } from '@/hooks/useJdenticonAvatar';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -15,10 +12,6 @@ interface ResponsiveLayoutProps {
 const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [screenSize, setScreenSize] = useState('lg');
-  const { publicKey } = useAuth();
-
-  // Generate avatar for mobile menu button using user's public key
-  const mobileMenuAvatar = useJdenticonAvatar(publicKey || '', 32);
 
   useEffect(() => {
     const handleResize = () => {
@@ -67,10 +60,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
                 {isMobileMenuOpen ? (
                   <X className="h-5 w-5" />
                 ) : (
-                  <Avatar className="h-8 w-8 rounded-full">
-                    <AvatarImage src={mobileMenuAvatar} />
-                    <AvatarFallback className="bg-gray-200 text-gray-700 rounded-full text-xs">A</AvatarFallback>
-                  </Avatar>
+                  <Menu className="h-5 w-5" />
                 )}
               </Button>
               <h1 className="absolute left-1/2 transform -translate-x-1/2 text-base font-semibold text-gray-900 whitespace-nowrap">

@@ -23,9 +23,12 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   
-  // Generate dynamic avatar based on pubkey for consistency
+  // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
   const jdenticonAvatar = useJdenticonAvatar(post.author.pubkey || post.author.username, avatarSizePixels);
+  
+  // Use profile image if available, otherwise use generated avatar
+  const displayAvatar = post.author.avatar || jdenticonAvatar;
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -52,14 +55,14 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
     >
       <div className="flex space-x-2 sm:space-x-3">
         <Avatar 
-          className={`${avatarSize} rounded-none flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+          className={`${avatarSize} flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
           onClick={(e) => {
             e.stopPropagation();
             setShowUserDetailsDialog(true);
           }}
         >
-          <AvatarImage src={jdenticonAvatar} />
-          <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none">
+          <AvatarImage src={displayAvatar} />
+          <AvatarFallback className="bg-gray-200 text-gray-700">
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -102,6 +105,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
         userPubkey={post.author.pubkey}
         userAddress={post.author.username}
         displayName={post.author.name}
+        userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
       />
     </div>
