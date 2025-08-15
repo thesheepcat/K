@@ -50,7 +50,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   
   return (
     <div 
-      className={`border-b border-gray-200 p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200 bg-white`}
+      className={`border-b border-border p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
       onClick={handleCardClick}
     >
       <div className="flex space-x-2 sm:space-x-3">
@@ -62,7 +62,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
           }}
         >
           <AvatarImage src={displayAvatar} />
-          <AvatarFallback className="bg-gray-200 text-gray-700">
+          <AvatarFallback className="bg-muted text-muted-foreground">
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -70,7 +70,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
               <span 
-                className="font-bold text-black truncate hover:underline cursor-pointer"
+                className="font-bold text-foreground truncate hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/user/${post.author.pubkey}`);
@@ -79,7 +79,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                 {post.author.name}
               </span>
               <span 
-                className="text-gray-500 cursor-help hidden sm:inline hover:underline cursor-pointer" 
+                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer" 
                 title={post.author.username}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -89,9 +89,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                 @{truncateKaspaAddress(post.author.username)}
               </span>
             </div>
-            <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
+            <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
-          <div className={`mt-1 text-black ${contentTextSize} break-words`}>
+          <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
             <LinkifiedText>{post.content}</LinkifiedText>
           </div>
           {/* No interaction buttons (likes, reposts, replies) for Users view */}

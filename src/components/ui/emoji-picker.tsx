@@ -50,7 +50,7 @@ const EmojiPickerButton: React.FC<EmojiPickerButtonProps> = ({
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-none ${className}`}
+        className={`p-2 text-secondary-action hover:text-secondary-action-hover hover:bg-muted rounded-none ${className}`}
       >
         <Smile size={18} />
       </Button>

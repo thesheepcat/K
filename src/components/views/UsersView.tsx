@@ -224,25 +224,25 @@ const loadMoreUsers = useCallback(async () => {
   }, [loadMoreUsers]);
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-gray-200 flex flex-col h-full" data-main-content>
+    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
-      <div className="sticky top-0 bg-white bg-opacity-80 backdrop-blur-md border-b border-gray-200 z-10">
+      <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">Users</h1>
             <div className="flex items-center space-x-2">
               {isLoading && (
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
               )}
               {lastFetchTime && (
-                <span className="text-xs text-gray-500 hidden sm:inline">
+                <span className="text-xs text-muted-foreground hidden sm:inline">
                   Updated: {lastFetchTime.toLocaleTimeString()}
                 </span>
               )}
             </div>
           </div>
           {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
               Error: {error}
             </div>
           )}
@@ -258,7 +258,7 @@ const loadMoreUsers = useCallback(async () => {
         }}
       >
         {posts.length === 0 && !isLoading ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-muted-foreground">
             No user introductions found. Be the first to introduce yourself!
           </div>
         ) : (
@@ -273,14 +273,14 @@ const loadMoreUsers = useCallback(async () => {
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading more users...</p>
+                <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Loading more users...</p>
               </div>
             )}
             
             {/* End of posts indicator */}
             {!hasMore && posts.length > 0 && (
-              <div className="p-4 text-center text-gray-500 text-sm">
+              <div className="p-4 text-center text-muted-foreground text-sm">
                 No more users to load
               </div>
             )}

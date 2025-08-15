@@ -31,7 +31,7 @@ export const linkifyText = (text: string): React.ReactNode[] => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 underline break-all"
+          className="text-info hover:text-info/80 underline break-all"
           onClick={(e) => e.stopPropagation()} // Prevent card click when clicking link
         >
           {part}

@@ -4,15 +4,15 @@ const Header: React.FC = () => {
     return(
         <div></div>
     /*
-        <div className="sticky top-0 bg-white border-b border-gray-200">
+        <div className="sticky top-0 bg-background border-b border-light">
           <div className="p-4 pb-0">
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-light">
               <Button
                 variant="ghost"
-                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-gray-100 ${
+                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-muted ${
                   activeTab === 'home' 
-                    ? 'border-black text-black' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-active text-active' 
+                    : 'border-transparent text-secondary-action hover:text-secondary-action-hover'
                 }`}
                 onClick={() => setActiveTab('home')}
               >
@@ -20,10 +20,10 @@ const Header: React.FC = () => {
               </Button>
               <Button
                 variant="ghost"
-                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-gray-100 ${
+                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-muted ${
                   activeTab === 'my-posts' 
-                    ? 'border-black text-black' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-active text-active' 
+                    : 'border-transparent text-secondary-action hover:text-secondary-action-hover'
                 }`}
                 onClick={() => setActiveTab('my-posts')}
               >
@@ -31,10 +31,10 @@ const Header: React.FC = () => {
               </Button>
               <Button
                 variant="ghost"
-                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-gray-100 ${
+                className={`px-6 py-3 text-base font-semibold rounded-none border-b-2 hover:bg-muted ${
                   activeTab === 'following' 
-                    ? 'border-black text-black' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-active text-active' 
+                    : 'border-transparent text-secondary-action hover:text-secondary-action-hover'
                 }`}
                 onClick={() => setActiveTab('following')}
               >

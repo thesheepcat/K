@@ -22,7 +22,7 @@ const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
   const displayAvatar = user.author.avatar || jdenticonAvatar;
   
   return (
-    <div className="p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+    <div className="p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 border-b border-border/50 last:border-b-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Avatar 
@@ -30,19 +30,19 @@ const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
             onClick={() => onUserClick(user.author.pubkey || '')}
           >
             <AvatarImage src={displayAvatar} />
-            <AvatarFallback className="bg-gray-200 text-gray-700">
+            <AvatarFallback className="bg-muted text-muted-foreground">
               {user.author.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
           <div>
             <p 
-              className="font-bold text-black hover:underline cursor-pointer"
+              className="font-bold text-foreground hover:underline cursor-pointer"
               onClick={() => onUserClick(user.author.pubkey || '')}
             >
               {user.author.name}
             </p>
             <p 
-              className="text-sm text-gray-500 hover:underline cursor-pointer"
+              className="text-sm text-muted-foreground hover:underline cursor-pointer"
               onClick={() => onUserClick(user.author.pubkey || '')}
               title={user.author.username}
             >
@@ -52,7 +52,7 @@ const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
         </div>
         {/* Temporarily disabled */}
         {/* 
-        <Button className="bg-black text-white hover:bg-gray-800 px-6 py-2 font-bold rounded-none">
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 font-bold rounded-none">
           Follow
         </Button>
         */}
@@ -159,21 +159,21 @@ const RightSidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-80 h-screen p-4 bg-white">
-      <Card className="border-gray-200 rounded-none  gap-2">
+    <div className="w-80 h-screen p-4 bg-background">
+      <Card className="border-border rounded-none  gap-2">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-black">Meet new users</h3>
+            <h3 className="text-xl font-bold text-foreground">Meet new users</h3>
           </div>
           {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
               Error: {error}
             </div>
           )}
         </CardHeader>
         <CardContent className="p-0">
           {users.length === 0 && !isLoading ? (
-            <div className="p-4 text-center text-gray-500">
+            <div className="p-4 text-center text-muted-foreground">
               No users found
             </div>
           ) : (

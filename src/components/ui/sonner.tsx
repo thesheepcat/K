@@ -10,8 +10,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           className="toaster group"
           toastOptions={{
             classNames: {
-              success: 'bg-white text-black border-gray-200 [&>[data-icon]]:text-green-600',
-              error: 'bg-white text-black border-gray-200 [&>[data-icon]]:text-red-600',
+              success: 'bg-card text-card-foreground border-border [&>[data-icon]]:text-success',
+              error: 'bg-card text-card-foreground border-border [&>[data-icon]]:text-destructive',
             },
             style: {
               borderRadius: '6px',
@@ -29,8 +29,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           className="toaster group"
           toastOptions={{
             classNames: {
-              success: 'bg-white text-black border-gray-200 [&>[data-icon]]:text-green-600',
-              error: 'bg-white text-black border-gray-200 [&>[data-icon]]:text-red-600',
+              success: 'bg-card text-card-foreground border-border [&>[data-icon]]:text-success',
+              error: 'bg-card text-card-foreground border-border [&>[data-icon]]:text-destructive',
             },
             style: {
               borderRadius: '6px',

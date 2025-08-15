@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, EyeOff, Key, Copy, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Key, Copy, RefreshCw, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import KaspaLogo from '../icons/KaspaLogo';
 
@@ -92,31 +92,51 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md md:max-w-xl">
         <div className="text-center mb-8">
           <KaspaLogo className="h-20 w-20 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Your voice. Your ideas. Uncensored. 
           </h1>
-          <h2 className="text-xl font-bold text-gray-900">Sign in</h2>
-          <p className="text-gray-600 mt-3">Enter your private key or generate a new one</p>
-          <p className="text-gray-600 mt-3">And just relax: we don't want your current wallet private key</p>
+          <h2 className="text-xl font-bold text-foreground">Sign in</h2>
+          <p className="text-muted-foreground mt-3">Enter your private key or generate a new one</p>
+          <p className="text-muted-foreground mt-3">And just relax: we don't want your current wallet private key</p>
         </div>
 
-        <Card className="border border-gray-200 rounded-none">
+        <Card className="border border-border rounded-none shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-none">
-                  {error}
+                <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-none">
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-shrink-0">
+                      <svg className="h-4 w-4 text-destructive mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-destructive font-medium">Error</p>
+                      <p className="text-xs text-destructive/80 mt-1">{error}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* Copy Feedback */}
               {copyFeedback && (
-                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-none">
-                  {copyFeedback}
+                <div className="bg-success/10 border border-success/20 p-4 rounded-none">
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-shrink-0">
+                      <svg className="h-4 w-4 text-success mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-success font-medium">Success</p>
+                      <p className="text-xs text-success/80 mt-1">{copyFeedback}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -127,16 +147,16 @@ const LoginForm: React.FC = () => {
                     type="button"
                     onClick={handleGenerateKeyPair}
                     disabled={loading}
-                    className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-none"
+                    className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 border border-border rounded-none"
                   >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-loader-circle' : ''}`} />
                     Generate New Key
                   </Button>
                   {/* 
                   <Button
                     type="button"
                     onClick={handlePasteFromClipboard}
-                    className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 rounded-none"
+                    className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 border border-border rounded-none"
                   >
                     <Copy className="h-4 w-4 mr-2" />
                     Paste from Clipboard
@@ -146,10 +166,13 @@ const LoginForm: React.FC = () => {
               </div>
 
               {/* Private Key Input */}
-              <div className="space-y-2">
-                <label htmlFor="privateKey" className="block text-sm font-medium text-gray-700">
-                  Private Key
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Key className="h-4 w-4 text-muted-foreground" />
+                  <label htmlFor="privateKey" className="block text-sm font-medium text-foreground">
+                    Private Key
+                  </label>
+                </div>
                 <div className="relative">
                   <Input
                     id="privateKey"
@@ -157,14 +180,14 @@ const LoginForm: React.FC = () => {
                     value={privateKey}
                     onChange={(e) => setPrivateKey(e.target.value)}
                     placeholder="Enter your private key - Don't use your wallet private key"
-                    className={`rounded-none ${generatedKeys ? 'pr-20' : 'pr-10'}`}
+                    className={`rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 ${generatedKeys ? 'pr-20' : 'pr-10'}`}
                     required
                   />
                   {generatedKeys && (
                     <button
                       type="button"
                       onClick={() => copyToClipboard(generatedKeys.privateKey, 'Private key')}
-                      className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-10 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                       title="Copy private key"
                     >
                       <Copy className="h-4 w-4" />
@@ -173,7 +196,7 @@ const LoginForm: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPrivateKey(!showPrivateKey)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPrivateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -183,17 +206,17 @@ const LoginForm: React.FC = () => {
               {/* Generated Keys Display */}
               {generatedKeys && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Public Key</label>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Public Key</label>
                   <div className="relative">
                     <Input
                       value={generatedKeys.publicKey}
                       readOnly
-                      className="text-xs font-mono bg-white rounded-none pr-10"
+                      className="text-xs font-mono bg-background rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => copyToClipboard(generatedKeys.publicKey, 'Public key')}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                       title="Copy public key"
                     >
                       <Copy className="h-4 w-4" />
@@ -203,10 +226,13 @@ const LoginForm: React.FC = () => {
               )}
 
               {/* Password Input */}
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password (for encryption)
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                    Password (for encryption)
+                  </label>
+                </div>
                 <div className="relative">
                   <Input
                     id="password"
@@ -214,13 +240,13 @@ const LoginForm: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password to encrypt your private key"
-                    className="pr-10 rounded-none"
+                    className="pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -228,10 +254,13 @@ const LoginForm: React.FC = () => {
               </div>
 
               {/* Confirm Password Input */}
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">
+                    Confirm Password
+                  </label>
+                </div>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
@@ -239,32 +268,34 @@ const LoginForm: React.FC = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm your password"
-                    className="pr-10 rounded-none"
+                    className="pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-black text-white hover:bg-gray-800 py-3 font-bold rounded-none"
-              >
-                <Key className="h-4 w-4 mr-2" />
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
+              <div className="pt-4 border-t border-border space-y-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 font-bold rounded-none"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Your private key will be encrypted and stored securely in your browser.</p>
           <p className="mt-1">Make sure to remember your password!</p>
         </div>

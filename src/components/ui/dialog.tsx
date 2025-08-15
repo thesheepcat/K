@@ -41,19 +41,19 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white border border-gray-200 rounded-none shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-popover border border-border rounded-none shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-black">{title}</h2>
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h2 className="text-lg font-semibold text-popover-foreground">{title}</h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-none"
+              className="p-2 hover:bg-muted rounded-none"
             >
               <X className="h-4 w-4" />
             </Button>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, MessageCircle, Loader2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
@@ -160,7 +160,7 @@ const PostCard: React.FC<PostCardProps> = ({
   
   return (
     <div 
-      className={`border-b border-gray-200 p-3 sm:p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200 bg-white`}
+      className={`border-b border-border p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
       onClick={handleCardClick}
     >
       <div className="flex space-x-2 sm:space-x-3">
@@ -172,7 +172,7 @@ const PostCard: React.FC<PostCardProps> = ({
           }}
         >
           <AvatarImage src={displayAvatar} />
-          <AvatarFallback className="bg-gray-200 text-gray-700">
+          <AvatarFallback className="bg-muted text-muted-foreground">
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -180,7 +180,7 @@ const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
               <span 
-                className="font-bold text-black truncate hover:underline cursor-pointer"
+                className="font-bold text-foreground truncate hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/user/${post.author.pubkey}`);
@@ -189,7 +189,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 {post.author.name}
               </span>
               <span 
-                className="text-gray-500 cursor-help hidden sm:inline hover:underline cursor-pointer" 
+                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer" 
                 title={post.author.username}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -199,14 +199,14 @@ const PostCard: React.FC<PostCardProps> = ({
                 @{truncateKaspaAddress(post.author.username)}
               </span>
             </div>
-            <span className="text-gray-500 text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
+            <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
-          <div className={`mt-1 text-black ${contentTextSize} break-words whitespace-pre-wrap`}>
+          <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
             <LinkifiedText>{displayContent}</LinkifiedText>
           </div>
           {isLongMessage && !isDetailView && (
-            <div className="mt-2 p-2 bg-gray-100 border-l-4 border-blue-500 rounded-r">
-              <p className="text-sm text-gray-600">
+            <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
+              <p className="text-sm text-muted-foreground">
                 <span className="font-medium">Long message.</span> Click to read more...
               </p>
             </div>
@@ -216,9 +216,9 @@ const PostCard: React.FC<PostCardProps> = ({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-gray-500 hover:text-blue-500 p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
+              className="text-muted-foreground hover:text-info p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
               // TO BE IMPLEMENTED - Reply count click functionality and hover effects
-              //className="text-gray-500 hover:text-blue-500 hover:bg-blue-50 p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
+              //className="text-secondary-action hover:text-info hover:bg-interactive-hover p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
               onClick={() => {
                 if (context === 'list') {
                   // Navigate to PostDetailView with reply intent
@@ -244,15 +244,15 @@ const PostCard: React.FC<PostCardProps> = ({
               disabled={post.downVoted || post.upVoted || isSubmittingVote || !privateKey}
               className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
                 post.downVoted || !privateKey
-                  ? 'text-gray-500' 
+                  ? 'text-muted-foreground' 
                   : post.upVoted 
-                  ? 'text-green-500' 
-                  : 'text-gray-500 hover:text-green-500'
+                  ? 'text-success' 
+                  : 'text-muted-foreground hover:text-success'
               }`}
               onClick={handleUpVote}
             >
               {isSubmittingVote ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
               ) : (
                 <ThumbsUp className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.upVoted ? 'fill-current' : ''}`} />
               )}
@@ -264,15 +264,15 @@ const PostCard: React.FC<PostCardProps> = ({
               disabled={post.upVoted || post.downVoted || isSubmittingVote || !privateKey}
               className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
                 post.upVoted || !privateKey
-                  ? 'text-gray-500' 
+                  ? 'text-muted-foreground' 
                   : post.downVoted 
-                  ? 'text-red-500' 
-                  : 'text-gray-500 hover:text-red-500'
+                  ? 'text-destructive' 
+                  : 'text-muted-foreground hover:text-destructive'
               }`}
               onClick={handleDownVote}
             >
               {isSubmittingVote ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
               ) : (
                 <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.downVoted ? 'fill-current' : ''}`} />
               )}
@@ -282,9 +282,9 @@ const PostCard: React.FC<PostCardProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className={`p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-green-500' : 'text-gray-500'}`}
+              className={`p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-success' : 'text-secondary-action'}`}
               // TO BE IMPLEMENTED - Repost count click functionality and hover effects
-              // className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-green-500' : 'text-gray-500 hover:text-green-500 hover:bg-green-50'}`}
+              // className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-success' : 'text-secondary-action hover:text-success hover:bg-success-hover'}`}
               // onClick={() => onRepost(post.id)}
             >
               <Repeat2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
