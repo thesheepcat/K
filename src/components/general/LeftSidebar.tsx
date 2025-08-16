@@ -2,6 +2,7 @@ import { User, Settings, MessageSquareQuote, MessageSquareReply, ScanEye, Users,
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 import KaspaLogo from '../icons/KaspaLogo';
 
 interface LeftSidebarProps {
@@ -14,6 +15,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const { theme } = useUserSettings();
 
   const menuItems = [
     { icon: MessageSquareQuote, label: 'My posts', path: '/' },
@@ -50,9 +52,9 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   return (
     <div className={`${sidebarWidth} h-screen border-r border-border bg-background transition-all duration-300 ease-in-out ${
       isCollapsed && !isMobile ? 'p-2' : 'p-4'
-    }`}>
+    } ${isMobile ? 'pt-20' : ''}`}>
       <div className="mb-8 flex justify-center">
-        <KaspaLogo className={`${logoSize} transition-all duration-300`} />
+        <KaspaLogo className={`${logoSize} transition-all duration-300`} isDarkTheme={theme === 'dark'} />
       </div>
       <nav className="space-y-3">
         {menuItems.map((item) => (

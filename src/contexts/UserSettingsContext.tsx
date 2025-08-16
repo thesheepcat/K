@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 export type KaspaNetwork = 'mainnet' | 'testnet-10' | 'testnet-11';
 export type KaspaConnectionType = 'resolver' | 'custom-node';
+export type Theme = 'light' | 'dark';
 
 interface UserSettingsContextType {
   selectedNetwork: KaspaNetwork;
@@ -15,6 +16,8 @@ interface UserSettingsContextType {
   setKaspaConnectionType: (type: KaspaConnectionType) => void;
   customKaspaNodeUrl: string;
   setCustomKaspaNodeUrl: (url: string) => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 }
 
 const UserSettingsContext = createContext<UserSettingsContextType | undefined>(undefined);
@@ -43,6 +46,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     );
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
+  const [theme, setThemeState] = useState<Theme>('light');
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -68,10 +72,23 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         if (settings.customKaspaNodeUrl && typeof settings.customKaspaNodeUrl === 'string') {
           setCustomKaspaNodeUrlState(settings.customKaspaNodeUrl);
         }
+        
+        if (settings.theme && ['light', 'dark'].includes(settings.theme)) {
+          setThemeState(settings.theme);
+          // Apply theme to document root immediately
+          if (typeof document !== 'undefined') {
+            document.documentElement.setAttribute('data-theme', settings.theme);
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading user settings:', error);
       // Continue with default settings if loading fails
+    }
+    
+    // Apply default theme if no settings exist
+    if (typeof document !== 'undefined' && !localStorage.getItem(SETTINGS_STORAGE_KEY)) {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   }, []);
 
@@ -81,14 +98,16 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       selectedNetwork, 
       apiBaseUrl, 
       kaspaConnectionType, 
-      customKaspaNodeUrl 
+      customKaspaNodeUrl,
+      theme
     };
     
     // Don't save on initial load (when all values are defaults)
     const isInitialLoad = selectedNetwork === 'testnet-10' && 
                          apiBaseUrl === 'http://localhost:3000' && 
                          kaspaConnectionType === 'resolver' && 
-                         customKaspaNodeUrl === '';
+                         customKaspaNodeUrl === '' &&
+                         theme === 'light';
     
     if (!isInitialLoad) {
       try {
@@ -97,20 +116,22 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         console.error('Error auto-saving settings:', error);
       }
     }
-  }, [selectedNetwork, apiBaseUrl, kaspaConnectionType, customKaspaNodeUrl]);
+  }, [selectedNetwork, apiBaseUrl, kaspaConnectionType, customKaspaNodeUrl, theme]);
 
   const saveSettings = (overrides: Partial<{
     selectedNetwork: KaspaNetwork;
     apiBaseUrl: string;
     kaspaConnectionType: KaspaConnectionType;
     customKaspaNodeUrl: string;
+    theme: Theme;
   }> = {}) => {
     try {
       const settings = { 
         selectedNetwork: overrides.selectedNetwork ?? selectedNetwork, 
         apiBaseUrl: overrides.apiBaseUrl ?? apiBaseUrl, 
         kaspaConnectionType: overrides.kaspaConnectionType ?? kaspaConnectionType, 
-        customKaspaNodeUrl: overrides.customKaspaNodeUrl ?? customKaspaNodeUrl 
+        customKaspaNodeUrl: overrides.customKaspaNodeUrl ?? customKaspaNodeUrl,
+        theme: overrides.theme ?? theme
       };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
@@ -136,6 +157,16 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const setCustomKaspaNodeUrl = (url: string) => {
     setCustomKaspaNodeUrlState(url);
     saveSettings({ customKaspaNodeUrl: url });
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    saveSettings({ theme: newTheme });
+    
+    // Apply theme to document root
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', newTheme);
+    }
   };
 
   const getNetworkDisplayName = (network: KaspaNetwork): string => {
@@ -166,7 +197,9 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     kaspaConnectionType,
     setKaspaConnectionType,
     customKaspaNodeUrl,
-    setCustomKaspaNodeUrl
+    setCustomKaspaNodeUrl,
+    theme,
+    setTheme
   };
 
   return (

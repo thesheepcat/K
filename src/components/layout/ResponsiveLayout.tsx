@@ -86,7 +86,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
             }` : 
             'relative'
           }
-          ${(screenSize === 'sm' || screenSize === 'md') ? 'top-16 h-[calc(100vh-4rem)]' : 'h-full'}
+          ${(screenSize === 'sm' || screenSize === 'md') ? 'top-0 h-screen' : 'h-full'}
         `}>
           <LeftSidebar 
             isCollapsed={showCollapsedLeftSidebar}

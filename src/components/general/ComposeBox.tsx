@@ -105,7 +105,7 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
               <Button
                 onClick={handlePost}
                 disabled={!content.trim() || isSubmitting}
-                className="px-4 sm:px-6 py-2 font-bold rounded-lg hover:rounded-lg text-sm sm:text-base"
+                className="px-4 sm:px-6 py-2 font-bold rounded-none text-sm sm:text-base"
               >
                 {isSubmitting ? (
                   <>

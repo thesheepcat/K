@@ -237,7 +237,7 @@ const loadMorePosts = useCallback(async () => {
   // Handle case where userPubkey is missing
   if (!userPubkey) {
     return (
-      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+      <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border">
           <div className="flex items-center space-x-4 mb-4">
             <Button
@@ -264,7 +264,7 @@ const loadMorePosts = useCallback(async () => {
   const isCurrentUser = publicKey === userPubkey;
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header with back button */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">

@@ -19,64 +19,118 @@ body {
   --popover-foreground: 0 0% 0%;
   --primary: 0 0% 0%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 90.2%; /* gray-200 equivalent */
-  --secondary-foreground: 0 0% 32.5%; /* gray-700 equivalent */
-  --muted: 0 0% 96.1%; /* gray-100 equivalent */
-  --muted-foreground: 0 0% 32.5%; /* gray-700 equivalent */
+  --secondary: 0 0% 90.2%;
+  --secondary-foreground: 0 0% 32.5%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 32.5%;
   --accent: 0 0% 96.1%;
   --accent-foreground: 0 0% 0%;
-  --destructive: 0 84.2% 60.2%; /* red-500 equivalent */
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 90.2%; /* gray-200 equivalent */
+  --destructive: 0 85% 50%; 
+  --destructive-foreground: 0 0% 85%;
+  --border: 0 0% 90.2%; 
   --input: 0 0% 89.8%;
   --ring: 0 0% 3.9%;
   --radius: 0.5rem;
   
   /* Status colors */
-  --success: 142.1 76.2% 36.3%; /* green-500 equivalent */
+  --success: 142.1 76.2% 36.3%;
   --warning: 47.9 95.8% 53.1%;
-  --info: 217.2 91.2% 59.8%; /* blue-500 equivalent */ 
+  --info: 217.2 91.2% 59.8%;
  
   /* Compose colors */
-  --compose-bg: 0 0% 97.6%; /* gray-50 equivalent */
+  --compose-bg: 0 0% 98;
   
   /* Additional semantic colors */
-  --gray-200: 0 0% 90.2%;
-  --gray-300: 0 0% 82.4%;
+  --gray-200: 0 0% 90;
+  --gray-300: 0 0% 82%;
   --gray-400: 0 0% 60%;
   --gray-500: 0 0% 60%;
   --gray-600: 0 0% 45%;
-  --gray-700: 0 0% 32.5%;
-  --gray-800: 0 0% 31%;
-  --gray-900: 0 0% 20%;
   
   /* Hover and active state colors */
-  --primary-hover: 0 0% 31%; /* gray-800 for primary hover */
-  --secondary-hover: 0 0% 83.1%; /* gray-300 for secondary hover */
-  --muted-hover: 0 0% 93.1%; /* lighter muted hover */
-  --foreground-hover: 0 0% 20%; /* gray-800 for foreground hover */
-  --muted-active: 0 0% 91%; /* darker muted active */
-  --foreground-active: 0 0% 10%; /* darker black active */
+  --primary-hover: 0 0% 31%; 
+  --secondary-hover: 0 0% 83.1%;
+  --muted-hover: 0 0% 93.1%; 
+  --foreground-hover: 0 0% 20%;
+  --muted-active: 0 0% 91%; 
+  --foreground-active: 0 0% 10%; 
   
   /* Interactive colors */
-  --interactive-hover-bg: 217.2 91.2% 95%; /* blue-50 */
-  --success-hover-bg: 142.1 76.2% 95%; /* green-50 */
-  --warning-hover-bg: 47.9 95.8% 95%; /* orange-50 */
+  --interactive-hover-bg: 217.2 91.2% 95%; 
+  --success-hover-bg: 142.1 76.2% 95%; 
+  --warning-hover-bg: 47.9 95.8% 95%; 
   
   /* Warning color variants */
-  --warning-600: 47.9 95.8% 45%; /* orange-600 */
-  --warning-700: 47.9 95.8% 40%; /* orange-700 */
-  --warning-800: 47.9 95.8% 30%; /* orange-800 */
-  --warning-border: 47.9 95.8% 85%; /* orange-200 */
-  
-  /* Destructive variants */
-  --destructive-600: 0 84.2% 50%; /* red-600 */
+  --warning-600: 47.9 95.8% 45%; 
+  --warning-700: 47.9 95.8% 40%; 
+  --warning-800: 47.9 95.8% 30%; 
+  --warning-border: 47.9 95.8% 85%;
   
   /* Overlay */
   --overlay: 0 0% 0% / 0.5; /* black with 50% opacity */
   
   /* White */
   --white: 0 0% 100%;
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --background: 0 0% 8%; 
+  --foreground: 0 0% 85%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 85%;
+  --popover: 0 0% 4%;
+  --popover-foreground: 0 0% 85%;
+  --primary: 0 0% 85%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 85%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 85%;
+  --destructive: 0 85% 50%;
+  --destructive-foreground: 0 0% 85%;
+  --border: 0 0% 30%;
+  --input: 0 0% 15%;
+  --ring: 0 0% 83%;
+
+  /* Status colors for dark theme */
+  --success: 142.1 70.6% 45%; 
+  --warning: 47.9 95.8% 53%;
+  --info: 217.2 91.2% 60%;
+
+  /* Compose colors for dark theme */
+  --compose-bg: 0 0% 7%; /* slightly lighter than background */
+
+  /* Gray scale adjustments for dark theme */
+  --gray-200: 0 0% 15%; 
+  --gray-300: 0 0% 21%; 
+  --gray-400: 0 0% 39%; 
+  --gray-500: 0 0% 64%; 
+  --gray-600: 0 0% 72%; 
+
+  /* Hover and active state colors for dark theme */
+  --primary-hover: 0 0% 80%;
+  --secondary-hover: 0 0% 20%;
+  --muted-hover: 0 0% 20%; 
+  --foreground-hover: 0 0% 80%;
+  --muted-active: 0 0% 25%;
+  --foreground-active: 0 0% 85%;
+
+  /* Interactive colors for dark theme */
+  --interactive-hover-bg: 217.2 91.2% 15%;
+  --success-hover-bg: 142.1 76.2% 15%; 
+  --warning-hover-bg: 47.9 95.8% 15%; 
+
+  /* Warning color variants for dark theme */
+  --warning-600: 47.9 95.8% 65%; 
+  --warning-700: 47.9 95.8% 70%; 
+  --warning-800: 47.9 95.8% 80%; 
+  --warning-border: 47.9 95.8% 25%;
+
+  /* Overlay for dark theme */
+  --overlay: 0 0% 100% / 0.5;
 }
 
 /* Button semantic color utilities */
@@ -288,7 +342,7 @@ button:active, .btn:active {
 }
 
 .text-required {
-  color: hsl(var(--destructive)); /* red-500 equivalent */
+  color: hsl(var(--destructive));
 }
 
 .text-warning {
@@ -354,11 +408,11 @@ button:active, .btn:active {
 }
 
 .bg-remove-button {
-  background-color: hsl(var(--destructive)); /* red-500 for remove buttons */
+  background-color: hsl(var(--destructive));
 }
 
 .hover\:bg-remove-button-hover:hover {
-  background-color: hsl(var(--destructive-600));
+  background-color: hsl(var(--destructive));
 }
 
 .bg-warning-subtle {
@@ -447,4 +501,15 @@ button:active, .btn:active {
 .focus-visible\:ring-0:focus-visible {
   box-shadow: none;
   outline: none;
+}
+
+/* Toast icon colors */
+[data-sonner-toast][data-type="success"] [data-icon],
+[data-sonner-toast][data-type="success"] svg {
+  color: hsl(var(--success)) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon],
+[data-sonner-toast][data-type="error"] svg {
+  color: hsl(var(--destructive)) !important;
 }

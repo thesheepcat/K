@@ -430,7 +430,7 @@ const ProfileView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full" data-main-content>
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <h1 className="text-lg sm:text-xl font-bold">Profile</h1>

@@ -50,7 +50,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   
   return (
     <div 
-      className={`border-b border-border p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
+      className={`border-b border-border sm:border-l sm:border-r p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
       onClick={handleCardClick}
     >
       <div className="flex space-x-2 sm:space-x-3">

@@ -2,9 +2,12 @@ import React from 'react';
 
 interface KaspaLogoProps {
   className?: string;
+  isDarkTheme?: boolean;
 }
 
-const KaspaLogo: React.FC<KaspaLogoProps> = ({ className = "h-8 w-8" }) => {
+const KaspaLogo: React.FC<KaspaLogoProps> = ({ className = "h-8 w-8", isDarkTheme = false }) => {
+  const fillColor = isDarkTheme ? "#ffffff" : "#1a1a1a";
+  
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -12,7 +15,7 @@ const KaspaLogo: React.FC<KaspaLogoProps> = ({ className = "h-8 w-8" }) => {
       className={className}
     >
       <defs>
-        <style>{`.cls-1{fill:none;}.cls-2{fill:none;}.cls-3{fill:#1a1a1a;}`}</style>
+        <style>{`.cls-1{fill:none;}.cls-2{fill:none;}.cls-3{fill:${fillColor};}`}</style>
       </defs>
       <g>
         <g>

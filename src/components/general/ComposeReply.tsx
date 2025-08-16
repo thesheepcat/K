@@ -126,14 +126,14 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                   onClick={onCancel}
                   variant="ghost"
                   disabled={isSubmitting}
-                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-sm rounded-lg hover:rounded-lg"
+                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-sm rounded-none"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleReply}
                   disabled={!content.trim() || isSubmitting}
-                  className="px-4 py-1 text-sm font-bold rounded-lg hover:rounded-lg"
+                  className="px-4 py-1 text-sm font-bold rounded-none"
                 >
                   {isSubmitting ? (
                     <>

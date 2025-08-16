@@ -425,7 +425,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
   // Show error if no public key is available
   if (!publicKey) {
     return (
-      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+      <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -453,7 +453,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
   // Loading state
   if (isLoadingPost) {
     return (
-      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+      <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -480,7 +480,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
   // Error state
   if (postError || (!currentPost && !isLoadingPost)) {
     return (
-      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+      <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -523,7 +523,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
   }
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header with back button and optional parent post button */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <div className="flex items-center justify-between">

@@ -248,7 +248,7 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
   
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <div className="flex items-center justify-between">

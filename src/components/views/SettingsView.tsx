@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Server, Network, Globe, HardDrive } from 'lucide-react';
+import { Server, Network, Globe, HardDrive, Palette } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectOption } from '@/components/ui/select';
-import { useUserSettings, type KaspaNetwork, type KaspaConnectionType } from '@/contexts/UserSettingsContext';
+import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type Theme } from '@/contexts/UserSettingsContext';
 
 const SettingsView: React.FC = () => {
   const { 
@@ -15,7 +15,9 @@ const SettingsView: React.FC = () => {
     kaspaConnectionType,
     setKaspaConnectionType,
     customKaspaNodeUrl,
-    setCustomKaspaNodeUrl
+    setCustomKaspaNodeUrl,
+    theme,
+    setTheme
   } = useUserSettings();
 
   const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
@@ -45,13 +47,18 @@ const SettingsView: React.FC = () => {
     showSaveFeedback('Network updated');
   };
 
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme);
+    showSaveFeedback('Theme updated');
+  };
+
   const showSaveFeedback = (message: string) => {
     setSaveFeedback(message);
     setTimeout(() => setSaveFeedback(null), 2000);
   };
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-border flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <h1 className="text-lg sm:text-xl font-bold">Settings</h1>
@@ -95,6 +102,13 @@ const SettingsView: React.FC = () => {
                     <label className="block text-xs font-medium text-muted-foreground mb-1">Connection</label>
                     <div className="bg-background border border-border p-2 text-xs">
                       {kaspaConnectionType === 'resolver' ? 'Resolver (Automatic)' : 'Custom Node'}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Theme</label>
+                    <div className="bg-background border border-border p-2 text-xs capitalize">
+                      {theme}
                     </div>
                   </div>
                   
@@ -231,6 +245,35 @@ const SettingsView: React.FC = () => {
                     )}
                   </div>
                 )}
+
+                {/* Appearance Settings */}
+                <Card className="border border-border rounded-none">
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <Palette className="h-5 w-5 text-muted-foreground" />
+                        <h2 className="text-lg font-semibold">Appearance</h2>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-foreground">
+                          Theme
+                        </label>
+                        <Select
+                          value={theme}
+                          onChange={(e) => handleThemeChange(e.target.value as Theme)}
+                          className="w-full"
+                        >
+                          <SelectOption value="light">Light</SelectOption>
+                          <SelectOption value="dark">Dark</SelectOption>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Choose between light and dark theme for the interface.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
