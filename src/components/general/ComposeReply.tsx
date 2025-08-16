@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
@@ -94,16 +93,16 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
   };
 
   return (
-    <Card className="border-0 border-t border-gray-200 bg-gray-50 rounded-none">
+    <Card className="border-0 border-t border-border bg-compose rounded-none">
       <CardContent className="p-3">
-        <div className="mb-2 text-sm text-gray-600">
-          Replying to <span className="text-blue-500">@{replyingToUser}</span>
+        <div className="mb-2 text-sm text-muted-foreground">
+          Replying to <span className="text-info">@{replyingToUser}</span>
         </div>
         <div className="flex space-x-2">
           {/* Removing avatar
           <Avatar className="h-8 w-8 rounded-none">
             <AvatarImage src={userAvatar} />
-            <AvatarFallback className="bg-gray-200 text-gray-700 rounded-none text-xs">You</AvatarFallback>
+            <AvatarFallback className="bg-muted text-muted-foreground rounded-none text-xs">You</AvatarFallback>
           </Avatar>
           */}
           <div className="flex-1">
@@ -114,25 +113,12 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 min-h-14 border-none resize-none text-sm placeholder-gray-500 focus:outline-none focus:ring-0 focus:shadow-none rounded-none bg-transparent"
-                style={{
-                  outline: 'none',
-                  boxShadow: 'none',
-                  border: '1px solid #d1d5db'
-                }}
-                onFocus={(e) => {
-                  e.target.style.outline = 'none';
-                  e.target.style.boxShadow = 'none';
-                  e.target.style.border = '1px solid #9ca3af';
-                }}
-                onBlur={(e) => {
-                  e.target.style.border = '1px solid #d1d5db';
-                }}
+                className="flex-1 min-h-14 resize-none text-sm rounded-none bg-transparent border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
             <div className="flex justify-between items-center mt-2">
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 Press Esc to cancel • Cmd+Enter to reply
               </div>
               <div className="flex space-x-2">
@@ -140,18 +126,18 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
                   onClick={onCancel}
                   variant="ghost"
                   disabled={isSubmitting}
-                  className="text-gray-600 hover:bg-gray-200 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm rounded-lg hover:rounded-lg"
+                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-sm rounded-none"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleReply}
                   disabled={!content.trim() || isSubmitting}
-                  className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 px-4 py-1 text-sm font-bold rounded-lg hover:rounded-lg"
+                  className="px-4 py-1 text-sm font-bold rounded-none"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin text-gray-400" />
+                      <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
                       Replying...
                     </>
                   ) : (

@@ -29,7 +29,7 @@ const UnlockSession: React.FC = () => {
       if (!success) {
         setError('Invalid password');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to unlock session');
     } finally {
       setLoading(false);
@@ -42,27 +42,40 @@ const UnlockSession: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-start justify-center p-4 pt-16">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <KaspaLogo className="h-20 w-20 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-600 mt-2">Enter your password to unlock your session</p>
+          <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
+          <p className="text-muted-foreground mt-2">Enter your password to unlock your session</p>
         </div>
 
-        <Card className="border border-gray-200 rounded-none">
+        <Card className="border border-border rounded-none shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-none">
-                  {error}
+                <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-none">
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-shrink-0">
+                      <svg className="h-4 w-4 text-destructive mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-destructive font-medium">Error</p>
+                      <p className="text-xs text-destructive/80 mt-1">{error}</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                    Password
+                  </label>
+                </div>
                 <div className="relative">
                   <Input
                     id="password"
@@ -70,43 +83,45 @@ const UnlockSession: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="pr-10 rounded-none"
+                    className="pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     required                    
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Enter the password you used when setting up your account
+                </p>
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-black text-white hover:bg-gray-800 py-3 font-bold rounded-none"
-              >
-                <Lock className="h-4 w-4 mr-2" />
-                {loading ? 'Unlocking...' : 'Unlock Session'}
-              </Button>
+              <div className="pt-4 border-t border-border space-y-2">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 font-bold rounded-none"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  {loading ? 'Unlocking...' : 'Unlock Session'}
+                </Button>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="w-full py-3 font-bold rounded-none"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Use Different Account
+                </Button>
+              </div>
             </form>
-
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                className="w-full text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-none"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Use Different Account
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Forgot your password? You'll need to login with your private key again.</p>
         </div>
       </div>

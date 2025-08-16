@@ -1,1 +1,515 @@
 @import "tailwindcss";
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+}
+
+:root {
+  /* Light theme colors - shadcn/ui standard values */
+  --background: 0 0% 100%; /* white */
+  --foreground: 0 0% 0%; /* black */
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 90.2%;
+  --secondary-foreground: 0 0% 32.5%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 32.5%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 85% 50%; 
+  --destructive-foreground: 0 0% 85%;
+  --border: 0 0% 90.2%; 
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 3.9%;
+  --radius: 0.5rem;
+  
+  /* Status colors */
+  --success: 142.1 76.2% 36.3%;
+  --warning: 47.9 95.8% 53.1%;
+  --info: 217.2 91.2% 59.8%;
+ 
+  /* Compose colors */
+  --compose-bg: 0 0% 98;
+  
+  /* Additional semantic colors */
+  --gray-200: 0 0% 90;
+  --gray-300: 0 0% 82%;
+  --gray-400: 0 0% 60%;
+  --gray-500: 0 0% 60%;
+  --gray-600: 0 0% 45%;
+  
+  /* Hover and active state colors */
+  --primary-hover: 0 0% 31%; 
+  --secondary-hover: 0 0% 83.1%;
+  --muted-hover: 0 0% 93.1%; 
+  --foreground-hover: 0 0% 20%;
+  --muted-active: 0 0% 91%; 
+  --foreground-active: 0 0% 10%; 
+  
+  /* Interactive colors */
+  --interactive-hover-bg: 217.2 91.2% 95%; 
+  --success-hover-bg: 142.1 76.2% 95%; 
+  --warning-hover-bg: 47.9 95.8% 95%; 
+  
+  /* Warning color variants */
+  --warning-600: 47.9 95.8% 45%; 
+  --warning-700: 47.9 95.8% 40%; 
+  --warning-800: 47.9 95.8% 30%; 
+  --warning-border: 47.9 95.8% 85%;
+  
+  /* Overlay */
+  --overlay: 0 0% 0% / 0.5; /* black with 50% opacity */
+  
+  /* White */
+  --white: 0 0% 100%;
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --background: 0 0% 8%; 
+  --foreground: 0 0% 85%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 85%;
+  --popover: 0 0% 4%;
+  --popover-foreground: 0 0% 85%;
+  --primary: 0 0% 85%;
+  --primary-foreground: 0 0% 9%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 85%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 85%;
+  --destructive: 0 85% 50%;
+  --destructive-foreground: 0 0% 85%;
+  --border: 0 0% 30%;
+  --input: 0 0% 15%;
+  --ring: 0 0% 83%;
+
+  /* Status colors for dark theme */
+  --success: 142.1 70.6% 45%; 
+  --warning: 47.9 95.8% 53%;
+  --info: 217.2 91.2% 60%;
+
+  /* Compose colors for dark theme */
+  --compose-bg: 0 0% 7%; /* slightly lighter than background */
+
+  /* Gray scale adjustments for dark theme */
+  --gray-200: 0 0% 15%; 
+  --gray-300: 0 0% 21%; 
+  --gray-400: 0 0% 39%; 
+  --gray-500: 0 0% 64%; 
+  --gray-600: 0 0% 72%; 
+
+  /* Hover and active state colors for dark theme */
+  --primary-hover: 0 0% 80%;
+  --secondary-hover: 0 0% 20%;
+  --muted-hover: 0 0% 20%; 
+  --foreground-hover: 0 0% 80%;
+  --muted-active: 0 0% 25%;
+  --foreground-active: 0 0% 85%;
+
+  /* Interactive colors for dark theme */
+  --interactive-hover-bg: 217.2 91.2% 15%;
+  --success-hover-bg: 142.1 76.2% 15%; 
+  --warning-hover-bg: 47.9 95.8% 15%; 
+
+  /* Warning color variants for dark theme */
+  --warning-600: 47.9 95.8% 65%; 
+  --warning-700: 47.9 95.8% 70%; 
+  --warning-800: 47.9 95.8% 80%; 
+  --warning-border: 47.9 95.8% 25%;
+
+  /* Overlay for dark theme */
+  --overlay: 0 0% 100% / 0.5;
+}
+
+/* Button semantic color utilities */
+.bg-primary {
+  background-color: hsl(var(--primary));
+}
+
+.text-primary-foreground {
+  color: hsl(var(--primary-foreground));
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: hsl(var(--primary-hover));
+}
+
+.bg-secondary {
+  background-color: hsl(var(--secondary));
+}
+
+.text-secondary-foreground {
+  color: hsl(var(--secondary-foreground));
+}
+
+.hover\:bg-secondary\/80:hover {
+  background-color: hsl(var(--secondary-hover));
+}
+
+.hover\:bg-muted\/80:hover {
+  background-color: hsl(var(--muted-hover));
+}
+
+.hover\:bg-foreground\/80:hover {
+  background-color: hsl(var(--foreground-hover));
+}
+
+/* Active states for buttons */
+.active\:bg-muted\/90:active, .hover\:bg-muted\/80:hover:active {
+  background-color: hsl(var(--muted-active));
+}
+
+.active\:bg-foreground\/90:active, .hover\:bg-foreground\/80:hover:active {
+  background-color: hsl(var(--foreground-active));
+}
+
+.bg-muted {
+  background-color: hsl(var(--muted));
+}
+
+.text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+
+.bg-accent {
+  background-color: hsl(var(--accent));
+}
+
+.text-accent-foreground {
+  color: hsl(var(--accent-foreground));
+}
+
+.hover\:bg-accent:hover {
+  background-color: hsl(var(--accent));
+}
+
+.hover\:text-accent-foreground:hover {
+  color: hsl(var(--accent-foreground));
+}
+
+.bg-card {
+  background-color: hsl(var(--card));
+}
+
+.text-card-foreground {
+  color: hsl(var(--card-foreground));
+}
+
+.bg-popover {
+  background-color: hsl(var(--popover));
+}
+
+.text-popover-foreground {
+  color: hsl(var(--popover-foreground));
+}
+
+.bg-destructive {
+  background-color: hsl(var(--destructive));
+}
+
+.bg-background {
+  background-color: hsl(var(--background));
+}
+
+.text-foreground {
+  color: hsl(var(--foreground));
+}
+
+.text-info {
+  color: hsl(var(--info));
+}
+
+.hover\:text-info:hover {
+  color: hsl(var(--info));
+}
+
+.text-success {
+  color: hsl(var(--success));
+}
+
+.hover\:text-success:hover {
+  color: hsl(var(--success));
+}
+
+.text-destructive {
+  color: hsl(var(--destructive));
+}
+
+.hover\:text-destructive:hover {
+  color: hsl(var(--destructive));
+}
+
+.bg-compose {
+  background-color: hsl(var(--compose-bg));
+}
+
+/* Animation utilities */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-circle {
+  0% {
+    transform: rotate(0deg);
+    border-top-color: hsl(var(--foreground));
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+  25% {
+    border-top-color: hsl(var(--foreground));
+    border-right-color: hsl(var(--foreground));
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+  50% {
+    border-top-color: hsl(var(--foreground));
+    border-right-color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+    border-left-color: transparent;
+  }
+  75% {
+    border-top-color: hsl(var(--foreground));
+    border-right-color: hsl(var(--foreground));
+    border-bottom-color: hsl(var(--foreground));
+    border-left-color: hsl(var(--foreground));
+  }
+  100% {
+    transform: rotate(360deg);
+    border-top-color: hsl(var(--foreground));
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite !important;
+  transform-origin: center;
+}
+
+.animate-loader-circle {
+  animation: loader-circle 1.2s ease-in-out infinite !important;
+  transform-origin: center;
+}
+
+/* Ensure spinner elements have proper display */
+div.animate-spin, div.animate-loader-circle {
+  display: inline-block;
+}
+
+/* Button transitions for smooth hover/press effects */
+button, .btn {
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out, transform 0.05s ease-in-out;
+}
+
+button:active, .btn:active {
+  transform: translateY(1px);
+}
+
+/* Text color semantic utilities */
+.text-subtle {
+  color: hsl(var(--gray-500));
+}
+
+.hover\:text-subtle-hover:hover {
+  color: hsl(var(--gray-600));
+}
+
+.text-label {
+  color: hsl(var(--gray-600));
+}
+
+.text-placeholder {
+  color: hsl(var(--gray-400));
+}
+
+.text-required {
+  color: hsl(var(--destructive));
+}
+
+.text-warning {
+  color: hsl(var(--warning));
+}
+
+.text-disabled {
+  color: hsl(var(--gray-400));
+}
+
+.text-secondary-action {
+  color: hsl(var(--gray-500));
+}
+
+.hover\:text-secondary-action-hover:hover {
+  color: hsl(var(--gray-600));
+}
+
+.text-interactive {
+  color: hsl(var(--gray-500));
+}
+
+.hover\:text-interactive-hover:hover {
+  color: hsl(var(--info));
+}
+
+.bg-interactive-hover {
+  background-color: hsl(var(--interactive-hover-bg));
+}
+
+.hover\:bg-interactive-hover:hover {
+  background-color: hsl(var(--interactive-hover-bg));
+}
+
+.bg-success-hover {
+  background-color: hsl(var(--success-hover-bg));
+}
+
+.hover\:bg-success-hover:hover {
+  background-color: hsl(var(--success-hover-bg));
+}
+
+/* Icon specific colors */
+.text-icon-default {
+  color: hsl(var(--gray-400));
+}
+
+.text-icon-upload {
+  color: hsl(var(--gray-400));
+}
+
+/* Background semantic utilities */
+.bg-neutral {
+  background-color: hsl(var(--muted));
+}
+
+.hover\:bg-neutral-hover:hover {
+  background-color: hsl(var(--muted-hover));
+}
+
+.bg-upload-area {
+  background-color: hsl(var(--muted));
+}
+
+.bg-remove-button {
+  background-color: hsl(var(--destructive));
+}
+
+.hover\:bg-remove-button-hover:hover {
+  background-color: hsl(var(--destructive));
+}
+
+.bg-warning-subtle {
+  background-color: hsl(var(--warning-hover-bg));
+}
+
+.text-warning-icon {
+  color: hsl(var(--warning-600));
+}
+
+.text-warning-text {
+  color: hsl(var(--warning-800));
+}
+
+.text-warning-secondary {
+  color: hsl(var(--warning-700));
+}
+
+.text-warning-muted {
+  color: hsl(var(--warning-600));
+}
+
+.hover\:text-warning-hover:hover {
+  color: hsl(var(--warning-800));
+}
+
+/* Border semantic utilities */
+.border-light {
+  border-color: hsl(var(--gray-200));
+}
+
+.border-medium {
+  border-color: hsl(var(--gray-300));
+}
+
+.border-upload {
+  border-color: hsl(var(--gray-300));
+}
+
+.border-warning {
+  border-color: hsl(var(--warning-border));
+}
+
+.hover\:bg-button-outline:hover {
+  background-color: hsl(var(--gray-300));
+}
+
+/* Focus and ring utilities */
+.focus\:ring-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--info));
+}
+
+.focus\:border-transparent:focus {
+  border-color: transparent;
+}
+
+/* Active/selected states */
+.border-active {
+  border-color: hsl(var(--foreground)); /* black for active borders */
+}
+
+.text-active {
+  color: hsl(var(--foreground)); /* black for active text */
+}
+
+/* Overlay utilities */
+.bg-overlay {
+  background-color: hsl(var(--overlay));
+}
+
+/* Button text utilities */
+.text-on-dark {
+  color: hsl(var(--white));
+}
+
+/* Custom input/textarea border styling */
+.border-input-thin {
+  border-color: hsl(var(--border));
+}
+
+.focus-visible\:border-input-thin-focus:focus-visible {
+  border-color: hsl(var(--gray-400));
+}
+
+.focus-visible\:ring-0:focus-visible {
+  box-shadow: none;
+  outline: none;
+}
+
+/* Toast icon colors */
+[data-sonner-toast][data-type="success"] [data-icon],
+[data-sonner-toast][data-type="success"] svg {
+  color: hsl(var(--success)) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon],
+[data-sonner-toast][data-type="error"] svg {
+  color: hsl(var(--destructive)) !important;
+}

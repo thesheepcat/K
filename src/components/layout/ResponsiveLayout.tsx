@@ -45,17 +45,17 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
   const isMobile = screenSize === 'sm' || screenSize === 'md';
 
   return (
-    <div className="h-screen bg-white flex justify-center overflow-hidden">
-      <div className="flex w-full max-w-7xl bg-white shadow-lg relative h-full">
+    <div className="h-screen bg-background flex justify-center overflow-hidden">
+      <div className="flex w-full max-w-7xl bg-background shadow-lg relative h-full">
         {/* Mobile Header - Fixed at top */}
         {(screenSize === 'sm' || screenSize === 'md') && (
-          <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+          <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm">
             <div className="relative flex items-center px-4 py-3 max-w-7xl mx-auto">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-0 w-8 h-8 bg-white shadow-sm rounded-full border border-gray-200 z-10"
+                className="p-0 w-8 h-8 bg-background shadow-sm rounded-full border border-border z-10"
               >
                 {isMobileMenuOpen ? (
                   <X className="h-5 w-5" />
@@ -63,7 +63,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
                   <Menu className="h-5 w-5" />
                 )}
               </Button>
-              <h1 className="absolute left-1/2 transform -translate-x-1/2 text-base font-semibold text-gray-900 whitespace-nowrap">
+              <h1 className="absolute left-1/2 transform -translate-x-1/2 text-base font-semibold text-foreground whitespace-nowrap">
                 Your voice. Your ideas.
               </h1>
             </div>
@@ -73,7 +73,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
         {/* Mobile Overlay */}
         {(screenSize === 'sm' || screenSize === 'md') && isMobileMenuOpen && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-30"
+            className="fixed inset-0 bg-overlay z-30"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
@@ -86,7 +86,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
             }` : 
             'relative'
           }
-          ${(screenSize === 'sm' || screenSize === 'md') ? 'top-16 h-[calc(100vh-4rem)]' : 'h-full'}
+          ${(screenSize === 'sm' || screenSize === 'md') ? 'top-0 h-screen' : 'h-full'}
         `}>
           <LeftSidebar 
             isCollapsed={showCollapsedLeftSidebar}

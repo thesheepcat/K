@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Loader2, Upload, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Upload, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
@@ -216,17 +216,17 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
   const isOverLimit = charactersRemaining < 0 || nicknameCharactersRemaining < 0;
 
   return (
-    <Card className="border-l-0 border-r-0 border-t-0 border-b border-gray-200 bg-white rounded-none gap-0">
+    <Card className="border-l-0 border-r-0 border-t-0 border-b border-border bg-card rounded-none gap-0">
       <CardHeader className="p-3 sm:p-4 pb-1 flex flex-row items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Introduce Yourself</h3>
-          <p className="text-sm text-gray-600">Share your nickname, profile image and a message with the network</p>         
+          <h3 className="text-lg font-semibold text-foreground">Introduce Yourself</h3>
+          <p className="text-sm text-muted-foreground">Share your nickname, profile image and a message with the network</p>         
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
+          className="h-8 w-8 p-0"
         >
           {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
         </Button>
@@ -237,39 +237,26 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
           {/* Nickname Input */}
           <div className="py-4">
             <div className="space-y-2">
-              <label htmlFor="nickname" className="text-sm font-medium text-gray-700">
-                Nickname <span className="text-red-500">*</span>
+              <label htmlFor="nickname" className="text-sm font-medium text-label">
+                Nickname <span className="text-required">*</span>
               </label>
             <Input
                 id="nickname"
                 placeholder="Enter your nickname (max 20 characters)..."
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                className="flex-1 min-h-10 sm:min-h-12 border resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-400 focus:shadow-none rounded-none"
-                style={{
-                  outline: 'none',
-                  boxShadow: 'none',
-                  border: '1px solid #d1d5db'
-                }}
-                onFocus={(e) => {
-                  e.target.style.outline = 'none';
-                  e.target.style.boxShadow = 'none';
-                  e.target.style.border = '1px solid #9ca3af';
-                }}
-                onBlur={(e) => {
-                  e.target.style.border = '1px solid #d1d5db';
-                }}
+                className="flex-1 min-h-10 sm:min-h-12 text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                 maxLength={MAX_NICKNAME_CHARACTERS + 5}
               />
               <div className="flex justify-between items-center">
                 <span className={`text-xs ${
-                  nicknameCharactersRemaining < 0 ? 'text-red-500' : 
-                  nicknameCharactersRemaining <= 5 ? 'text-orange-500' : 'text-gray-500'
+                  nicknameCharactersRemaining < 0 ? 'text-required' : 
+                  nicknameCharactersRemaining <= 5 ? 'text-warning' : 'text-subtle'
                 }`}>
                   {nicknameCharactersRemaining} characters remaining
                 </span>
                 {nicknameCharactersRemaining < 0 && (
-                  <span className="text-xs text-red-500">Character limit exceeded</span>
+                  <span className="text-xs text-required">Character limit exceeded</span>
                 )}
               </div>
             </div>
@@ -278,8 +265,8 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
           {/* Message Input */}
           <div className="py-4">
             <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium text-gray-700">
-                Message <span className="text-red-500">*</span>
+              <label htmlFor="message" className="text-sm font-medium text-label">
+                Message <span className="text-required">*</span>
               </label>
             <div className="flex space-x-2 sm:space-x-3">
                 <div className="flex-1 min-w-0">
@@ -290,34 +277,20 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                       placeholder="Share your message with the network (max 100 characters)..."
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      //className="flex-1 min-h-10 sm:min-h-12 border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none rounded-none"
-                      className="flex-1 min-h-10 sm:min-h-12 border border-gray-300 resize-none text-sm sm:text-base placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-gray-400 focus:shadow-none rounded-none"
-                      style={{
-                        outline: 'none',
-                        boxShadow: 'none',
-                        border: '1px solid #d1d5db'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.outline = 'none';
-                        e.target.style.boxShadow = 'none';
-                        e.target.style.border = '1px solid #9ca3af';
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.border = '1px solid #d1d5db';
-                      }}
+                      className="flex-1 min-h-10 sm:min-h-12 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       maxLength={MAX_CHARACTERS + 10}
                     />
                     <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className={`text-xs ${
-                      charactersRemaining < 0 ? 'text-red-500' : 
-                      charactersRemaining <= 20 ? 'text-orange-500' : 'text-gray-500'
+                      charactersRemaining < 0 ? 'text-required' : 
+                      charactersRemaining <= 20 ? 'text-warning' : 'text-subtle'
                     }`}>
                       {charactersRemaining} characters remaining
                     </span>
                     {charactersRemaining < 0 && (
-                      <span className="text-xs text-red-500">Character limit exceeded</span>
+                      <span className="text-xs text-required">Character limit exceeded</span>
                     )}
                   </div>
                 </div>
@@ -328,8 +301,8 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
           {/* Profile Image Upload */}
           <div className="py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Profile Image <span className="text-gray-500">(optional)</span>
+              <label className="text-sm font-medium text-label">
+                Profile Image <span className="text-subtle">(optional)</span>
               </label>
             <div className="flex items-center space-x-4">
                 {profileImagePreview ? (
@@ -337,19 +310,19 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                     <img 
                       src={profileImagePreview} 
                       alt="Profile preview" 
-                      className="w-12 h-12 object-cover border border-gray-300"
+                      className="w-12 h-12 object-cover border border-medium"
                     />
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition-colors"
+                      className="absolute -top-2 -right-2 bg-remove-button text-on-dark rounded-full w-5 h-5 flex items-center justify-center hover:bg-remove-button-hover transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (
-                  <div className="w-12 h-12 border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                    <Upload className="w-6 h-6 text-gray-400" />
+                  <div className="w-12 h-12 border-2 border-dashed border-upload flex items-center justify-center bg-upload-area">
+                    <Upload className="w-6 h-6 text-icon-upload" />
                   </div>
                 )}
                 <div className="flex gap-2 justify-center">
@@ -365,11 +338,11 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
-                    className="rounded-none border-gray-300 hover:bg-gray-300"
+                    className="rounded-none border-medium hover:bg-button-outline"
                   >
                     {profileImagePreview ? 'Change Image' : 'Upload Image'}
                   </Button>
-                  <div className="flex items-center text-xs text-gray-500 mt-1">
+                  <div className="flex items-center text-xs text-subtle mt-1">
                     <p>PNG, JPEG, or BMP • Max 5MB • Will be resized to 48x48px</p>
                   </div>
                 </div>
@@ -382,11 +355,11 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
             <Button
               onClick={handlePost}
               disabled={!nickname.trim() || !content.trim() || isSubmitting || isOverLimit}
-              className="bg-black text-white hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 px-6 py-2 font-bold rounded-none hover:rounded-none"
+              className="px-4 sm:px-6 py-2 font-bold rounded-lg hover:rounded-lg text-sm sm:text-base"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin text-gray-400" />
+                  <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
                   Introducing...
                 </>
               ) : (

@@ -237,21 +237,21 @@ const loadMorePosts = useCallback(async () => {
   // Handle case where userPubkey is missing
   if (!userPubkey) {
     return (
-      <div className="flex-1 w-full max-w-3xl mx-auto border-r border-gray-200 flex flex-col h-full">
-        <div className="p-4 border-b border-gray-200">
+      <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center space-x-4 mb-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="p-2 hover:bg-muted rounded-full"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-lg sm:text-xl font-bold">Error</h1>
           </div>
           <div className="text-center px-4">
-            <p className="text-gray-500 mb-4 text-sm sm:text-base">
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
               Invalid user public key.
             </p>
           </div>
@@ -264,30 +264,30 @@ const loadMorePosts = useCallback(async () => {
   const isCurrentUser = publicKey === userPubkey;
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto border-r border-gray-200 flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header with back button */}
-      <div className="sticky top-0 bg-white bg-opacity-80 backdrop-blur-md border-b border-gray-200 z-10">
+      <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
           <div className="flex items-center space-x-4 mb-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="p-2 hover:bg-muted rounded-full"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-xl font-bold text-black truncate">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
                 {isCurrentUser ? 'My posts' : `${authorInfo?.name || 'Loading...'}'s posts`}
               </h1>
             </div>
             <div className="flex items-center space-x-2">
               {authorInfo?.username && (
                 <span 
-                  className="text-sm sm:text-lg text-gray-500 truncate hover:underline cursor-pointer"
+                  className="text-sm sm:text-lg text-muted-foreground truncate hover:underline cursor-pointer"
                   onClick={() => setShowUserDetailsDialog(true)}
                   title="Click to view user details"
                 >
@@ -295,17 +295,17 @@ const loadMorePosts = useCallback(async () => {
                 </span>
               )}
               {isLoading && (
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
               )}
               {lastFetchTime && (
-                <span className="text-xs text-gray-500 hidden sm:inline">
+                <span className="text-xs text-muted-foreground hidden sm:inline">
                   Updated: {lastFetchTime.toLocaleTimeString()}
                 </span>
               )}
             </div>
           </div>
           {error && (
-            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
               Error: {error}
             </div>
           )}
@@ -322,7 +322,7 @@ const loadMorePosts = useCallback(async () => {
         }}
       >
         {posts.length === 0 && !isLoading ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-muted-foreground">
             {isCurrentUser ? 'No posts found. Create your first post!' : 'This user has no posts yet.'}
           </div>
         ) : (
@@ -341,14 +341,14 @@ const loadMorePosts = useCallback(async () => {
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading more posts...</p>
+                <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Loading more posts...</p>
               </div>
             )}
             
             {/* End of posts indicator */}
             {!hasMore && posts.length > 0 && (
-              <div className="p-4 text-center text-gray-500 text-sm">
+              <div className="p-4 text-center text-muted-foreground text-sm">
                 No more posts to load
               </div>
             )}
