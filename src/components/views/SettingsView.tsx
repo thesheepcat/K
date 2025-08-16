@@ -245,35 +245,35 @@ const SettingsView: React.FC = () => {
                     )}
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Appearance Settings */}
-                <Card className="border border-border rounded-none">
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <Palette className="h-5 w-5 text-muted-foreground" />
-                        <h2 className="text-lg font-semibold">Appearance</h2>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-foreground">
-                          Theme
-                        </label>
-                        <Select
-                          value={theme}
-                          onChange={(e) => handleThemeChange(e.target.value as Theme)}
-                          className="w-full"
-                        >
-                          <SelectOption value="light">Light</SelectOption>
-                          <SelectOption value="dark">Dark</SelectOption>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          Choose between light and dark theme for the interface.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+          {/* Appearance Settings */}
+          <Card className="border border-border rounded-none">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Palette className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">Appearance</h2>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    Theme
+                  </label>
+                  <Select
+                    value={theme}
+                    onChange={(e) => handleThemeChange(e.target.value as Theme)}
+                    className="w-full"
+                  >
+                    <SelectOption value="light">Light</SelectOption>
+                    <SelectOption value="dark">Dark</SelectOption>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Choose between light and dark theme for the interface.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
