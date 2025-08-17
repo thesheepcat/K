@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import EmojiPickerButton from '@/components/ui/emoji-picker';
+import { detectMentionsInText, validateAndReturnPublicKey } from '@/utils/kaspaAddressUtils';
 
 interface ComposeBoxProps {
   onPost: (content: string) => void;
@@ -14,9 +15,34 @@ interface ComposeBoxProps {
 const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validatedMentions, setValidatedMentions] = useState<Array<{pubkey: string}>>([]);
   const { privateKey } = useAuth();
-  const { sendTransaction } = useKaspaTransactions();
+  const { sendTransaction, networkId } = useKaspaTransactions();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+
+  // Validate mentions whenever content changes
+  useEffect(() => {
+    const validateMentions = async () => {
+      const mentions = detectMentionsInText(content);
+      const validated: Array<{pubkey: string}> = [];
+      
+      for (const mention of mentions) {
+        const validPubkey = await validateAndReturnPublicKey(mention.pubkey);
+        if (validPubkey) {
+          validated.push({ pubkey: validPubkey });
+        }
+      }
+      
+      setValidatedMentions(validated);
+    };
+    
+    if (content.includes('@')) {
+      validateMentions();
+    } else {
+      setValidatedMentions([]);
+    }
+  }, [content, networkId]);
 
   const handleEmojiSelect = (emoji: string) => {
     const textarea = textareaRef.current;
@@ -41,12 +67,13 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
       try {
         setIsSubmitting(true);
         
-        // Send post transaction
+        // Send post transaction with mentioned public keys
+        const mentionedPubkeys = validatedMentions.map(m => m.pubkey);
         const result = await sendTransaction({
           privateKey: privateKey,
           userMessage: content,
           type: 'post',
-          mentionedPubkeys: [] // Empty array for posts as specified
+          mentionedPubkeys: mentionedPubkeys
         });
 
         // Show success toast with transaction details
@@ -90,13 +117,15 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
           */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start space-x-2">
-              <Textarea
-                ref={textareaRef}
-                placeholder="What's happening?"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="flex-1 min-h-10 sm:min-h-12 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-              />
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={textareaRef}
+                  placeholder="What's happening?"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="flex-1 min-h-10 sm:min-h-12 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                />
+              </div>
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
             <div className="flex justify-between items-center mt-2">

@@ -42,7 +42,7 @@ const UnlockSession: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-start justify-center pt-16 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <KaspaLogo className="h-20 w-20 mx-auto mb-4" />

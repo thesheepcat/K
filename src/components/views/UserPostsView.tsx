@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PostCard from '../general/PostCard';
@@ -19,7 +19,14 @@ const POLLING_INTERVAL = 5000; // 5 seconds
 
 const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onRepost }) => {
   const { userPubkey } = useParams<{ userPubkey: string }>();
+  const location = useLocation();
+  
+  // Handle pubkeys (decode URL encoding)
+  const userIdentifier = userPubkey ? decodeURIComponent(userPubkey) : '';
   const navigate = useNavigate();
+  
+  // Check if this navigation came from a mention click
+  const isFromMention = location.state?.fromMention === true;
   const { publicKey } = useAuth();
   const { fetchAndConvertMyPosts, selectedNetwork, networkId, apiBaseUrl } = useKaspaPostsApi();
   
@@ -46,7 +53,7 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
   // Use refs to store the latest values to avoid dependency issues
   const fetchFunctionRef = useRef(fetchAndConvertMyPosts);
   const publicKeyRef = useRef(publicKey);
-  const userPubkeyRef = useRef(userPubkey);
+  const userPubkeyRef = useRef(userIdentifier);
   const postsRef = useRef(posts);
   const nextCursorRef = useRef(nextCursor);
   const hasMoreRef = useRef(hasMore);
@@ -56,7 +63,7 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
   // Update refs when values change
   fetchFunctionRef.current = fetchAndConvertMyPosts;
   publicKeyRef.current = publicKey;
-  userPubkeyRef.current = userPubkey;
+  userPubkeyRef.current = userIdentifier;
   postsRef.current = posts;
   nextCursorRef.current = nextCursor;
   hasMoreRef.current = hasMore;
@@ -66,13 +73,13 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
   // Generate author info for display (same format as PostCard)
   useEffect(() => {
     const generateUserAuthorInfo = async () => {
-      if (userPubkey && networkId) {
-        const info = await generateAuthorInfo(userPubkey, publicKey ?? undefined, networkId);
+      if (userIdentifier && networkId) {
+        const info = await generateAuthorInfo(userIdentifier, publicKey ?? undefined, networkId);
         setAuthorInfo(info);
       }
     };
     generateUserAuthorInfo();
-  }, [userPubkey, networkId, publicKey]);
+  }, [userIdentifier, networkId, publicKey]);
 
 const loadUserPosts = useCallback(async (reset: boolean = true) => {
     if (!userPubkeyRef.current) return;
@@ -235,7 +242,7 @@ const loadMorePosts = useCallback(async () => {
   }, [loadMorePosts]);
 
   // Handle case where userPubkey is missing
-  if (!userPubkey) {
+  if (!userIdentifier) {
     return (
       <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border">
@@ -261,7 +268,8 @@ const loadMorePosts = useCallback(async () => {
   }
 
   // Get display info from generated author info
-  const isCurrentUser = publicKey === userPubkey;
+  // Check if this is the current user's profile
+  const isCurrentUser = publicKey === userIdentifier;
 
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
@@ -321,7 +329,13 @@ const loadMorePosts = useCallback(async () => {
           msOverflowStyle: 'none'
         }}
       >
-        {posts.length === 0 && !isLoading ? (
+        {/* Show only loading state when coming from mention click and still loading */}
+        {isFromMention && isLoading ? (
+          <div className="p-8 text-center">
+            <div className="w-8 h-8 border-2 border-transparent rounded-full animate-loader-circle mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading user posts...</p>
+          </div>
+        ) : posts.length === 0 && !isLoading ? (
           <div className="p-8 text-center text-muted-foreground">
             {isCurrentUser ? 'No posts found. Create your first post!' : 'This user has no posts yet.'}
           </div>
@@ -367,7 +381,7 @@ const loadMorePosts = useCallback(async () => {
           userNickname={authorInfo.nickname}
           onNavigateToUserPosts={
             // Show button if viewing another user's posts, hide if viewing own posts
-            !isCurrentUser ? () => navigate(`/user/${userPubkey}`) : undefined
+            !isCurrentUser ? () => navigate(`/user/${encodeURIComponent(userIdentifier)}`) : undefined
           }
         />
       )}
