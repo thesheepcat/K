@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import EmojiPickerButton from '@/components/ui/emoji-picker';
+import { detectMentionsInText, validateAndReturnPublicKey } from '@/utils/kaspaAddressUtils';
 
 interface ComposeReplyProps {
   onReply: (content: string) => void;
@@ -15,12 +16,36 @@ interface ComposeReplyProps {
   mentionedPubkeys: string[]; // Array of pubkeys to mention
 }
 
-const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replyingToUser, postId, mentionedPubkeys }) => {
+const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, mentionedPubkeys }) => {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validatedMentions, setValidatedMentions] = useState<Array<{pubkey: string}>>([]);
   const { privateKey } = useAuth();
-  const { sendTransaction } = useKaspaTransactions();
+  const { sendTransaction, networkId } = useKaspaTransactions();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Validate mentions whenever content changes
+  useEffect(() => {
+    const validateMentions = async () => {
+      const mentions = detectMentionsInText(content);
+      const validated: Array<{pubkey: string}> = [];
+      
+      for (const mention of mentions) {
+        const validPubkey = await validateAndReturnPublicKey(mention.pubkey);
+        if (validPubkey) {
+          validated.push({ pubkey: validPubkey });
+        }
+      }
+      
+      setValidatedMentions(validated);
+    };
+    
+    if (content.includes('@')) {
+      validateMentions();
+    } else {
+      setValidatedMentions([]);
+    }
+  }, [content, networkId]);
 
   const handleEmojiSelect = (emoji: string) => {
     const textarea = textareaRef.current;
@@ -45,13 +70,22 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
       try {
         setIsSubmitting(true);
         
+        // Combine original mentioned pubkeys with newly detected mentions
+        const allMentionedPubkeys = [
+          ...mentionedPubkeys,
+          ...validatedMentions.map(m => m.pubkey)
+        ];
+        
+        // Remove duplicates
+        const uniqueMentionedPubkeys = [...new Set(allMentionedPubkeys)];
+        
         // Send reply transaction
         const result = await sendTransaction({
           privateKey: privateKey,
           userMessage: content,
           type: 'reply',
           postId: postId,
-          mentionedPubkeys: mentionedPubkeys
+          mentionedPubkeys: uniqueMentionedPubkeys
         });
 
         // Show success toast with transaction details
@@ -95,9 +129,6 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, replying
   return (
     <Card className="border-0 border-t border-border bg-compose rounded-none">
       <CardContent className="p-3">
-        <div className="mb-2 text-sm text-muted-foreground">
-          Replying to <span className="text-info">@{replyingToUser}</span>
-        </div>
         <div className="flex space-x-2">
           {/* Removing avatar
           <Avatar className="h-8 w-8 rounded-none">

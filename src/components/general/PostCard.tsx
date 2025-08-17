@@ -36,6 +36,14 @@ const PostCard: React.FC<PostCardProps> = ({
 }) => {
   
   const navigate = useNavigate();
+  
+  const handleMentionClick = (pubkey: string) => {
+    // Navigate to user profile using the pubkey as identifier
+    // Pass state to indicate this is a mention click so UI can show loading state
+    navigate(`/user/${encodeURIComponent(pubkey)}`, { 
+      state: { fromMention: true } 
+    });
+  };
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
   const { privateKey } = useAuth();
@@ -202,7 +210,7 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
-            <LinkifiedText>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={handleMentionClick}>{displayContent}</LinkifiedText>
           </div>
           {isLongMessage && !isDetailView && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">

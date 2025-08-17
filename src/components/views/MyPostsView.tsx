@@ -274,7 +274,12 @@ const loadMorePosts = useCallback(async () => {
           msOverflowStyle: 'none'
         }}
       >
-        {posts.length === 0 && !isLoading ? (
+        {isLoading && posts.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="w-8 h-8 border-2 border-transparent rounded-full animate-loader-circle mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading posts...</p>
+          </div>
+        ) : posts.length === 0 && !isLoading ? (
           <div className="p-8 text-center text-muted-foreground">
             No posts found. Create your first post above!
           </div>

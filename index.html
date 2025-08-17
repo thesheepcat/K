@@ -25,6 +25,27 @@
         box-sizing: border-box;
       }
       
+      /* Dark theme styles for splash screen */
+      #initial-splash.dark-theme {
+        background: hsl(0, 0%, 8%);
+      }
+      
+      #initial-splash.dark-theme .splash-title {
+        color: hsl(0, 0%, 85%) !important;
+      }
+      
+      #initial-splash.dark-theme .splash-subtitle {
+        color: hsl(0, 0%, 64%) !important;
+      }
+      
+      #initial-splash.dark-theme .splash-dot {
+        background: hsl(0, 0%, 64%) !important;
+      }
+      
+      #initial-splash.dark-theme .cls-3 {
+        fill: hsl(0, 0%, 85%) !important;
+      }
+      
       #initial-splash * {
         box-sizing: border-box;
       }
@@ -183,6 +204,24 @@
         </div>
       </div>
     </div>
+    
+    <script>
+      // Apply theme immediately based on saved settings
+      (function() {
+        try {
+          const storedSettings = localStorage.getItem('kaspa_user_settings');
+          if (storedSettings) {
+            const settings = JSON.parse(storedSettings);
+            if (settings.theme === 'dark') {
+              document.getElementById('initial-splash').classList.add('dark-theme');
+              document.documentElement.setAttribute('data-theme', 'dark');
+            }
+          }
+        } catch (error) {
+          console.error('Error applying theme to splash screen:', error);
+        }
+      })();
+    </script>
     
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
