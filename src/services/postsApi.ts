@@ -235,7 +235,7 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
 
   // Convert unix timestamp to relative time string
   const now = Date.now();
-  const postTime = serverPost.timestamp * 1000; // Convert to milliseconds
+  const postTime = serverPost.timestamp; // Already in milliseconds
   const diffMs = now - postTime;
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
@@ -318,7 +318,7 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
 
   // Convert unix timestamp to relative time string
   const now = Date.now();
-  const postTime = serverUserPost.timestamp * 1000; // Convert to milliseconds
+  const postTime = serverUserPost.timestamp; // Already in milliseconds
   const diffMs = now - postTime;
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
@@ -516,7 +516,7 @@ export const fetchPostComments = async (postId: string, requesterPubkey: string,
  */
 const formatTimestamp = (timestamp: number): string => {
   const now = Date.now();
-  const postTime = timestamp * 1000; // Convert to milliseconds
+  const postTime = timestamp; // Already in milliseconds
   const diffMs = now - postTime;
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
