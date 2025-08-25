@@ -14,6 +14,7 @@ export interface TransactionOptions {
   postId?: string; // Required for replies and votes
   mentionedPubkeys?: string[]; // Array of pubkeys to mention
   vote?: 'upvote' | 'downvote'; // Required for vote type
+  mentionedPubkey?: string; // Single pubkey for vote transactions (author's pubkey)
   networkId?: string; // Optional network override, defaults to context network
 }
 
@@ -24,7 +25,7 @@ export interface TransactionResult {
 }
 
 export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {    
-    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, networkId: overrideNetworkId } = options;
+    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, networkId: overrideNetworkId } = options;
     
     try {
         // Ensure Kaspa SDK is loaded
@@ -135,15 +136,18 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}broadcast:${userPublicKey}:${messageSignature}:${userMessage}`;
         } else if (type === 'vote') {
-            // Format: k:1:vote:sender_pubkey:sender_signature:post_id:vote
+            // Format: k:1:vote:sender_pubkey:sender_signature:post_id:vote:mentioned_pubkey
             if (!postId) {
                 throw new Error('Post ID is required for votes');
             }
             if (!vote || (vote !== 'upvote' && vote !== 'downvote')) {
                 throw new Error('Valid vote type (upvote/downvote) is required for votes');
             }
-            // Sign the string: post_id:vote
-            signatureData = `${postId}:${vote}`;
+            if (!mentionedPubkey) {
+                throw new Error('Mentioned pubkey is required for votes');
+            }
+            // Sign the string: post_id:vote:mentioned_pubkey
+            signatureData = `${postId}:${vote}:${mentionedPubkey}`;
             
             messageSignature = signMessage({
                 message: signatureData, 
@@ -151,7 +155,7 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
                 noAuxRand: false
             });
             
-            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}vote:${userPublicKey}:${messageSignature}:${postId}:${vote}`;
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}vote:${userPublicKey}:${messageSignature}:${postId}:${vote}:${mentionedPubkey}`;
         } else {
             throw new Error(`Unsupported transaction type: ${type}`);
         }

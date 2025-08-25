@@ -180,7 +180,7 @@ sequenceDiagram
   Action: `vote`
   **Payload Format:**
   ```
-  k:1:vote:sender_pubkey:sender_signature:post_id:vote
+  k:1:vote:sender_pubkey:sender_signature:post_id:vote:mentioned_pubkey
   ```
 
 ### Field Descriptions- 
@@ -188,15 +188,16 @@ sequenceDiagram
   - `sender_signature`: Digital signature for consistency verification
   - `post_id`: The reference to the post being voted
   - `vote`: The value defining the user vote the content (upvote/downvote)
+  - `mentioned_pubkey`: The pubkey of the author of the post/reply being voted
  
 ### Example Usage
   ```
-  k:1:vote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:upvote
+  k:1:vote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:upvote:030f657a3c77eab35c8f3d8d7bcf4ee1ca3aac7f991d0e3abacdb17e3c5de3b2f7
   ```
 
 ---
 
-### ✅ Reposting user contents
+### ✅ Reposting user contents (confirmed but not yet implemented)
 - User A can setup his own account to:
   - Gets notified if someone repost its content (forwarding a post/reply);
 - User B can freely repost a User A content in it's own profile (whether he support User A or not);
