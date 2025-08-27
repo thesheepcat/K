@@ -69,18 +69,19 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **Replying to posts**: Engage in conversations
 - ✅ **Viewing network posts**: Browse all content shared by users
 - ✅ **Reply notifications**: See all replies involving you
+- ✅ **User mentions**: Tag other users in your posts
 - ✅ **Upvoting/Downvoting**: Community-driven content ranking
+- ✅ **Quoting**: Add commentary when sharing posts
 - ✅ **Indexer configuration**: Use local or public indexers for network data
 - ✅ **Node configuration**: Connect to local or public Kaspa nodes
+- ✅ **UI Themes**: Dark theme
 
 ### ❌ Future Features (not yet available)  
-- ❌ **UI Themes**: Dark theme
 - ❌ **Reposting**: Share others' content with your network
-- ❌ **Quoting**: Add commentary when sharing posts
-- ❌ **User mentions**: Tag other users in your posts
-- ❌ **Following/Unfollowing**: Curate your content feed
+- ❌ **Following/Unfollowing**: Manage your content feed
 - ❌ **User blocking**: Spam protection and content filtering
 - ❌ **User endorsements**: Promote and suggest other users
+- ❌ **User notifications**: User is notified when mentioned
 - ❌ **Historical data**: Access past user activity (indexer dependent)
 
 ---

@@ -68,7 +68,8 @@ const PostCard: React.FC<PostCardProps> = ({
         userMessage: '', // Empty message for votes
         type: 'vote' as any, // Cast as any since it's not in the official types yet
         postId: post.id,
-        vote: 'upvote'
+        vote: 'upvote',
+        mentionedPubkey: post.author.pubkey // Include the author's pubkey as per protocol specification
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
@@ -111,7 +112,8 @@ const PostCard: React.FC<PostCardProps> = ({
         userMessage: '', // Empty message for votes
         type: 'vote' as any, // Cast as any since it's not in the official types yet
         postId: post.id,
-        vote: 'downvote'
+        vote: 'downvote',
+        mentionedPubkey: post.author.pubkey // Include the author's pubkey as per protocol specification
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
