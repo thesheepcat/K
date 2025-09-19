@@ -11,6 +11,7 @@ import MyReplies from "./components/views/MyRepliesView.tsx";
 import Watching from "./components/views/WatchingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
+import BlockedUsersView from "./components/views/BlockedUsersView.tsx";
 import PostDetailView from "./components/views/PostDetailView.tsx";
 import UserPostsView from "./components/views/UserPostsView.tsx";
 import ProfileView from "./components/views/ProfileView.tsx";
@@ -27,6 +28,7 @@ const MainApp: React.FC = () => {
   const [watchingData, setWatchingData] = useState<Post[]>([]);
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
+  const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
   useEffect(() => {
     // Hide the static HTML splash screen and load Kaspa WASM
     const loadApp = async () => {
@@ -141,6 +143,10 @@ const MainApp: React.FC = () => {
     setUsersData(serverPosts);
   };
 
+  const handleBlockedUsersPostsUpdate = (serverPosts: Post[]) => {
+    setBlockedUsersData(serverPosts);
+  };
+
   
 
   const handlePost = (content: string) => {
@@ -210,15 +216,24 @@ const MainApp: React.FC = () => {
       />
     } 
   />
-          <Route 
-            path="/users" 
+          <Route
+            path="/users"
             element={
-              <UsersView 
+              <UsersView
                 posts={usersData}
                 onPost={handlePost}
                 onServerPostsUpdate={handleUsersPostsUpdate}
               />
-            } 
+            }
+          />
+          <Route
+            path="/blocked-users"
+            element={
+              <BlockedUsersView
+                posts={blockedUsersData}
+                onServerPostsUpdate={handleBlockedUsersPostsUpdate}
+              />
+            }
           />
           <Route 
             path="/post/:postId" 

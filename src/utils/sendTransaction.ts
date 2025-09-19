@@ -10,11 +10,13 @@ function encodeToBase64(text: string): string {
 export interface TransactionOptions {
   privateKey: string;
   userMessage: string;
-  type: 'post' | 'reply' | 'broadcast' | 'vote';
+  type: 'post' | 'reply' | 'broadcast' | 'vote' | 'block';
   postId?: string; // Required for replies and votes
   mentionedPubkeys?: string[]; // Array of pubkeys to mention
   vote?: 'upvote' | 'downvote'; // Required for vote type
   mentionedPubkey?: string; // Single pubkey for vote transactions (author's pubkey)
+  blockingAction?: 'block' | 'unblock'; // Required for block type
+  blockedUserPubkey?: string; // Required for block type
   networkId?: string; // Optional network override, defaults to context network
 }
 
@@ -24,8 +26,8 @@ export interface TransactionResult {
   feeKAS: string;
 }
 
-export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {    
-    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, networkId: overrideNetworkId } = options;
+export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {
+    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, blockingAction, blockedUserPubkey, networkId: overrideNetworkId } = options;
     
     try {
         // Ensure Kaspa SDK is loaded
@@ -156,6 +158,24 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             });
             
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}vote:${userPublicKey}:${messageSignature}:${postId}:${vote}:${mentionedPubkey}`;
+        } else if (type === 'block') {
+            // Format: k:1:block:sender_pubkey:sender_signature:blocking_action:blocked_user_pubkey
+            if (!blockingAction || (blockingAction !== 'block' && blockingAction !== 'unblock')) {
+                throw new Error('Valid blocking action (block/unblock) is required for block transactions');
+            }
+            if (!blockedUserPubkey) {
+                throw new Error('Blocked user pubkey is required for block transactions');
+            }
+            // Sign the string: blocking_action:blocked_user_pubkey
+            signatureData = `${blockingAction}:${blockedUserPubkey}`;
+
+            messageSignature = signMessage({
+                message: signatureData,
+                privateKey: privateKeyObject,
+                noAuxRand: false
+            });
+
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}block:${userPublicKey}:${messageSignature}:${blockingAction}:${blockedUserPubkey}`;
         } else {
             throw new Error(`Unsupported transaction type: ${type}`);
         }

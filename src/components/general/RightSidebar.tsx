@@ -88,8 +88,11 @@ const RightSidebar: React.FC = () => {
       const options = {
         limit: 5
       };
-      
-      const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+
+      if (!publicKeyRef.current) {
+        throw new Error('User not authenticated');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, options);
       
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -104,7 +107,7 @@ const RightSidebar: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchAndConvertUsers, publicKey]);
+  }, []);
 
   // Load users on component mount and when network or apiBaseUrl changes
   useEffect(() => {
@@ -121,8 +124,12 @@ const RightSidebar: React.FC = () => {
           const options = {
             limit: 5
           };
-          
-          const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+
+          if (!publicKeyRef.current) {
+            console.error('User not authenticated for polling');
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
           
           // Defensive check for response structure
           if (!response || !response.pagination) {

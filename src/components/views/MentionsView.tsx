@@ -17,8 +17,7 @@ const POLLING_INTERVAL = 5000; // 5 seconds
 const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepost, onServerPostsUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);  
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const { publicKey } = useAuth();
@@ -85,8 +84,6 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       }
-      
-      setLastFetchTime(new Date());
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch mentions';
       setError(errorMessage);
@@ -204,8 +201,6 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
               // Don't update pagination state as it would affect infinite scroll
             }
           }
-          
-          setLastFetchTime(new Date());
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch mentions';
           setError(errorMessage);
@@ -253,16 +248,6 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Mentions</h1>
-          <div className="flex items-center space-x-2">
-            {isLoading && (
-              <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
-            )}
-            {lastFetchTime && (
-              <span className="text-xs text-muted-foreground">
-                Updated: {lastFetchTime.toLocaleTimeString()}
-              </span>
-            )}
-          </div>
         </div>
         {error && (
           <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">

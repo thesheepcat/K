@@ -66,10 +66,10 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+        <div className={`flex-1 min-w-0 ${!post.content ? 'flex items-center' : ''}`}>
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
-              <span 
+              <span
                 className="font-bold text-foreground truncate hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -78,8 +78,8 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
               >
                 {post.author.name}
               </span>
-              <span 
-                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer" 
+              <span
+                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer"
                 title={post.author.username}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -91,9 +91,11 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
             </div>
             <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
           </div>
-          <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
-            <LinkifiedText>{post.content}</LinkifiedText>
-          </div>
+          {post.content && (
+            <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
+              <LinkifiedText>{post.content}</LinkifiedText>
+            </div>
+          )}
           {/* No interaction buttons (likes, reposts, replies) for Users view */}
         </div>
       </div>

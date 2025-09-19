@@ -1,11 +1,13 @@
 import { useCallback } from 'react';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
-import { 
-  fetchMyPosts, 
-  fetchFollowingPosts, 
+import {
+  fetchMyPosts,
+  fetchFollowingPosts,
   fetchWatchingPosts,
   fetchMentions,
   fetchUsers,
+  fetchBlockedUsers,
+  fetchUserDetails,
   fetchPostDetails,
   fetchPostReplies,
   fetchUserReplies,
@@ -136,9 +138,9 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
 
-  const fetchAndConvertUsers = useCallback(async (currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+  const fetchAndConvertUsers = useCallback(async (currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
     try {
-      const response = await fetchUsers(options, apiBaseUrl);
+      const response = await fetchUsers(currentUserPubkey, options, apiBaseUrl);
       
       // Defensive check for response structure
       if (!response) {
@@ -160,6 +162,38 @@ export const useKaspaPostsApi = () => {
       };
     } catch (error) {
       console.error('Error in fetchAndConvertUsers:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
+  const fetchAndConvertBlockedUsers = useCallback(async (currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      if (!currentUserPubkey) {
+        throw new Error('Current user public key is required for fetching blocked users');
+      }
+
+      const response = await fetchBlockedUsers(currentUserPubkey, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchBlockedUsers returned null/undefined response');
+        throw new Error('No response from fetchBlockedUsers');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchBlockedUsers response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, currentUserPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertBlockedUsers:', error);
       throw error;
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
@@ -273,23 +307,27 @@ export const useKaspaPostsApi = () => {
   }, [networkAwareConvertServerRepliesToClientPosts, apiBaseUrl]);
 
   // Create bound versions of the raw API functions with apiBaseUrl pre-filled
-  const boundFetchMyPosts = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchMyPosts = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) =>
     fetchMyPosts(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchFollowingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchFollowingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) =>
     fetchFollowingPosts(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchWatchingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchWatchingPosts = useCallback((requesterPubkey: string, options?: PaginationOptions) =>
     fetchWatchingPosts(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchMentions = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchMentions = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) =>
     fetchMentions(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchUsers = useCallback((options?: PaginationOptions) => 
-    fetchUsers(options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostDetails = useCallback((postId: string, requesterPubkey: string) => 
+  const boundFetchUsers = useCallback((requesterPubkey: string, options?: PaginationOptions) =>
+    fetchUsers(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchBlockedUsers = useCallback((requesterPubkey: string, options?: PaginationOptions) =>
+    fetchBlockedUsers(requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchUserDetails = useCallback((userPublicKey: string, requesterPubkey: string) =>
+    fetchUserDetails(userPublicKey, requesterPubkey, apiBaseUrl), [apiBaseUrl]);
+  const boundFetchPostDetails = useCallback((postId: string, requesterPubkey: string) =>
     fetchPostDetails(postId, requesterPubkey, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostReplies = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchPostReplies = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) =>
     fetchPostReplies(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchUserReplies = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchUserReplies = useCallback((userPublicKey: string, requesterPubkey: string, options?: PaginationOptions) =>
     fetchUserReplies(userPublicKey, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
-  const boundFetchPostComments = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) => 
+  const boundFetchPostComments = useCallback((postId: string, requesterPubkey: string, options?: PaginationOptions) =>
     fetchPostComments(postId, requesterPubkey, options, apiBaseUrl), [apiBaseUrl]);
 
   return {
@@ -299,6 +337,8 @@ export const useKaspaPostsApi = () => {
     fetchWatchingPosts: boundFetchWatchingPosts,
     fetchMentions: boundFetchMentions,
     fetchUsers: boundFetchUsers,
+    fetchBlockedUsers: boundFetchBlockedUsers,
+    fetchUserDetails: boundFetchUserDetails,
     fetchPostDetails: boundFetchPostDetails,
     fetchPostReplies: boundFetchPostReplies,
     fetchUserReplies: boundFetchUserReplies,
@@ -310,6 +350,7 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertWatchingPosts,
     fetchAndConvertMentions,
     fetchAndConvertUsers,
+    fetchAndConvertBlockedUsers,
     fetchAndConvertPostDetails,
     fetchAndConvertPostReplies,
     fetchAndConvertUserReplies,

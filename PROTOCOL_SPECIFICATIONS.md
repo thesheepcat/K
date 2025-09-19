@@ -131,7 +131,7 @@ k:1:post:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0
 
 ---
 
-### ❌ Mentioning other users in posts or replies (not yet completed)
+### ✅ Mentioning other users in posts or replies
 - User A can setup his own account to:
   - Allow all users to mention him;
   - Allow only user who support him to to mention him;
@@ -197,7 +197,7 @@ sequenceDiagram
 
 ---
 
-### ✅ Reposting user contents (confirmed but not yet implemented)
+### ⚠️ Reposting user contents (confirmed but not yet implemented)
 - User A can setup his own account to:
   - Gets notified if someone repost its content (forwarding a post/reply);
 - User B can freely repost a User A content in it's own profile (whether he support User A or not);
@@ -239,6 +239,37 @@ k:1:repost:sender_pubkey:sender_signature:post_id
   k:1:repost:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942
   ```
 
+---
+
+### ✅ Blocking users
+- Even if User B follow or support User A, User A can freely decide to block User B, blocking notifications related to all main actions (replies, mentions, reposts, quotes);
+- User B can freely mention User A and reply, reposts and quote User A contents but User A will never be notified about these actions.
+
+
+ ```mermaid
+  sequenceDiagram
+    actor A as Alice (front-end)
+    A->>Alice Kaspa node: I want to block Bob!
+    Alice Kaspa node->>Alice's indexer: I want to block Bob!
+    Alice's indexer->>A: Bob is blocked!
+```
+**Protocol Specifications**
+  Action: `block`
+  **Payload Format:**
+  ```
+  k:1:block:sender_pubkey:sender_signature:blocking_action:blocked_user_pubkey
+  ```
+
+### Field Descriptions- 
+  - `sender_pubkey`: The public key of the message sender
+  - `sender_signature`: Digital signature for consistency verification
+  - `blocking_action`: The value defining the blocking action (block/unblock)
+  - `blocked_user_pubkey`: The pubkey of the user being blocked/unblocked
+ 
+### Example Usage
+  ```
+  k:1:block:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:block:030f657a3c77eab35c8f3d8d7bcf4ee1ca3aac7f991d0e3abacdb17e3c5de3b2f7
+  ```
 ---
 
 ### ❌ Watching a user (not yet confirmed)
@@ -356,25 +387,5 @@ k:1:support:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I s
 - `message`: The message to post when supporting someone
 - `recipient_pubkey`: The pubkey of the user being supported
 
-
----
-
-
-### ❌ Blocking users (not yet confirmed)
-- Even if User B follow or support User A, User A can freely decide to block User B, blocking notifications related to all main actions (replies, mentions, reposts, quotes);
-- User B can freely mention User A and reply, reposts and quote User A contents but User A will never be notified about these actions.
-
-
- ```mermaid
-sequenceDiagram
-    actor A as Alice (front-end)
-    A->>Alice's indexer: I want to block Bob!
-    participant Alice Kaspa node
-    participant Bob Kaspa node
-    actor B as Bob (front-end)
-    B->>Bob Kaspa node: I'm trying to reply to Alice's post!
-    Bob Kaspa node-->>Alice Kaspa node: I'm trying to reply to Alice's post!
-    Alice Kaspa node->>Alice's indexer: I'm trying to reply Alice's post!
-```
 
 ---

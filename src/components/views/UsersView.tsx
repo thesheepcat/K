@@ -21,7 +21,6 @@ const UsersView: React.FC<UsersViewProps> = ({ posts, onPost, onServerPostsUpdat
     const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
 
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -57,8 +56,11 @@ const loadUsers = useCallback(async (reset: boolean = true) => {
         limit: 10,
         ...(reset ? {} : { before: nextCursorRef.current })
       };
-      
-      const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+
+      if (!publicKeyRef.current) {
+        throw new Error('User not authenticated');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, options);
       
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -77,8 +79,6 @@ const loadUsers = useCallback(async (reset: boolean = true) => {
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       }
-      
-      setLastFetchTime(new Date());
     } catch (error) {
       console.error('Error loading users:', error);
       setError(error instanceof Error ? error.message : 'Failed to load users');
@@ -127,8 +127,12 @@ const loadMoreUsers = useCallback(async () => {
           const options = {
             limit: 10
           };
-          
-          const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+
+          if (!publicKeyRef.current) {
+            console.error('User not authenticated for polling');
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
           
           // Defensive check for response structure
           if (!response || !response.pagination) {
@@ -182,8 +186,6 @@ const loadMoreUsers = useCallback(async () => {
               // Don't update pagination state as it would affect infinite scroll
             }
           }
-          
-          setLastFetchTime(new Date());
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
           setError(errorMessage);
@@ -230,16 +232,6 @@ const loadMoreUsers = useCallback(async () => {
         <div className="p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">Users</h1>
-            <div className="flex items-center space-x-2">
-              {isLoading && (
-                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
-              )}
-              {lastFetchTime && (
-                <span className="text-xs text-muted-foreground hidden sm:inline">
-                  Updated: {lastFetchTime.toLocaleTimeString()}
-                </span>
-              )}
-            </div>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
