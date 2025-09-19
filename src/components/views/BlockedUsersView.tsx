@@ -55,7 +55,11 @@ const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
         ...(reset ? {} : { before: nextCursorRef.current })
       };
 
-      const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+
+      if (!publicKeyRef.current) {
+        throw new Error('User not authenticated');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, options);
 
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -68,8 +72,16 @@ const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       } else {
-        // Append new posts to existing ones
-        const updatedPosts = [...postsRef.current, ...(response.posts || [])];
+        // Append new posts to existing ones, filtering out duplicates
+        const existingPostIds = new Set(postsRef.current.map(post => post.id));
+        const newPosts = (response.posts || []).filter(post => !existingPostIds.has(post.id));
+
+        // If no new posts were found but API says there are more, we might be in a duplicate situation
+        if (newPosts.length === 0 && response.pagination.hasMore) {
+          console.warn('No new posts found despite hasMore=true, possible duplicate API response');
+        }
+
+        const updatedPosts = [...postsRef.current, ...newPosts];
         onServerPostsUpdateRef.current(updatedPosts);
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
@@ -123,7 +135,11 @@ const loadMoreBlockedUsers = useCallback(async () => {
             limit: 10
           };
 
-          const response = await fetchFunctionRef.current(publicKeyRef.current || undefined, options);
+          if (!publicKeyRef.current) {
+            console.error('User not authenticated for polling');
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
 
           // Defensive check for response structure
           if (!response || !response.pagination) {
@@ -202,7 +218,10 @@ const loadMoreBlockedUsers = useCallback(async () => {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-      const shouldLoadMore = distanceFromBottom < 300; // Load when within 300px of bottom
+
+      // Check if content doesn't fill the container (no scrollable area) or if near bottom
+      const contentTooShort = scrollHeight <= clientHeight;
+      const shouldLoadMore = contentTooShort || distanceFromBottom < 300;
 
       if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
         loadMoreBlockedUsers();
@@ -211,10 +230,32 @@ const loadMoreBlockedUsers = useCallback(async () => {
 
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
 
+    // Note: Height check moved to separate effect that triggers when posts change
+
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
   }, [loadMoreBlockedUsers]);
+
+  // Check if content fills container whenever posts change
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || posts.length === 0) return;
+
+    const checkContentHeight = () => {
+      const { scrollHeight, clientHeight } = scrollContainer;
+      const needsMoreContent = scrollHeight <= clientHeight + 50;
+
+      if (needsMoreContent && hasMoreRef.current && !isLoadingMoreRef.current) {
+        loadMoreBlockedUsers();
+      }
+    };
+
+    // Check after a delay to allow for DOM updates
+    const timeoutId = setTimeout(checkContentHeight, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [posts, loadMoreBlockedUsers]);
 
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
