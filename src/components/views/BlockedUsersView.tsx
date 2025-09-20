@@ -9,7 +9,7 @@ interface BlockedUsersViewProps {
   onServerPostsUpdate: (posts: Post[]) => void;
 }
 
-const POLLING_INTERVAL = 5000; // 5 seconds
+const POLLING_INTERVAL = 10000; // 10 seconds
 
 const BlockedUsersView: React.FC<BlockedUsersViewProps> = ({ posts, onServerPostsUpdate }) => {
       const { publicKey } = useAuth();
@@ -295,6 +295,13 @@ const loadMoreBlockedUsers = useCallback(async () => {
               <UserPostCard
                 key={post.id}
                 post={post}
+                showUnblockButton={true}
+                onUnblock={(userPubkey) => {
+                  // Optimistically remove the user from the blocked list
+                  // The real update will come from the next polling cycle
+                  const updatedPosts = posts.filter(p => p.author.pubkey !== userPubkey);
+                  onServerPostsUpdate(updatedPosts);
+                }}
               />
             ))}
 
