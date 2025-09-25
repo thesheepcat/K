@@ -205,7 +205,8 @@ These fields are populated when users have shared profile information through br
       "isUpvoted": false,
       "isDownvoted": false,
       "userNickname": "QWxpY2U=",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false
     }
   ],
   "pagination": {
@@ -270,7 +271,8 @@ These fields are populated when users have shared profile information through br
       "isUpvoted": false,
       "isDownvoted": false,
       "userNickname": "Q2FybA==",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false
     }
   ],
   "pagination": {
@@ -284,13 +286,14 @@ These fields are populated when users have shared profile information through br
 **Note:** This endpoint returns posts and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
 ### 4. Get Users
-Fetch user introduction posts with pagination support:
+Fetch user introduction posts with pagination support and blocked users awareness:
 
 ```bash
-curl "http://localhost:3000/get-users?limit=10"
+curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
 ```
 
 **Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
 - `limit` (required): Number of user posts to return (max: 100, min: 1)
 - `before` (optional): Return user posts created before this timestamp (for pagination to older posts)
 - `after` (optional): Return user posts created after this timestamp (for fetching newer posts)
@@ -306,7 +309,18 @@ curl "http://localhost:3000/get-users?limit=10"
       "signature": "3045022100d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d20220333435363738393031323334353637383930313233343536373839303132333435",
       "timestamp": 1703190000,
       "userNickname": "QWxpY2U=",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false
+    },
+    {
+      "id": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+      "userPublicKey": "03456def789012345678901234567890123456789012345678901234567890abcd",
+      "postContent": "KioqKioqKioqKg==",
+      "signature": "304502210098765432109876543210987654321098765432109876543210987654321098765020200fedcba0987654321fedcba0987654321fedcba0987654321fedcba098765432109",
+      "timestamp": 1703185000,
+      "userNickname": "Qm9i",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": true
     }
   ],
   "pagination": {
@@ -322,9 +336,121 @@ curl "http://localhost:3000/get-users?limit=10"
   - `parentPostId` (user introductions are not replies)
   - `mentionedPubkeys` (user introductions don't mention other users)
 
+**Blocked Users Awareness:**
+- `blockedUser`: Boolean field indicating if the user is blocked by the requester
+- For blocked users, `postContent` will show masked content (`"KioqKioqKioqKg=="` - Base64 encoded "**********")
+- The requester's own posts will never be marked as blocked (`blockedUser: false`)
+- This allows client applications to filter or style blocked users' content appropriately
+
+**Database Query Logic:**
+This endpoint performs a LEFT JOIN between `k_broadcasts` and `k_blocks` tables:
+1. Fetches all user introduction posts from `k_broadcasts`
+2. Checks if each user is blocked by the requester via LEFT JOIN with `k_blocks`
+3. Returns all posts with blocking status information
+
 This endpoint is specifically designed for displaying user introduction posts with a character limit of 100 characters.
 
-### 5. Get User Posts
+### 5. Get User Details
+Fetch detailed information for a specific user including their introduction post and block status:
+
+```bash
+curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&requesterPubkey=03ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd"
+```
+
+**Query Parameters:**
+- `user` (required): User's public key (66-character hex string with 02/03 prefix)
+- `requesterPubkey` (required): Public key of the user requesting the details (66-character hex string with 02/03 prefix)
+
+**Response:**
+```json
+{
+  "id": "u1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+  "userPublicKey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
+  "postContent": "SGkgZXZlcnlvbmUhIEknbSBhIEthc3BhIGVudGh1c2lhc3QgYW5kIGRldmVsb3Blci4=",
+  "signature": "3045022100d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d20220333435363738393031323334353637383930313233343536373839303132333435",
+  "timestamp": 1703190000,
+  "userNickname": "QWxpY2U=",
+  "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+  "blockedUser": false
+}
+```
+
+**Response Fields:**
+- `id`: Transaction ID of the user's introduction post
+- `userPublicKey`: The user's public key
+- `postContent`: Base64 encoded introduction message
+- `signature`: User's signature for the introduction post
+- `timestamp`: Unix timestamp when the introduction was posted
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+- `blockedUser`: Boolean indicating whether the requester has blocked this user
+
+**Block Status Logic:**
+The `blockedUser` field indicates whether the requesting user (`requesterPubkey`) has blocked the target user (`user`). This is determined by checking the `k_blocks` table for records where:
+- `sender_pubkey` = `requesterPubkey` (the requester did the blocking)
+- `blocked_user_pubkey` = `user` (the target user was blocked)
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `404 Not Found`: User not found (no introduction post exists)
+- `429 Too Many Requests`: Rate limit exceeded
+
+**Note:** This endpoint returns the same data structure as the `get-users` endpoint but for a single specific user, with the addition of the `blockedUser` field. Unlike the paginated `get-users` endpoint, this returns a single user object directly (not wrapped in a `posts` array with pagination metadata).
+
+### 6. Get Blocked Users
+Fetch a paginated list of users blocked by the requester:
+
+```bash
+curl "http://localhost:3000/get-blocked-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the blocked users list (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of blocked users to return (max: 100, min: 1)
+- `before` (optional): Return blocked users created before this timestamp (for pagination to older blocked users)
+- `after` (optional): Return blocked users created after this timestamp (for fetching newer blocked users)
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "b1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+      "userPublicKey": "03456def789012345678901234567890123456789012345678901234567890abcd",
+      "postContent": "SGVsbG8sIEknbSBhIGRldmVsb3BlciBpbnRlcmVzdGVkIGluIGJsb2NrY2hhaW4=",
+      "signature": "304502210098765432109876543210987654321098765432109876543210987654321098765020200fedcba0987654321fedcba0987654321fedcba0987654321fedcba098765432109",
+      "timestamp": 1703185000,
+      "userNickname": "Qm9i",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": true
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1703184000",
+    "prevCursor": "1703186000"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of blocked user objects, each containing the same data as the `get-users` endpoint
+- `pagination`: Standard pagination metadata for navigating through the results
+- `blockedUser`: Always `true` for all users in this response (since they are blocked by the requester)
+
+**Database Query Logic:**
+This endpoint performs an INNER JOIN between `k_blocks` and `k_broadcasts` tables:
+1. Finds all records in `k_blocks` where `sender_pubkey` = `requesterPubkey`
+2. Joins with `k_broadcasts` to get user profile data for each `blocked_user_pubkey`
+3. Returns the broadcast/profile information for all blocked users
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+**Note:** This endpoint returns users in the order they were blocked (most recent blocks first). The response format matches `get-users` with pagination support, but includes only users that have been blocked by the requesting user.
+
+### 7. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
@@ -364,7 +490,8 @@ These fields are populated when users have shared profile information through br
       "isUpvoted": false,
       "isDownvoted": true,
       "userNickname": "Sm9obg==",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false
     }
   ],
   "pagination": {
@@ -391,7 +518,7 @@ These fields are populated when users have shared profile information through br
   // Result: "Hello 世界 🌍"
   ```
 
-### 6. Get Post Replies
+### 8. Get Post Replies
 Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
@@ -444,7 +571,8 @@ Exactly one of `post` or `user` must be provided, but not both.
       "isUpvoted": true,
       "isDownvoted": false,
       "userNickname": "Qm9i",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false
     }
   ],
   "pagination": {
@@ -455,7 +583,7 @@ Exactly one of `post` or `user` must be provided, but not both.
 }
 ```
 
-### 7. Get Post Details
+### 9. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
@@ -491,7 +619,8 @@ These fields are populated when users have shared profile information through br
     "isUpvoted": true,
     "isDownvoted": false,
     "userNickname": "Sm9obg==",
-    "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+    "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+    "blockedUser": false
   }
 }
 ```
@@ -635,7 +764,7 @@ All IDs are 32-byte cryptographic hashes represented as 64-character hexadecimal
 - These fields are mutually exclusive (only one can be `true` at a time)
 - If the user hasn't voted on the post/reply, both fields will be `false`
 - The backend must query the voting database using `requesterPubkey` and post `id` to determine these values
-- All APIs now require `requesterPubkey` parameter except `get-users` (user introductions don't support voting)
+- All APIs now require `requesterPubkey` parameter for voting status and blocked users awareness
 
 **APIs that now include voting status:**
 - `get-post-details`
@@ -644,6 +773,18 @@ All IDs are 32-byte cryptographic hashes represented as 64-character hexadecimal
 - `get-posts-watching`
 - `get-mentions`
 - `get-replies`
+
+**APIs that include blocked users awareness:**
+- `get-post-details`
+- `get-posts`
+- `get-posts-following`
+- `get-posts-watching`
+- `get-mentions`
+- `get-replies`
+- `get-users`
+- `get-user-details`
+
+**Note:** `get-users` includes blocked users awareness but not voting status (user introductions don't support voting).
 
 ### Post IDs
 All post and reply IDs should be 32-byte cryptographic hashes represented as 64-character hexadecimal strings. These IDs are derived from the transaction data and ensure uniqueness across the system.

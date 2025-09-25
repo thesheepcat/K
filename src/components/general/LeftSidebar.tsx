@@ -1,4 +1,4 @@
-import { User, Settings, MessageSquareQuote, MessageSquareReply, ScanEye, Users, LogOut, AtSign } from 'lucide-react';
+import { User, Settings, MessageSquareQuote, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +26,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
     //{ icon: Bell, label: 'Notifications', path: '/notifications' },
     
     { icon: Users, label: 'Users', path: '/users' },
+    { icon: UserX, label: 'Blocked', path: '/blocked-users' },
     //{ icon: UserCheck, label: 'Promoted users', path: '/promoted' },
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: Settings, label: 'Settings', path: '/settings' },

@@ -1,27 +1,38 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { truncateKaspaAddress } from "@/utils/postUtils";
 import { LinkifiedText } from '@/utils/linkUtils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
+import { toast } from 'sonner';
 
 interface UserPostCardProps {
   post: Post;
   isDetailView?: boolean;
   isComment?: boolean;
   onClick?: () => void;
+  showUnblockButton?: boolean;
+  onUnblock?: (userPubkey: string) => void;
 }
 
-const UserPostCard: React.FC<UserPostCardProps> = ({ 
-  post, 
-  isDetailView = false, 
-  isComment = false, 
-  onClick
+const UserPostCard: React.FC<UserPostCardProps> = ({
+  post,
+  isDetailView = false,
+  isComment = false,
+  onClick,
+  showUnblockButton = false,
+  onUnblock
 }) => {
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
+  const [isSubmittingUnblock, setIsSubmittingUnblock] = useState(false);
+  const { privateKey } = useAuth();
+  const { sendTransaction } = useKaspaTransactions();
   
   // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
@@ -29,6 +40,50 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   
   // Use profile image if available, otherwise use generated avatar
   const displayAvatar = post.author.avatar || jdenticonAvatar;
+
+  const handleUnblock = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!privateKey || !post.author.pubkey || isSubmittingUnblock) return;
+
+    try {
+      setIsSubmittingUnblock(true);
+
+      // Send unblock transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for blocking actions
+        type: 'block' as any, // Cast as any since it's a new type
+        blockingAction: 'unblock',
+        blockedUserPubkey: post.author.pubkey
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success('Unblock transaction successful!', {
+          description: (
+            <div className="space-y-1">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+            </div>
+          ),
+          duration: 5000,
+        });
+
+        // Call the callback to notify parent component
+        if (onUnblock) {
+          onUnblock(post.author.pubkey);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting unblock:', error);
+      toast.error('Error submitting unblock', {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingUnblock(false);
+    }
+  };
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -66,10 +121,10 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
             {post.author.name.split(' ').map(n => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+        <div className={`flex-1 min-w-0 ${!post.content ? 'flex items-center' : ''}`}>
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
-              <span 
+              <span
                 className="font-bold text-foreground truncate hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -78,8 +133,8 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
               >
                 {post.author.name}
               </span>
-              <span 
-                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer" 
+              <span
+                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer"
                 title={post.author.username}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -89,11 +144,29 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                 @{truncateKaspaAddress(post.author.username)}
               </span>
             </div>
-            <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
+            <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
+              <span className="text-muted-foreground text-xs sm:text-sm">{post.timestamp}</span>
+              {showUnblockButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isSubmittingUnblock || !privateKey}
+                  onClick={handleUnblock}
+                  className="rounded-none text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  {isSubmittingUnblock ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
+                  ) : null}
+                  Unblock
+                </Button>
+              )}
+            </div>
           </div>
-          <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
-            <LinkifiedText>{post.content}</LinkifiedText>
-          </div>
+          {post.content && (
+            <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
+              <LinkifiedText>{post.content}</LinkifiedText>
+            </div>
+          )}
           {/* No interaction buttons (likes, reposts, replies) for Users view */}
         </div>
       </div>

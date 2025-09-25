@@ -19,7 +19,6 @@ const MyReplies: React.FC<MyRepliesProps> = ({ posts, onUpVote, onDownVote, onRe
   const { fetchAndConvertUserReplies, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -80,8 +79,6 @@ const loadPosts = useCallback(async (reset: boolean = true) => {
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       }
-      
-      setLastFetchTime(new Date());
     } catch (error) {
       console.error('Error loading replies:', error);
       setError(error instanceof Error ? error.message : 'Failed to load replies');
@@ -194,8 +191,6 @@ const loadMorePosts = useCallback(async () => {
               // Don't update pagination state as it would affect infinite scroll
             }
           }
-          
-          setLastFetchTime(new Date());
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch replies';
           setError(errorMessage);
@@ -245,16 +240,6 @@ const loadMorePosts = useCallback(async () => {
         <div className="p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">My replies</h1>
-            <div className="flex items-center space-x-2">
-              {isLoading && (
-                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
-              )}
-              {lastFetchTime && (
-                <span className="text-xs text-muted-foreground hidden sm:inline">
-                  Updated: {lastFetchTime.toLocaleTimeString()}
-                </span>
-              )}
-            </div>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">

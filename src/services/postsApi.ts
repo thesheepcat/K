@@ -175,14 +175,17 @@ export const fetchMentions = async (userPublicKey: string, requesterPubkey: stri
 /**
  * Fetch users from the server with pagination
  */
-export const fetchUsers = async (options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+export const fetchUsers = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-users`);
-    
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
     // Limit is mandatory for paginated endpoints
     const limit = options?.limit || 10; // Default to 10 if not provided
     url.searchParams.append('limit', limit.toString());
-    
+
     // Before and after are optional
     if (options?.before) {
       url.searchParams.append('before', options.before);
@@ -206,6 +209,47 @@ export const fetchUsers = async (options?: PaginationOptions, apiBaseUrl: string
     return data;
   } catch (error) {
     console.error('Error fetching paginated users:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch blocked users from the server with pagination
+ */
+export const fetchBlockedUsers = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-blocked-users`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching paginated blocked users:', error);
     throw error;
   }
 };
@@ -376,15 +420,56 @@ export const convertServerUserPostsToClientPosts = async (serverUserPosts: Serve
 };
 
 /**
+ * Fetch details for a specific user
+ */
+export const fetchUserDetails = async (userPublicKey: string, requesterPubkey: string, apiBaseUrl: string = 'http://localhost:3000'): Promise<{
+  id: string;
+  userPublicKey: string;
+  postContent: string;
+  signature: string;
+  timestamp: number;
+  userNickname?: string;
+  userProfileImage?: string;
+  blockedUser: boolean;
+}> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-user-details`);
+
+    // User parameter is mandatory
+    url.searchParams.append('user', userPublicKey);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user details: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch details for a specific post/reply
  */
 export const fetchPostDetails = async (postId: string, requesterPubkey: string, apiBaseUrl: string = 'http://localhost:3000'): Promise<{ post: ServerPost }> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-post-details`);
-    
+
     // Post ID parameter is mandatory
     url.searchParams.append('id', postId);
-    
+
     // Requester pubkey parameter is mandatory
     url.searchParams.append('requesterPubkey', requesterPubkey);
 
