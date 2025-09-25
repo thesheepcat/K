@@ -152,7 +152,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   size="sm"
                   disabled={isSubmittingUnblock || !privateKey}
                   onClick={handleUnblock}
-                  className="rounded-none text-foreground border-border hover:bg-muted hover:text-foreground"
+                  className="rounded-none text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
                   {isSubmittingUnblock ? (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>

@@ -436,8 +436,8 @@ const loadMorePosts = useCallback(async () => {
                       onClick={handleBlock}
                       className={`rounded-none ${
                         userDetails?.blockedUser
-                          ? 'text-foreground border-border hover:bg-muted hover:text-foreground'
-                          : 'text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground'
+                          ? 'text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground'
+                          : 'text-foreground border-border hover:bg-muted hover:text-foreground'
                       }`}
                     >
                       {isSubmittingBlock ? (
