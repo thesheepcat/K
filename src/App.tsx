@@ -10,6 +10,7 @@ import MyPosts from "./components/views/MyPostsView.tsx";
 import MyReplies from "./components/views/MyRepliesView.tsx";
 import Watching from "./components/views/WatchingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
+import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
 import BlockedUsersView from "./components/views/BlockedUsersView.tsx";
 import PostDetailView from "./components/views/PostDetailView.tsx";
@@ -204,17 +205,21 @@ const MainApp: React.FC = () => {
       />
     } 
   />
-  <Route 
-    path="/mentions" 
+  <Route
+    path="/mentions"
     element={
-      <Mentions 
+      <Mentions
         posts={mentionsData}
         onUpVote={handleUpVote}
         onDownVote={handleDownVote}
         onRepost={handleRepost}
         onServerPostsUpdate={handleMentionsPostsUpdate}
       />
-    } 
+    }
+  />
+  <Route
+    path="/notifications"
+    element={<NotificationsView />}
   />
           <Route
             path="/users"

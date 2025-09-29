@@ -75,13 +75,13 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **Indexer configuration**: Use local or public indexers for network data
 - ✅ **Node configuration**: Connect to local or public Kaspa nodes
 - ✅ **UI Themes**: Dark theme
+- ✅ **User blocking**: Spam protection and content filtering
+- ✅ **User notifications**: User is notified when mentioned
 
 ### ❌ Future Features (not yet available)  
 - ❌ **Reposting**: Share others' content with your network
 - ❌ **Following/Unfollowing**: Manage your content feed
-- ❌ **User blocking**: Spam protection and content filtering
 - ❌ **User endorsements**: Promote and suggest other users
-- ❌ **User notifications**: User is notified when mentioned
 - ❌ **Historical data**: Access past user activity (indexer dependent)
 
 ---
