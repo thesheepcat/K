@@ -18,6 +18,10 @@ export const getDefaultApiUrl = (): string => {
   return 'http://localhost:3000';
 };
 
+export const getApiBaseUrl = (): string => {
+  return getDefaultApiUrl();
+};
+
 export const isValidApiUrl = (url: string): boolean => {
   try {
     // Allow relative paths

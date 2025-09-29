@@ -29,6 +29,12 @@ The K webapp API provides the following endpoints for social media functionality
 7. **`get-post-details`** - Retrieve details for a specific post
    - Scope: Fetch complete details for a single post or reply with voting status
 
+8. **`get-notifications-count`** - Count notifications for a user
+   - Scope: Get the total count of unread notifications (posts, replies, and votes that mention the user)
+
+9. **`get-notifications`** - Retrieve notifications for a user
+   - Scope: Fetch paginated notifications including posts, replies, and votes mentioning the user with full details
+
 ## General Pagination Rules
 
 The API uses cursor-based pagination for efficient handling of large datasets. Pagination is implemented across all major endpoints.
@@ -940,6 +946,174 @@ The webapp polls different endpoints at different intervals:
 - **Post Details**: Polls main post details every 5 seconds for updated interaction counts, replies loaded on-demand
 
 All polling is automatic and includes loading indicators and error handling.
+
+### 10. Get Notifications Count
+Get the total count of notifications for a user, optionally filtered by cursor timestamp:
+
+```bash
+# Get total notification count for a user
+curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"
+
+# Get notification count since a specific cursor (for new notifications)
+curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&after=1758377365603_571321"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the notification count (66-character hex string with 02/03 prefix)
+- `after` (optional): Compound cursor in format `timestamp_id` (e.g., `1758377365603_571321`) - when provided, returns count of notifications after this cursor position
+
+**Response:**
+```json
+{
+  "count": 42
+}
+```
+
+**Use Cases:**
+- Display notification badge count in the UI
+- Check for new notifications since last visit
+- Determine if notifications panel should show an indicator
+- Real-time polling to update notification indicators
+
+**Implementation Details:**
+- Counts all mentions of the user in `k_mentions` table across content types: 'post', 'reply', and 'vote'
+- When `after` cursor is provided, only counts notifications after that cursor position (using compound cursor format `timestamp_id`)
+- Excludes notifications from blocked users (checks `k_blocks` table)
+- Returns simple integer count for efficient UI updates
+
+### 11. Get Notifications
+Fetch paginated notifications for a user including posts, replies, and votes mentioning them:
+
+```bash
+# Get first page of notifications (latest 10)
+curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+
+# Get next page (older notifications)
+curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
+
+# Check for newer notifications
+curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting notifications (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of notifications to return (max: 100, min: 1)
+- `before` (optional): Return notifications before this timestamp (for pagination to older notifications)
+- `after` (optional): Return notifications after this timestamp (for fetching newer notifications)
+
+**Response:**
+```json
+{
+  "notifications": [
+    {
+      "id": "9a9ac8900065bc858b762e0ae379bdf9286a42d571159af260925158a2c80ca3",
+      "userPublicKey": "03f56f6ad1c1166e330fb2897ae60afcb25afa10006212cfee24264c04d21bce60",
+      "postContent": "",
+      "timestamp": 1758996519522,
+      "userNickname": "VGhlIEtpbmc=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "contentType": "vote",
+      "cursor": "1758996519522_571321",
+      "voteType": "downvote",
+      "mentionBlockTime": 1758996519522,
+      "contentId": "d2ed33d371322d9033ec27e93a7cbdb47613d703465f0f7a9b58f5a1afa01c4d",
+      "votedContent": "R29vZCBtb3JuaW5nIEthc3BhIGZhbWlseSEgIPCfmoDwn5qA8J+agPCfmoDwn5qA"
+    },
+    {
+      "id": "65c7023a6c90274dbb4b7405a7f21b8be0d8fa6f14632a02581fa8fa7f1aec0c",
+      "userPublicKey": "03f56f6ad1c1166e330fb2897ae60afcb25afa10006212cfee24264c04d21bce60",
+      "postContent": "WWVzLCBzdXJlIQ==",
+      "timestamp": 1758996486131,
+      "userNickname": "VGhlIEtpbmc=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "contentType": "reply",
+      "cursor": "1758996486131_571322",
+      "voteType": null,
+      "mentionBlockTime": null,
+      "contentId": null,
+      "votedContent": null
+    },
+    {
+      "id": "d6cdd0ffe9eb693f522da4ed1cadf7f6f7369b73881158391540dea18c5a591e",
+      "userPublicKey": "03f56f6ad1c1166e330fb2897ae60afcb25afa10006212cfee24264c04d21bce60",
+      "postContent": "SSdtIHRyeWluZyBpdCE=",
+      "timestamp": 1758985495931,
+      "userNickname": "VGhlIEtpbmc=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "contentType": "post",
+      "cursor": "1758985495931_571323",
+      "voteType": null,
+      "mentionBlockTime": null,
+      "contentId": null,
+      "votedContent": null
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1758985000",
+    "prevCursor": "1758997000"
+  }
+}
+```
+
+**Notification Types:**
+
+1. **Post Notifications** (`contentType: "post"`):
+   - When someone mentions the user in an original post
+   - `postContent`: Base64 encoded post content
+   - Vote-specific fields are `null`
+
+2. **Reply Notifications** (`contentType: "reply"`):
+   - When someone mentions the user in a reply
+   - `postContent`: Base64 encoded reply content
+   - Vote-specific fields are `null`
+
+3. **Vote Notifications** (`contentType: "vote"`):
+   - When someone votes on content that mentions the user
+   - `postContent`: Empty string (votes don't have content)
+   - Additional vote fields:
+     - `voteType`: "upvote" or "downvote"
+     - `contentId`: ID of the content being voted on
+     - `votedContent`: Base64 encoded content of the post/reply being voted on
+
+**Common Fields for All Notification Types:**
+- `id`: Transaction ID of the notification content
+- `userPublicKey`: Public key of the user who created the notification
+- `timestamp`: Uses `k_mentions.block_time` consistently for proper chronological ordering
+- `userNickname`: Base64 encoded nickname from user's broadcast (optional)
+- `userProfileImage`: Base64 encoded profile image from user's broadcast (optional)
+- `contentType`: Type of mention - "post", "reply", or "vote"
+- `cursor`: Compound cursor combining timestamp and record ID (e.g., `"1758996519522_571321"`) for use with pagination
+
+**Vote-Specific Fields (only for vote notifications):**
+- `voteType`: "upvote" or "downvote"
+- `mentionBlockTime`: Timestamp from k_mentions table (same as timestamp)
+- `contentId`: ID of the content being voted on
+- `votedContent`: Base64 encoded content of the post/reply being voted on
+
+**Database Implementation:**
+- Queries `k_mentions` table for all content types: 'post', 'reply', 'vote'
+- Uses complex SQL CTEs to join with respective content tables (`k_posts`, `k_replies`, `k_votes`)
+- For vote notifications, includes additional data about the voted content
+- Excludes notifications from blocked users
+- Consistently uses `k_mentions.block_time` as primary timestamp for chronological ordering
+- Supports cursor-based pagination using compound cursors (timestamp + ID)
+
+**Use Cases:**
+- Display comprehensive notification feed in the app
+- Show different UI elements based on `contentType`
+- Navigate to original posts/replies from notifications
+- Display vote activity on user's content
+- Real-time polling for new notifications
+- Use individual notification `cursor` values with `get-notifications-count` API to count newer notifications
+
+**Cursor Integration:**
+Each notification includes a `cursor` field that can be used with the `get-notifications-count` API:
+```bash
+# Get count of notifications newer than a specific notification
+curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b...&after=1758996519522_571321"
+```
+This allows the webapp to determine how many new notifications have arrived since the last viewed notification.
 
 ## Error Handling
 

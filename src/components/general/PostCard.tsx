@@ -217,7 +217,7 @@ const PostCard: React.FC<PostCardProps> = ({
           {isLongMessage && !isDetailView && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium">Long message.</span> Click to read more...
+                Click to read more...
               </p>
             </div>
           )}

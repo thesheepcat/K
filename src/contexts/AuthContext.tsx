@@ -186,15 +186,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Store encrypted key in localStorage
       localStorage.setItem(STORAGE_KEY, encrypted);
       setHasStoredKeyState(true);
-      
+
       // Save encrypted session data
       saveSession(keyPair.privateKey, keyPair.publicKey, keyPair.address);
-      
+
       // Set authentication state
       setPrivateKey(keyPair.privateKey);
       setPublicKey(keyPair.publicKey);
       setAddress(keyPair.address);
       setIsAuthenticated(true);
+
     } catch (error) {
       console.error('Login error:', error);
       throw new Error('Invalid private key or encryption failed');
@@ -226,7 +227,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setPublicKey(keyPair.publicKey);
       setAddress(keyPair.address);
       setIsAuthenticated(true);
-      
+
+
       return true;
     } catch (error) {
       console.error('Unlock session error:', error);
@@ -240,7 +242,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setPublicKey(null);
     setAddress(null);
     setIsAuthenticated(false);
-    
+
     // Clear session data
     clearSession();
   };
@@ -251,10 +253,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setPublicKey(null);
     setAddress(null);
     setIsAuthenticated(false);
-    
+
     // Clear session data
     clearSession();
-    
+
     // Clear stored encrypted key from localStorage (full logout)
     localStorage.removeItem(STORAGE_KEY);
     setHasStoredKeyState(false);
