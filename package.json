@@ -69,6 +69,7 @@
   "build": {
     "appId": "com.k.app",
     "productName": "K",
+    "publish": null,
     "directories": {
       "output": "build"
     },
