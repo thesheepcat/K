@@ -6,8 +6,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Use relative paths for Electron compatibility
+  base: './',
   plugins: [
-    react(), 
+    react(),
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
@@ -70,6 +72,7 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 1000,
+    target: 'esnext',
   },
   esbuild: {
     keepNames: true,
