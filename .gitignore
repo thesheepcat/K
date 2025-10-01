@@ -25,3 +25,4 @@ dist-ssr
 *.sw?
 kaspa-wasm32-sdk
 TO_DO.md
+build
