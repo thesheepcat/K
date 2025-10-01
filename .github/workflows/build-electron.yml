@@ -23,9 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build web app
-        run: npm run build
-
       - name: Build Electron app (deb)
         run: npm run electron:build:deb
 
@@ -70,9 +67,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Build web app
-        run: npm run build
 
       - name: Build Electron app (Windows)
         run: npm run electron:build:win
