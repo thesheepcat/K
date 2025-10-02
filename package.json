@@ -84,7 +84,7 @@
         "AppImage"
       ],
       "category": "Network",
-      "icon": "public/pwa-512x512.png"
+      "icon": "public"
     },
     "win": {
       "target": [
