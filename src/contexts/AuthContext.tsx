@@ -179,10 +179,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Validate and generate keys from the private key
       const keyPair = await generateKeyPairFromKaspaSDK(privateKeyInput);
-      
+
       // Encrypt the private key with the password
       const encrypted = CryptoJS.AES.encrypt(privateKeyInput, password).toString();
-      
+
       // Store encrypted key in localStorage
       localStorage.setItem(STORAGE_KEY, encrypted);
       setHasStoredKeyState(true);

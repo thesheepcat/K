@@ -56,6 +56,8 @@ function createWindow() {
       webSecurity: false,
       // [SECURITY CONFIG 1] Allow insecure content to run
       allowRunningInsecureContent: true,
+      // Enable persistent storage for localStorage/sessionStorage
+      partition: 'persist:k-app',
     },
     icon: path.join(__dirname, '../public/pwa-512x512.png'),
   });
@@ -90,6 +92,13 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
+
+  // Enable DevTools in production via Ctrl+Shift+I or F12
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key === 'I')) {
+      mainWindow.webContents.toggleDevTools();
+    }
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;

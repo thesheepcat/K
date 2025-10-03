@@ -77,12 +77,13 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **UI Themes**: Dark theme
 - ✅ **User blocking**: Spam protection and content filtering
 - ✅ **User notifications**: User is notified when mentioned
+- ✅ **Desktop app**: K available on desktop environment, without using the K site (on Linux and Windows)
 
 ### ❌ Future Features (not yet available)  
 - ❌ **Reposting**: Share others' content with your network
 - ❌ **Following/Unfollowing**: Manage your content feed
 - ❌ **User endorsements**: Promote and suggest other users
-- ❌ **Historical data**: Access past user activity (indexer dependent)
+- ❌ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 
 ---
 
@@ -166,6 +167,26 @@ npm run dev
 ```
 
 The webapp will be available at: **http://localhost:5173**
+
+#### 3. **Build Standalone Desktop Application (Optional)**
+
+You can compile K as a standalone desktop application using Electron:
+
+```bash
+# Install dependencies (if not already done)
+npm install
+
+# Build for Linux (deb package)
+npm run electron:build:deb
+
+# Build for Linux (AppImage)
+npm run electron:build:appimage
+
+# Build for Windows
+npm run electron:build:win
+```
+
+The compiled applications will be available in the `build/` directory.
 
 ---
 

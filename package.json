@@ -55,6 +55,8 @@
     "@types/react-dom": "^19.1.6",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -67,6 +69,7 @@
   "build": {
     "appId": "com.k.app",
     "productName": "K",
+    "publish": null,
     "directories": {
       "output": "build"
     },
@@ -81,7 +84,7 @@
         "AppImage"
       ],
       "category": "Network",
-      "icon": "public/pwa-512x512.png"
+      "icon": "public"
     },
     "win": {
       "target": [

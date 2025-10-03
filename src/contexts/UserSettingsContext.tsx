@@ -38,12 +38,7 @@ const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>('testnet-10');
-  const [apiBaseUrl, setApiBaseUrlState] = useState<string>(
-      // Use relative path in production, localhost in development
-      typeof window !== 'undefined' && window.location.protocol === 'https:' 
-        ? 'https://indexer.kaspatalk.net' 
-        : 'http://localhost:3000'
-    );
+  const [apiBaseUrl, setApiBaseUrlState] = useState<string>('https://indexer.kaspatalk.net');
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
