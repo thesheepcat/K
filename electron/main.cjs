@@ -38,16 +38,19 @@
  * but should be reviewed if security requirements change.
  */
 
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, nativeImage } = require('electron');
 const path = require('path');
 
 let mainWindow;
 
 //frame: false, // Hide the top bar (title bar and menu) 
 function createWindow() {
+  const iconPath = path.join(__dirname, '../public/pwa-512x512.png');
+  const icon = nativeImage.createFromPath(iconPath);
+
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width:  1728,
+    height: 972,
     autoHideMenuBar: true, // Hide the menu bar
     webPreferences: {
       nodeIntegration: false,
@@ -59,7 +62,7 @@ function createWindow() {
       // Enable persistent storage for localStorage/sessionStorage
       partition: 'persist:k-app',
     },
-    icon: path.join(__dirname, '../public/pwa-512x512.png'),
+    icon: icon,
   });
 
   // [SECURITY CONFIG 1] Configure session to allow mixed content
