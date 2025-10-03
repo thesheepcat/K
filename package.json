@@ -23,9 +23,15 @@
     "electron:build": "npm run build && electron-builder --linux",
     "electron:build:deb": "npm run build && electron-builder --linux deb",
     "electron:build:appimage": "npm run build && electron-builder --linux AppImage",
-    "electron:build:win": "npm run build && electron-builder --win --x64"
+    "electron:build:win": "npm run build && electron-builder --win --x64",
+    "android:sync": "npx cap sync android",
+    "android:build": "npm run build && npx cap sync android && npx cap build android",
+    "android:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/cli": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "4.1.13",

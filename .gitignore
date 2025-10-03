@@ -25,3 +25,6 @@ dist-ssr
 *.sw?
 TO_DO.md
 build
+
+# Capacitor
+android
