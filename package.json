@@ -84,13 +84,24 @@
         "AppImage"
       ],
       "category": "Network",
-      "icon": "public"
+      "icon": "public",
+      "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
     },
     "win": {
       "target": [
         "portable"
       ],
-      "icon": "public/pwa-512x512.png"
+      "icon": "public/pwa-512x512.png",
+      "artifactName": "${productName}-${version}-windows-${arch}.${ext}"
+    },
+    "deb": {
+      "artifactName": "${productName}-${version}-linux-${arch}.deb"
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-linux-${arch}.AppImage"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-windows-${arch}.exe"
     }
   }
 }
