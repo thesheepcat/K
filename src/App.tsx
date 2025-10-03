@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter, BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { UserSettingsProvider } from "./contexts/UserSettingsContext";
 import LoginForm from "./components/auth/LoginForm";
@@ -21,6 +21,10 @@ import SettingsView from "./components/views/SettingsView.tsx";
 import { Toaster } from "@/components/ui/sonner";
 import { type Post } from "@/models/types";
 import kaspaService from "./services/kaspaService";
+
+// Use HashRouter for Electron (file:// protocol), BrowserRouter for web
+const isElectron = typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
+const Router = isElectron ? HashRouter : BrowserRouter;
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, hasStoredKey } = useAuth();

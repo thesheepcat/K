@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.3",
   "type": "module",
+  "author": {
+    "name": "K Team",
+    "email": "maintainer@ahug.com"
+  },
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -b && vite build",
@@ -13,7 +18,12 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write ./src",
     "format:check": "prettier --check ./src",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:build": "npm run build && electron-builder --linux",
+    "electron:build:deb": "npm run build && electron-builder --linux deb",
+    "electron:build:appimage": "npm run build && electron-builder --linux AppImage",
+    "electron:build:win": "npm run build && electron-builder --win --x64"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -45,6 +55,8 @@
     "@types/react-dom": "^19.1.6",
     "@vite-pwa/assets-generator": "^1.0.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.29.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
@@ -53,5 +65,43 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.0.0"
+  },
+  "build": {
+    "appId": "com.k.app",
+    "productName": "K",
+    "publish": null,
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/**/*"
+    ],
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Network",
+      "icon": "public",
+      "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "public/pwa-512x512.png",
+      "artifactName": "${productName}-${version}-windows-${arch}.${ext}"
+    },
+    "deb": {
+      "artifactName": "${productName}-${version}-linux-${arch}.deb"
+    },
+    "appImage": {
+      "artifactName": "${productName}-${version}-linux-${arch}.AppImage"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-windows-${arch}.exe"
+    }
   }
 }

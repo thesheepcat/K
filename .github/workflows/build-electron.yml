@@ -1,0 +1,166 @@
+name: Build Electron App
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Electron app (deb)
+        run: npm run electron:build:deb
+
+      - name: Build Electron app (AppImage)
+        run: npm run electron:build:appimage
+
+      - name: Upload deb artifact (dev branch)
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k-linux-deb
+          path: build/*.deb
+          retention-days: 30
+
+      - name: Upload AppImage artifact (dev branch)
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k-linux-appimage
+          path: build/*.AppImage
+          retention-days: 30
+
+      - name: Upload Linux artifacts for release (master branch)
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-artifacts
+          path: |
+            build/*.deb
+            build/*.AppImage
+          retention-days: 90
+
+      - name: Upload build summary
+        if: always()
+        run: |
+          echo "## Linux Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -lh build/*.deb build/*.AppImage 2>/dev/null || echo "No artifacts found" >> $GITHUB_STEP_SUMMARY
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Electron app (Windows)
+        run: npm run electron:build:win
+
+      - name: Upload Windows installer artifact (dev branch)
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k-windows-x64
+          path: build/*.exe
+          retention-days: 30
+
+      - name: Upload Windows artifacts for release (master branch)
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-artifacts
+          path: build/*.exe
+          retention-days: 90
+
+      - name: Upload build summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Windows Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -lh build/*.exe 2>/dev/null || echo "No artifacts found" >> $GITHUB_STEP_SUMMARY
+
+  create-release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release-artifacts
+          path: ./release-artifacts
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release-artifacts
+          path: ./release-artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          body: |
+            ## K Desktop Application Release v${{ steps.package-version.outputs.version }}
+
+            ### Downloads
+
+            #### Linux
+            - **Debian/Ubuntu (.deb)**: Install with `sudo dpkg -i K-${{ steps.package-version.outputs.version }}-linux-x64.deb`
+            - **AppImage**: Make executable with `chmod +x K-${{ steps.package-version.outputs.version }}-linux-x64.AppImage` and run
+
+            #### Windows
+            - **Portable (.exe)**: Run `K-${{ steps.package-version.outputs.version }}-windows-x64.exe` directly, no installation required
+
+            ### Installation Instructions
+
+            See the [README](https://github.com/${{ github.repository }}/blob/master/README.md) for detailed setup instructions.
+          files: |
+            ./release-artifacts/*.deb
+            ./release-artifacts/*.AppImage
+            ./release-artifacts/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
