@@ -137,44 +137,6 @@ jobs:
       - name: Build web app
         run: npm run build
 
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Configure Android SDK versions
-        run: |
-          cat > android/variables.gradle << 'EOF'
-          ext {
-              minSdkVersion = 23
-              compileSdkVersion = 35
-              targetSdkVersion = 35
-              androidxActivityVersion = '1.7.2'
-              androidxAppCompatVersion = '1.6.1'
-              androidxCoordinatorLayoutVersion = '1.2.0'
-              androidxCoreVersion = '1.10.1'
-              androidxFragmentVersion = '1.6.1'
-              coreSplashScreenVersion = '1.0.1'
-              androidxWebkitVersion = '1.7.0'
-              junitVersion = '4.13.2'
-              androidxJunitVersion = '1.1.5'
-              androidxEspressoCoreVersion = '3.5.1'
-              cordovaAndroidVersion = '10.1.1'
-          }
-          EOF
-
-      - name: Configure Android Gradle Plugin
-        run: |
-          sed -i "s/classpath 'com.android.tools.build:gradle:[^']*'/classpath 'com.android.tools.build:gradle:8.2.2'/" android/build.gradle
-
-      - name: Configure Java 21
-        run: |
-          echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
-
-      - name: Generate Android assets (icons and splash screens)
-        run: |
-          cp public/pwa-512x512.png public/icon.png
-          cp public/pwa-512x512.png public/icon-only.png
-          npx @capacitor/assets generate --assetPath public --android
-
       - name: Sync Capacitor
         run: npx cap sync android
 
