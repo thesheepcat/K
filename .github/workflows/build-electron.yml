@@ -169,6 +169,12 @@ jobs:
         run: |
           echo "org.gradle.java.home=$JAVA_HOME" >> android/gradle.properties
 
+      - name: Generate Android assets (icons and splash screens)
+        run: |
+          cp public/pwa-512x512.png public/icon.png
+          cp public/pwa-512x512.png public/icon-only.png
+          npx @capacitor/assets generate --assetPath public --android
+
       - name: Sync Capacitor
         run: npx cap sync android
 
