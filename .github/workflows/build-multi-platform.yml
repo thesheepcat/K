@@ -1,4 +1,4 @@
-name: Build Electron App
+name: Build Multi-Platform App
 
 on:
   push:
