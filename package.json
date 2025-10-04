@@ -26,7 +26,7 @@
     "electron:build:win": "npm run build && electron-builder --win --x64",
     "android:sync": "npx cap sync android",
     "android:build": "npm run build && npx cap sync android && npx cap build android",
-    "android:open": "npx cap open android"
+    "android:open": "CAPACITOR_ANDROID_STUDIO_PATH=/snap/android-studio/209/bin/studio.sh npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
