@@ -34,4 +34,3 @@ android/app/build/
 android/local.properties
 android/*.keystore
 android/capacitor-cordova-android-plugins/build/
-android/gradle/
