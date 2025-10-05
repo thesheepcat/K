@@ -1,4 +1,4 @@
-name: Build Electron App
+name: Build Multi-Platform App
 
 on:
   push:
@@ -109,8 +109,69 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           ls -lh build/*.exe 2>/dev/null || echo "No artifacts found" >> $GITHUB_STEP_SUMMARY
 
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Android APK (Debug)
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload APK artifact (dev branch)
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: k-android-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Upload Android artifacts for release (master branch)
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-artifacts
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 90
+
+      - name: Upload build summary
+        if: always()
+        run: |
+          echo "## Android Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -lh android/app/build/outputs/apk/debug/*.apk 2>/dev/null || echo "No artifacts found" >> $GITHUB_STEP_SUMMARY
+
   create-release:
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-android]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     permissions:
@@ -136,13 +197,19 @@ jobs:
           name: windows-release-artifacts
           path: ./release-artifacts
 
+      - name: Download Android artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-artifacts
+          path: ./release-artifacts
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
           name: Release v${{ steps.package-version.outputs.version }}
           body: |
-            ## K Desktop Application Release v${{ steps.package-version.outputs.version }}
+            ## K Application Release v${{ steps.package-version.outputs.version }}
 
             ### Downloads
 
@@ -153,6 +220,14 @@ jobs:
             #### Windows
             - **Portable (.exe)**: Run `K-${{ steps.package-version.outputs.version }}-windows-x64.exe` directly, no installation required
 
+            #### Android
+            - **APK (Debug Build - Unsigned)**: Download and install the APK file. You may need to enable "Install from Unknown Sources" in your Android settings.
+
+            **⚠️ Android Build Notice:**
+            - This is a **DEBUG version** intended for development and testing purposes only
+            - The APK is **UNSIGNED** and not suitable for distribution through official app stores
+            - For production use, a signed release build with proper keystore credentials is required
+
             ### Installation Instructions
 
             See the [README](https://github.com/${{ github.repository }}/blob/master/README.md) for detailed setup instructions.
@@ -160,6 +235,7 @@ jobs:
             ./release-artifacts/*.deb
             ./release-artifacts/*.AppImage
             ./release-artifacts/*.exe
+            ./release-artifacts/*.apk
           draft: false
           prerelease: false
         env:

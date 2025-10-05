@@ -25,3 +25,12 @@ dist-ssr
 *.sw?
 TO_DO.md
 build
+
+# Capacitor - Keep configuration but ignore build artifacts and local files
+android/.gradle/
+android/.idea/
+android/build/
+android/app/build/
+android/local.properties
+android/*.keystore
+android/capacitor-cordova-android-plugins/build/

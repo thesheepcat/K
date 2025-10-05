@@ -78,6 +78,8 @@ export default defineConfig({
     keepNames: true,
   },
   server: {
+    host: true,
+    port: 5173,
     fs: {
       allow: ['..']
     }
