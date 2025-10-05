@@ -78,12 +78,12 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **User blocking**: Spam protection and content filtering
 - ✅ **User notifications**: User is notified when mentioned
 - ✅ **Desktop app**: K available on desktop environment, without using the K site (on Linux and Windows)
+- ✅ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 
 ### ❌ Future Features (not yet available)  
 - ❌ **Reposting**: Share others' content with your network
 - ❌ **Following/Unfollowing**: Manage your content feed
 - ❌ **User endorsements**: Promote and suggest other users
-- ❌ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 
 ---
 
@@ -187,6 +187,34 @@ npm run electron:build:win
 ```
 
 The compiled applications will be available in the `build/` directory.
+
+#### 4. **Build Standalone Mobile Application for Android (Optional)**
+
+You can compile K as a standalone mobile application for Android using Capacitor:
+
+**Prerequisites:**
+- **Android Studio** installed on your system
+- **Java Development Kit (JDK) 21** or higher
+- **Android SDK** (usually installed with Android Studio)
+- **Gradle** (usually included with Android Studio)
+
+**Build Steps:**
+```bash
+# Install dependencies (if not already done)
+npm install
+
+# Build the Android application
+npm run build:android
+```
+
+The build process will generate an APK file that can be found in:
+`android/app/build/outputs/apk/debug/app-debug.apk`
+
+**⚠️ Important Notes:**
+- **This build generates a DEBUG version** of the application, which is intended for development and testing purposes only.
+- **The APK is UNSIGNED**, meaning it won't be suitable for distribution through official app stores.
+- For production releases, you'll need to create a signed release build using proper keystore credentials.
+- The debug APK can be installed directly on Android devices for testing by enabling "Install from unknown sources" in device settings.
 
 ---
 
