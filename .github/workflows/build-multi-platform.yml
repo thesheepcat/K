@@ -221,7 +221,12 @@ jobs:
             - **Portable (.exe)**: Run `K-${{ steps.package-version.outputs.version }}-windows-x64.exe` directly, no installation required
 
             #### Android
-            - **APK**: Download and install the APK file. You may need to enable "Install from Unknown Sources" in your Android settings.
+            - **APK (Debug Build - Unsigned)**: Download and install the APK file. You may need to enable "Install from Unknown Sources" in your Android settings.
+
+            **⚠️ Android Build Notice:**
+            - This is a **DEBUG version** intended for development and testing purposes only
+            - The APK is **UNSIGNED** and not suitable for distribution through official app stores
+            - For production use, a signed release build with proper keystore credentials is required
 
             ### Installation Instructions
 
