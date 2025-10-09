@@ -197,11 +197,11 @@ sequenceDiagram
 
 ---
 
-### ⚠️ Reposting user contents (confirmed but not yet implemented)
+### ✅ Quoting user contents
 - User A can setup his own account to:
-  - Gets notified if someone repost its content (forwarding a post/reply);
-- User B can freely repost a User A content in it's own profile (whether he support User A or not);
-- Depending on User A settings (above), User A receive the repost, gets notified about the repost, read the repost or ignore it (not visualizing it).
+  - Gets notified if someone quote its content (forwarding a post/reply);
+- User B can freely quote a User A content in it's own profile (whether he support User A or not);
+- Depending on User A settings (above), User A receive the quote, gets notified about the quote, read the quote or ignore it (not visualizing it).
 
 
 ```mermaid
@@ -213,32 +213,33 @@ sequenceDiagram
     Bob Kaspa node->>Bob's indexer: This is my new post!
     actor B as Bob (front-end)
     Bob's indexer->>B: This is my new post!
-    B->>Bob Kaspa node: I repost Alice's post!
-    Bob Kaspa node-->>Alice Kaspa node: I repost Alice's post!
-    Alice Kaspa node->>Alice's indexer: I repost Alice's post!
-    Alice's indexer->>A: I repost Alice's post!
+    B->>Bob Kaspa node: I quote Alice's post!
+    Bob Kaspa node-->>Alice Kaspa node: I quote Alice's post!
+    Alice Kaspa node->>Alice's indexer: I quote Alice's post!
+    Alice's indexer->>A: I quote Alice's post!
 ```
 
 **Protocol Specifications**
 
-Action: `repost`
+Action: `quote`
+
 
 **Payload Format:**
 ```
-k:1:repost:sender_pubkey:sender_signature:post_id
+k:1:quote:sender_pubkey:sender_signature:content_id:base64_encoded_message:mentioned_pubkey
 ```
 
-### Field Descriptions- 
-  - `sender_pubkey`: The public key of the message sender
-  - `sender_signature`: Digital signature for consistency verification
-  - `post_id`: The reference to the post/reply being reposted
- 
+### Field Descriptions
+- `sender_pubkey`: The public key of the message sender
+- `sender_signature`: Digital signature for consistency verification
+- `content_id`: The reference to the post/reply being quoted
+- `base64_encoded_message`: The message to post, encoded in Base64
+- `mentioned_pubkey`: The pubkey of the author of the post/reply being quoted
 
 ### Example Usage
-  ```
-  k:1:repost:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942
-  ```
-
+```
+k:1:quote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:1e321a6fad0a3c6f3cbbb61f54fcc047ec364e497b2d74a93f04963461a4e942:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h:0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
+```
 ---
 
 ### ✅ Blocking users
@@ -271,25 +272,6 @@ k:1:repost:sender_pubkey:sender_signature:post_id
   k:1:block:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:block:030f657a3c77eab35c8f3d8d7bcf4ee1ca3aac7f991d0e3abacdb17e3c5de3b2f7
   ```
 ---
-
-### ❌ Watching a user (not yet confirmed)
-- User B activates the "watching" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page.
-
- ```mermaid
-sequenceDiagram
-    actor B as Bob (front-end)
-    B->>Bob's indexer: I want to watch Alice!
-    actor A as Alice (front-end)
-    A->>Alice Kaspa node: I love Kaspa!
-    Alice Kaspa node-->>Bob Kaspa node: I love Kaspa!
-    Bob Kaspa node->>Bob's indexer: I love Kaspa!
-    Bob's indexer->>B: I love Kaspa!
-```
-**Protocol specifications**
-No protocol definition is required.
-
----
-
 
 ### ❌ Endorsing (suggesting) users (not yet confirmed)
 - User A like User B so much that he feels like User B deserve an endorsement, due to the value of his contents;

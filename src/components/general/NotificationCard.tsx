@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, MessageSquareQuote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
@@ -15,7 +15,7 @@ interface NotificationData {
   timestamp: number;
   userNickname?: string;
   userProfileImage?: string;
-  contentType: 'post' | 'reply' | 'vote';
+  contentType: 'post' | 'reply' | 'vote' | 'quote';
   cursor: string;
   voteType?: 'upvote' | 'downvote' | null;
   mentionBlockTime?: number | null;
@@ -118,6 +118,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
         return <MessageCircle className="h-5 w-5 text-blue-500" />;
       case 'reply':
         return <MessageCircle className="h-5 w-5 text-blue-500" />;
+      case 'quote':
+        return <MessageSquareQuote className="h-5 w-5 text-blue-500" />;
       case 'vote':
         return notification.voteType === 'upvote' ?
           <ThumbsUp className="h-5 w-5 text-green-500" /> :
@@ -133,6 +135,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
         return 'mentioned you in a post:';
       case 'reply':
         return 'mentioned you in a reply:';
+      case 'quote':
+        return 'quoted your content:';
       case 'vote':
         return `${notification.voteType === 'upvote' ? 'liked' : 'disliked'} your content:`;
       default:

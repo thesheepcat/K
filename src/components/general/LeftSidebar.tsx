@@ -1,4 +1,4 @@
-import { User, Settings, MessageSquareQuote, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell } from 'lucide-react';
+import { User, Settings, MessageSquare, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,7 +38,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   }, [isAuthenticated, publicKey, apiBaseUrl]);
 
   const menuItems = [
-    { icon: MessageSquareQuote, label: 'My posts', path: '/' },
+    { icon: MessageSquare, label: 'My posts', path: '/' },
     { icon: MessageSquareReply, label: 'My replies', path: '/my-replies' },
     //{ icon: UserRoundPlus, label: 'Following', path: '/following' },
     { icon: ScanEye, label: 'Watching', path: '/watching' },
@@ -89,7 +89,10 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
             title={isCollapsed && !isMobile ? item.label : undefined}
           >
             <div className="relative inline-block">
-              <item.icon className={`h-8 w-8 transition-all duration-300`} />
+              <item.icon
+                className={`h-8 w-8 transition-all duration-300`}
+                strokeWidth={location.pathname === item.path ? 2.7 : 2}
+              />
               {item.showBadge && notificationCount > 0 && (
                 <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-[11px] rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
                   {notificationCount > 30 ? '30+' : notificationCount}

@@ -14,12 +14,23 @@ export interface Post {
   downVotes: number;
   reposts: number;
   replies: number;
+  quotes: number;
   upVoted: boolean;
   downVoted: boolean;
   reposted: boolean;
   nestedReplies?: Post[];
   parentPostId?: string; // ID of the post/reply being replied to (only for replies)
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
+  isQuote?: boolean; // Whether this is a quote (true) or regular post (false)
+  quote?: QuoteData; // Quote reference data (only present when isQuote is true)
+}
+
+export interface QuoteData {
+  referencedMessage: string; // Decoded message content of the referenced post
+  referencedSenderPubkey: string; // Public key of the referenced content's author
+  referencedNickname?: string; // Decoded nickname of referenced author (optional)
+  referencedProfileImage?: string; // Base64 encoded profile image of referenced author (optional)
+  referencedId?: string; // ID of the referenced post (for navigation)
 }
 
 // Server response types for My Posts API
@@ -32,6 +43,7 @@ export interface ServerPost {
   repliesCount: number;
   upVotesCount: number;
   downVotesCount: number; // Optional, defaults to 0
+  quotesCount: number;
   repostsCount: number;
   parentPostId?: string; // ID of the post/reply being replied to (only for replies)
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
@@ -39,6 +51,16 @@ export interface ServerPost {
   isDownvoted?: boolean; // Whether the requesting user has downvoted this post
   userNickname?: string; // Base64 encoded nickname (optional)
   userProfileImage?: string; // Base64 encoded profile image (optional)
+  isQuote?: boolean; // Whether this is a quote (true) or regular post (false)
+  quote?: ServerQuoteData; // Quote reference data (only present when isQuote is true)
+}
+
+export interface ServerQuoteData {
+  referencedContentId: string; // Transaction ID of the referenced content (64-character hex string)
+  referencedMessage: string; // Base64 encoded message of the referenced content
+  referencedSenderPubkey: string; // Public key of the referenced content's author
+  referencedNickname?: string; // Base64 encoded nickname of referenced author (optional)
+  referencedProfileImage?: string; // Base64 encoded profile image of referenced author (optional)
 }
 
 export interface ServerReply {
@@ -50,6 +72,7 @@ export interface ServerReply {
   repliesCount: number;
   upVotesCount: number;
   downVotesCount: number; // Optional, defaults to 0
+  quotesCount: number;
   repostsCount: number;
   parentPostId?: string; // ID of the post/reply being replied to
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction

@@ -1,7 +1,7 @@
 {
   "name": "K",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "author": {
     "name": "K Team",
@@ -25,8 +25,7 @@
     "electron:build:appimage": "npm run build && electron-builder --linux AppImage",
     "electron:build:win": "npm run build && electron-builder --win --x64",
     "android:sync": "npx cap sync android",
-    "android:build": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
-    "android:open": "CAPACITOR_ANDROID_STUDIO_PATH=/snap/android-studio/209/bin/studio.sh npx cap open android"
+    "android:build": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
