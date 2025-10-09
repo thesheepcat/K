@@ -402,7 +402,10 @@ const loadMorePosts = useCallback(async () => {
             </Button>
           </div>
           <div className="flex items-start space-x-3 mb-4">
-            <Avatar className="h-12 w-12 flex-shrink-0">
+            <Avatar
+              className="h-12 w-12 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={() => setShowUserDetailsDialog(true)}
+            >
               <AvatarImage src={displayAvatar} />
               <AvatarFallback className="bg-muted text-muted-foreground">
                 {(decodedNickname || authorInfo?.name || 'U').split(' ').map(n => n[0]).join('')}
@@ -415,11 +418,7 @@ const loadMorePosts = useCallback(async () => {
                     {isCurrentUser ? 'My posts' : `${decodedNickname || authorInfo?.name || 'Loading...'}`}
                   </h1>
                   {authorInfo?.username && (
-                    <span
-                      className="text-sm sm:text-lg text-muted-foreground truncate hover:underline cursor-pointer"
-                      onClick={() => setShowUserDetailsDialog(true)}
-                      title="Click to view user details"
-                    >
+                    <span className="text-sm sm:text-lg text-muted-foreground truncate">
                       @{truncateKaspaAddress(authorInfo.username, 6, 6)}
                     </span>
                   )}

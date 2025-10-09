@@ -195,6 +195,13 @@ const NotificationsView: React.FC<NotificationsProps> = ({ onNotificationsSeen }
               setNotifications(updatedNotifications);
             }
           }
+
+          // Always update cursor when polling while viewing notifications
+          // This keeps the notification badge at zero while user is on this page
+          if (serverNotifications.length > 0) {
+            const latestNotification = serverNotifications[0];
+            notificationService.markNotificationsAsSeen(latestNotification.cursor);
+          }
         } catch (err) {
           console.error('Error polling notifications:', err);
         }
