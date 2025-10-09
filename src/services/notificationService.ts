@@ -214,6 +214,8 @@ class NotificationService {
 
       const data: NotificationCountResponse = await response.json();
 
+      console.log('[NotificationService] Notification count:', data.count);
+
       // Update notification count
       this.notificationCount = data.count;
       this.notifyListeners(this.notificationCount);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from './button';
 
@@ -10,8 +11,6 @@ interface DialogProps {
 }
 
 export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title }) => {
-  if (!isOpen) return null;
-
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -39,12 +38,17 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title
     };
   }, [isOpen, onClose]);
 
-  return (
-    <div 
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-overlay"
       onClick={handleBackdropClick}
     >
-      <div className="bg-popover border border-border rounded-none shadow-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div
+        className="bg-popover border border-border rounded-none shadow-lg max-w-md sm:max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between p-4 border-b border-border">
@@ -59,13 +63,14 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title
             </Button>
           </div>
         )}
-        
+
         {/* Content */}
         <div className={title ? "p-4" : "p-4"}>
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

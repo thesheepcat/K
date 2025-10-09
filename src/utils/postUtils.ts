@@ -62,6 +62,7 @@ export const createReplyPost = async (content: string, userPubkey: string, netwo
     downVotes: 0,
     reposts: 0,
     replies: 0,
+    quotes: 0,
     upVoted: false,
     downVoted: false,
     reposted: false,

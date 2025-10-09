@@ -283,7 +283,7 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
   const diffMs = now - postTime;
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
-  
+
   let timeString: string;
   if (diffDays > 0) {
     timeString = `${diffDays}d`;
@@ -303,12 +303,43 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
 
   // Generate proper author info with display formatting and optional nickname
   const authorInfo = await generateAuthorInfo(
-    serverPost.userPublicKey, 
-    currentUserPubkey, 
+    serverPost.userPublicKey,
+    currentUserPubkey,
     networkId,
     decodedNickname,
     serverPost.userProfileImage
   );
+
+  // Process quote data if this is a quote
+  let quoteData = undefined;
+  if (serverPost.isQuote && serverPost.quote) {
+    // Decode referenced message
+    let decodedReferencedMessage: string;
+    try {
+      decodedReferencedMessage = Base64.decode(serverPost.quote.referencedMessage);
+    } catch (error) {
+      console.error('Error decoding referenced message:', error);
+      decodedReferencedMessage = '[Unable to decode quoted content]';
+    }
+
+    // Decode referenced nickname if available
+    let decodedReferencedNickname: string | undefined;
+    if (serverPost.quote.referencedNickname) {
+      try {
+        decodedReferencedNickname = Base64.decode(serverPost.quote.referencedNickname);
+      } catch (error) {
+        console.error('Error decoding referenced nickname:', error);
+      }
+    }
+
+    quoteData = {
+      referencedMessage: decodedReferencedMessage,
+      referencedSenderPubkey: serverPost.quote.referencedSenderPubkey,
+      referencedNickname: decodedReferencedNickname,
+      referencedProfileImage: serverPost.quote.referencedProfileImage,
+      referencedId: serverPost.quote.referencedContentId, // Map API field to client field
+    };
+  }
 
   return {
     id: postId,
@@ -319,12 +350,15 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
     downVotes: serverPost.downVotesCount || 0, // Default to 0 if not provided
     reposts: serverPost.repostsCount,
     replies: serverPost.repliesCount,
+    quotes: serverPost.quotesCount || 0, // Default to 0 if not provided
     upVoted: serverPost.isUpvoted ?? false, // Use server data or default to false
     downVoted: serverPost.isDownvoted ?? false, // Use server data or default to false
     reposted: false, // Default to not reposted
     nestedReplies: [], // Replies will be empty for server posts initially
     parentPostId: serverPost.parentPostId,
-    mentionedPubkeys: serverPost.mentionedPubkeys || []
+    mentionedPubkeys: serverPost.mentionedPubkeys || [],
+    isQuote: serverPost.isQuote,
+    quote: quoteData
   };
 };
 
@@ -402,6 +436,7 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
     downVotes: 0, // Users view doesn't show downvotes
     reposts: 0, // Users view doesn't show reposts
     replies: 0, // Users view doesn't show replies
+    quotes: 0, // Users view doesn't show quotes
     upVoted: false, // Default to not upvoted
     downVoted: false, // Default to not downvoted
     reposted: false, // Default to not reposted
@@ -664,6 +699,7 @@ export const convertServerReplyToClientPost = async (serverReply: ServerReply, c
     downVotes: serverReply.downVotesCount || 0, // Default to 0 if not provided
     reposts: serverReply.repostsCount,
     replies: serverReply.repliesCount,
+    quotes: serverReply.quotesCount || 0, // Default to 0 if not provided
     upVoted: serverReply.isUpvoted ?? false, // Use server data or default to false
     downVoted: serverReply.isDownvoted ?? false, // Use server data or default to false
     reposted: false,

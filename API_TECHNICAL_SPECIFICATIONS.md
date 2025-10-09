@@ -30,10 +30,10 @@ The K webapp API provides the following endpoints for social media functionality
    - Scope: Fetch complete details for a single post or reply with voting status
 
 8. **`get-notifications-count`** - Count notifications for a user
-   - Scope: Get the total count of unread notifications (posts, replies, and votes that mention the user)
+   - Scope: Get the total count of unread notifications (posts, replies, votes that mention the user, and quotes of user's content)
 
 9. **`get-notifications`** - Retrieve notifications for a user
-   - Scope: Fetch paginated notifications including posts, replies, and votes mentioning the user with full details
+   - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
 
 ## General Pagination Rules
 
@@ -192,6 +192,18 @@ The `get-posts-watching` API now includes optional user profile fields for each 
 
 These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
 
+**Quote Support:**
+This endpoint returns both regular posts and quotes (posts that reference other content):
+- `isQuote`: Boolean field indicating if this is a quote (true) or regular post (false)
+- `quote`: Object containing referenced content data (only present when `isQuote` is true)
+  - `referencedContentId`: Transaction ID of the referenced content (64-character hex string)
+  - `referencedMessage`: Base64 encoded message of the referenced content
+  - `referencedSenderPubkey`: Public key of the referenced content's author
+  - `referencedNickname`: Base64 encoded nickname of referenced author (optional)
+  - `referencedProfileImage`: Base64 encoded profile image of referenced author (optional)
+
+Quotes are treated as posts with all standard interaction fields (upvotes, downvotes, replies, etc.) and include the data from the content being quoted.
+
 **Response:**
 ```json
 {
@@ -203,6 +215,7 @@ These fields are populated when users have shared profile information through br
       "signature": "304502210011111111111111111111111111111111111111111111111111111111111111110220222222222222222222222222222222222222222222222222222222222222222222",
       "timestamp": 1703185000,
       "repliesCount": 1,
+      "quotesCount": 1,
       "upVotesCount": 15,
       "downVotesCount": 1,
       "repostsCount": 2,
@@ -212,7 +225,35 @@ These fields are populated when users have shared profile information through br
       "isDownvoted": false,
       "userNickname": "QWxpY2U=",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": false
+      "blockedUser": false,
+      "isQuote": false
+    },
+    {
+      "id": "q1x2y3z4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+      "userPublicKey": "021234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12",
+      "postContent": "R3JlYXQgcG9pbnQhIEkgY29tcGxldGVseSBhZ3JlZSB3aXRoIHRoaXM=",
+      "signature": "3045022100b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b20220444555666777888999000111222333444555666777888999000111222333444555",
+      "timestamp": 1703184500,
+      "repliesCount": 0,
+      "quotesCount": 0,
+      "upVotesCount": 8,
+      "downVotesCount": 0,
+      "repostsCount": 1,
+      "parentPostId": null,
+      "mentionedPubkeys": [],
+      "isUpvoted": true,
+      "isDownvoted": false,
+      "userNickname": "Qm9i",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false,
+      "isQuote": true,
+      "quote": {
+        "referencedContentId": "w1x2y3z4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+        "referencedMessage": "TWFya2V0IGFuYWx5c2lzIHNob3dzIGludGVyZXN0aW5nIHBhdHRlcm5zIGVtZXJnaW5n",
+        "referencedSenderPubkey": "029876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba98",
+        "referencedNickname": "QWxpY2U=",
+        "referencedProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      }
     }
   ],
   "pagination": {
@@ -258,6 +299,18 @@ The `get-mentions` API includes optional user profile fields for each post:
 
 These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
 
+**Quote Support:**
+This endpoint returns posts, quotes, and replies that mention the user:
+- `isQuote`: Boolean field indicating if this is a quote (true) or regular post (false)
+- `quote`: Object containing referenced content data (only present when `isQuote` is true)
+  - `referencedContentId`: Transaction ID of the referenced content (64-character hex string)
+  - `referencedMessage`: Base64 encoded message of the referenced content
+  - `referencedSenderPubkey`: Public key of the referenced content's author
+  - `referencedNickname`: Base64 encoded nickname of referenced author (optional)
+  - `referencedProfileImage`: Base64 encoded profile image of referenced author (optional)
+
+Quotes are treated as posts with all standard interaction fields (upvotes, downvotes, replies, etc.) and include the data from the content being quoted.
+
 **Response:**
 ```json
 {
@@ -269,6 +322,7 @@ These fields are populated when users have shared profile information through br
       "signature": "304502210033333333333333333333333333333333333333333333333333333333333333330220444444444444444444444444444444444444444444444444444444444444444444",
       "timestamp": 1703185000,
       "repliesCount": 2,
+      "quotesCount": 0,
       "upVotesCount": 8,
       "downVotesCount": 0,
       "repostsCount": 1,
@@ -278,7 +332,8 @@ These fields are populated when users have shared profile information through br
       "isDownvoted": false,
       "userNickname": "Q2FybA==",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": false
+      "blockedUser": false,
+      "isQuote": false
     }
   ],
   "pagination": {
@@ -289,7 +344,7 @@ These fields are populated when users have shared profile information through br
 }
 ```
 
-**Note:** This endpoint returns posts and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
+**Note:** This endpoint returns posts, quotes, and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
 ### 4. Get Users
 Fetch user introduction posts with pagination support and blocked users awareness:
@@ -477,6 +532,18 @@ The `get-posts` API includes optional user profile fields for each post:
 
 These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
 
+**Quote Support:**
+This endpoint returns both regular posts and quotes (posts that reference other content):
+- `isQuote`: Boolean field indicating if this is a quote (true) or regular post (false)
+- `quote`: Object containing referenced content data (only present when `isQuote` is true)
+  - `referencedContentId`: Transaction ID of the referenced content (64-character hex string)
+  - `referencedMessage`: Base64 encoded message of the referenced content
+  - `referencedSenderPubkey`: Public key of the referenced content's author
+  - `referencedNickname`: Base64 encoded nickname of referenced author (optional)
+  - `referencedProfileImage`: Base64 encoded profile image of referenced author (optional)
+
+Quotes are treated as posts with all standard interaction fields (upvotes, downvotes, replies, etc.) and include the data from the content being quoted.
+
 **Response:**
 ```json
 {
@@ -488,6 +555,7 @@ These fields are populated when users have shared profile information through br
       "signature": "3045022100a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890022034567890123456789012345678901234567890123456789012345678901234567890",
       "timestamp": 1703184000,
       "repliesCount": 4,
+      "quotesCount": 0,
       "upVotesCount": 12,
       "downVotesCount": 2,
       "repostsCount": 3,
@@ -497,7 +565,35 @@ These fields are populated when users have shared profile information through br
       "isDownvoted": true,
       "userNickname": "Sm9obg==",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": false
+      "blockedUser": false,
+      "isQuote": false
+    },
+    {
+      "id": "q1x2y3z4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+      "userPublicKey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
+      "postContent": "R3JlYXQgcG9pbnQhIEkgY29tcGxldGVseSBhZ3JlZSB3aXRoIHRoaXM=",
+      "signature": "3045022100b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b20220444555666777888999000111222333444555666777888999000111222333444555",
+      "timestamp": 1703184500,
+      "repliesCount": 0,
+      "quotesCount": 0,
+      "upVotesCount": 8,
+      "downVotesCount": 0,
+      "repostsCount": 1,
+      "parentPostId": null,
+      "mentionedPubkeys": [],
+      "isUpvoted": true,
+      "isDownvoted": false,
+      "userNickname": "Sm9obg==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false,
+      "isQuote": true,
+      "quote": {
+        "referencedContentId": "w1x2y3z4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2",
+        "referencedMessage": "TWFya2V0IGFuYWx5c2lzIHNob3dzIGludGVyZXN0aW5nIHBhdHRlcm5zIGVtZXJnaW5n",
+        "referencedSenderPubkey": "029876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba98",
+        "referencedNickname": "QWxpY2U=",
+        "referencedProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+      }
     }
   ],
   "pagination": {
@@ -569,6 +665,7 @@ Exactly one of `post` or `user` must be provided, but not both.
       "signature": "304502210001010101010101010101010101010101010101010101010101010101010101010220010101010101010101010101010101010101010101010101010101010101010101",
       "timestamp": 1703180400,
       "repliesCount": 2,
+      "quotesCount": 0,
       "upVotesCount": 15,
       "downVotesCount": 1,
       "repostsCount": 2,
@@ -589,6 +686,8 @@ Exactly one of `post` or `user` must be provided, but not both.
 }
 ```
 
+**Note:** The `quotesCount` field indicates how many quotes reference this reply. Replies can be quoted just like posts.
+
 ### 9. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
@@ -607,6 +706,16 @@ The `get-post-details` API includes optional user profile fields for the post:
 
 These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
 
+**Quote Support:**
+This endpoint returns quote posts with the same structure as `get-posts-watching`:
+- `isQuote`: Boolean field indicating if this is a quote (true) or regular post (false)
+- `quote`: Object containing referenced content data (only present when `isQuote` is true)
+  - `referencedContentId`: Transaction ID of the referenced content (64-character hex string)
+  - `referencedMessage`: Base64 encoded message of the referenced content
+  - `referencedSenderPubkey`: Public key of the referenced content's author
+  - `referencedNickname`: Base64 encoded nickname of referenced author (optional)
+  - `referencedProfileImage`: Base64 encoded profile image of referenced author (optional)
+
 **Response:**
 ```json
 {
@@ -617,6 +726,7 @@ These fields are populated when users have shared profile information through br
     "signature": "3045022100a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890022034567890123456789012345678901234567890123456789012345678901234567890",
     "timestamp": 1703184000,
     "repliesCount": 4,
+    "quotesCount": 0,
     "upVotesCount": 12,
     "downVotesCount": 2,
     "repostsCount": 3,
@@ -626,7 +736,41 @@ These fields are populated when users have shared profile information through br
     "isDownvoted": false,
     "userNickname": "Sm9obg==",
     "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-    "blockedUser": false
+    "blockedUser": false,
+    "isQuote": false
+  }
+}
+```
+
+**Example Quote Response:**
+```json
+{
+  "post": {
+    "id": "78f0f1333439c75c614add631c7caade91ebf961707386f0fd296507197423c9",
+    "userPublicKey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
+    "postContent": "VGVzdGluZyBvdXQgYW5vdGhlciBxdW90ZS4uLi4=",
+    "signature": "b6cca5f892e99d3037840539d478fe69aedab3692febaf56fc7f672e4049d8cf23e71d28dad8306195fad252ced69221568fca8eb17dacbf13d1ab4512fdf3f8",
+    "timestamp": 1759784264991,
+    "repliesCount": 0,
+    "quotesCount": 0,
+    "upVotesCount": 1,
+    "downVotesCount": 0,
+    "repostsCount": 0,
+    "parentPostId": null,
+    "mentionedPubkeys": ["038ea9ca1fe1f22cc8074cc576e0870cf50f773c90c1f4830fd6ba6f60771cc1f3"],
+    "isUpvoted": true,
+    "isDownvoted": false,
+    "userNickname": "VGhlU2hlZXBDYXRPZmZpY2lhbA==",
+    "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAMa0lEQVR4AdSZCX...",
+    "blockedUser": false,
+    "isQuote": true,
+    "quote": {
+      "referencedContentId": "53360bbbed8ce2efc1facd2969ea579a87c3a93cee8adf4315c92e81e1b0545c",
+      "referencedMessage": "VGVzdGluZyBvdXQgYSBtZW50aW9uLgpIaSwgS1MhCkAwMzNkMDE3MDlhMDJiZjc4Zjk1ZTA5Y2QwMGJhOTNhZDhmYjdjOGFjMTFlNmQzZjg3MWExMTA2MmVlYjJhYThjZDgK",
+      "referencedSenderPubkey": "038ea9ca1fe1f22cc8074cc576e0870cf50f773c90c1f4830fd6ba6f60771cc1f3",
+      "referencedNickname": "anRtYWM1OA==",
+      "referencedProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAQA..."
+    }
   }
 }
 ```
@@ -686,12 +830,13 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
 ### Post Object
   ```typescript
   interface ServerPost {
-    id: string; // 32-byte cryptographic hash (64-character hex string) 
+    id: string; // 32-byte cryptographic hash (64-character hex string)
     userPublicKey: string; // User's public key (66-character hex string with 02/03 prefix)
     postContent: string; // Base64 encoded post content
     signature: string; // 64-byte Schnorr signature as hex string (130 characters)
     timestamp: number; // Unix timestamp
     repliesCount: number; // Number of replies
+    quotesCount: number; // Number of quotes (how many times this content has been quoted)
     upVotesCount: number; // Number of upvotes
     downVotesCount?: number; // Number of downvotes (optional, defaults to 0)
     repostsCount: number; // Number of reposts
@@ -701,6 +846,16 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
     isDownvoted: boolean; // Whether the requesting user has downvoted this post (for APIs with requesterPubkey)
     userNickname?: string; // Base64 encoded user nickname (optional)
     userProfileImage?: string; // Base64 encoded profile image (optional)
+    isQuote: boolean; // Whether this is a quote (true) or regular post (false)
+    quote?: QuoteData; // Quote reference data (only present when isQuote is true)
+  }
+
+  interface QuoteData {
+    referencedContentId: string; // Transaction ID of the referenced content (64-character hex string)
+    referencedMessage: string; // Base64 encoded message of the referenced content
+    referencedSenderPubkey: string; // Public key of the referenced content's author
+    referencedNickname?: string; // Base64 encoded nickname of referenced author (optional)
+    referencedProfileImage?: string; // Base64 encoded profile image of referenced author (optional)
   }
   ```
 
@@ -977,12 +1132,14 @@ curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df
 
 **Implementation Details:**
 - Counts all mentions of the user in `k_mentions` table across content types: 'post', 'reply', and 'vote'
+- Counts quotes of the user's content from `k_contents` table (content_type = 'quote')
 - When `after` cursor is provided, only counts notifications after that cursor position (using compound cursor format `timestamp_id`)
 - Excludes notifications from blocked users (checks `k_blocks` table)
+- Quotes are counted separately from mentions to avoid double-counting
 - Returns simple integer count for efficient UI updates
 
 ### 11. Get Notifications
-Fetch paginated notifications for a user including posts, replies, and votes mentioning them:
+Fetch paginated notifications for a user including posts, replies, votes mentioning them, and quotes of their content:
 
 ```bash
 # Get first page of notifications (latest 10)
@@ -1068,7 +1225,15 @@ curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df235397
    - `postContent`: Base64 encoded reply content
    - Vote-specific fields are `null`
 
-3. **Vote Notifications** (`contentType: "vote"`):
+3. **Quote Notifications** (`contentType: "quote"`):
+   - When someone quotes the user's content (post, reply, or quote)
+   - `postContent`: Base64 encoded content of the quote itself
+   - Quote-specific fields:
+     - `referencedContentId`: ID of the user's original content being quoted (optional)
+     - `referencedMessage`: Base64 encoded content of the original post/reply being quoted (optional)
+   - Vote-specific fields are `null`
+
+4. **Vote Notifications** (`contentType: "vote"`):
    - When someone votes on content that mentions the user
    - `postContent`: Empty string (votes don't have content)
    - Additional vote fields:
@@ -1079,10 +1244,10 @@ curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df235397
 **Common Fields for All Notification Types:**
 - `id`: Transaction ID of the notification content
 - `userPublicKey`: Public key of the user who created the notification
-- `timestamp`: Uses `k_mentions.block_time` consistently for proper chronological ordering
+- `timestamp`: Block time for proper chronological ordering
 - `userNickname`: Base64 encoded nickname from user's broadcast (optional)
 - `userProfileImage`: Base64 encoded profile image from user's broadcast (optional)
-- `contentType`: Type of mention - "post", "reply", or "vote"
+- `contentType`: Type of notification - "post", "reply", "quote", or "vote"
 - `cursor`: Compound cursor combining timestamp and record ID (e.g., `"1758996519522_571321"`) for use with pagination
 
 **Vote-Specific Fields (only for vote notifications):**
@@ -1092,7 +1257,9 @@ curl "http://localhost:3000/get-notifications?requesterPubkey=02218b3732df235397
 - `votedContent`: Base64 encoded content of the post/reply being voted on
 
 **Database Implementation:**
-- Queries `k_mentions` table for all content types: 'post', 'reply', 'vote'
+- Queries `k_mentions` table for content types: 'post', 'reply', 'vote' (excludes 'quote' to avoid duplicates)
+- Queries `k_contents` table for content_type = 'quote' where the user's content is being quoted
+- Uses UNION ALL to combine mentions and quotes into a single notification stream
 - Uses complex SQL CTEs to join with respective content tables (`k_posts`, `k_replies`, `k_votes`)
 - For vote notifications, includes additional data about the voted content
 - Excludes notifications from blocked users

@@ -10,11 +10,11 @@ function encodeToBase64(text: string): string {
 export interface TransactionOptions {
   privateKey: string;
   userMessage: string;
-  type: 'post' | 'reply' | 'broadcast' | 'vote' | 'block';
-  postId?: string; // Required for replies and votes
+  type: 'post' | 'reply' | 'broadcast' | 'vote' | 'block' | 'quote';
+  postId?: string; // Required for replies, votes, and quotes
   mentionedPubkeys?: string[]; // Array of pubkeys to mention
   vote?: 'upvote' | 'downvote'; // Required for vote type
-  mentionedPubkey?: string; // Single pubkey for vote transactions (author's pubkey)
+  mentionedPubkey?: string; // Single pubkey for vote/quote transactions (author's pubkey)
   blockingAction?: 'block' | 'unblock'; // Required for block type
   blockedUserPubkey?: string; // Required for block type
   networkId?: string; // Optional network override, defaults to context network
@@ -176,6 +176,24 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             });
 
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}block:${userPublicKey}:${messageSignature}:${blockingAction}:${blockedUserPubkey}`;
+        } else if (type === 'quote') {
+            // Format: k:1:quote:sender_pubkey:sender_signature:content_id:base64_encoded_message:mentioned_pubkey
+            if (!postId) {
+                throw new Error('Post ID is required for quotes');
+            }
+            if (!mentionedPubkey) {
+                throw new Error('Mentioned pubkey (quoted author) is required for quotes');
+            }
+            // Sign the string: content_id:base64_encoded_message:mentioned_pubkey
+            signatureData = `${postId}:${encodedMessage}:${mentionedPubkey}`;
+
+            messageSignature = signMessage({
+                message: signatureData,
+                privateKey: privateKeyObject,
+                noAuxRand: false
+            });
+
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}quote:${userPublicKey}:${messageSignature}:${postId}:${encodedMessage}:${mentionedPubkey}`;
         } else {
             throw new Error(`Unsupported transaction type: ${type}`);
         }

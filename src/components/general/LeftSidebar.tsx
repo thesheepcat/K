@@ -1,4 +1,4 @@
-import { User, Settings, MessageSquareQuote, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell } from 'lucide-react';
+import { User, Settings, MessageSquare, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,7 +38,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   }, [isAuthenticated, publicKey, apiBaseUrl]);
 
   const menuItems = [
-    { icon: MessageSquareQuote, label: 'My posts', path: '/' },
+    { icon: MessageSquare, label: 'My posts', path: '/' },
     { icon: MessageSquareReply, label: 'My replies', path: '/my-replies' },
     //{ icon: UserRoundPlus, label: 'Following', path: '/following' },
     { icon: ScanEye, label: 'Watching', path: '/watching' },

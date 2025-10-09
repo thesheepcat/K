@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, MessageCircle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, MessageCircle, MessageSquareQuote } from "lucide-react";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import { LinkifiedText } from '@/utils/linkUtils';
+import QuoteDialog from "../dialogs/QuoteDialog";
+import SimplifiedPostCard from "./SimplifiedPostCard";
 
 interface PostCardProps {
   post: Post;
@@ -45,6 +47,7 @@ const PostCard: React.FC<PostCardProps> = ({
     });
   };
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
+  const [showQuoteDialog, setShowQuoteDialog] = useState(false);
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
@@ -221,23 +224,37 @@ const PostCard: React.FC<PostCardProps> = ({
               </p>
             </div>
           )}
+          {/* Render quoted post if this is a quote */}
+          {post.isQuote && post.quote && (
+            <div className="mt-3">
+              <SimplifiedPostCard
+                quote={post.quote}
+                onClick={post.quote.referencedId ? (e) => {
+                  e?.stopPropagation();
+                  if (post.quote) {
+                    navigate(`/post/${post.quote.referencedId}`);
+                  }
+                } : undefined}
+              />
+            </div>
+          )}
           <div className="flex items-center justify-between mt-3 w-full">
             
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="text-muted-foreground hover:text-info p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
               // TO BE IMPLEMENTED - Reply count click functionality and hover effects
               //className="text-secondary-action hover:text-info hover:bg-interactive-hover p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
               onClick={() => {
                 if (context === 'list') {
                   // Navigate to PostDetailView with reply intent
-                  navigate(`/post/${post.id}`, { 
-                    state: { 
-                      post, 
-                      shouldReply: true, 
-                      replyToId: post.id 
-                    } 
+                  navigate(`/post/${post.id}`, {
+                    state: {
+                      post,
+                      shouldReply: true,
+                      replyToId: post.id
+                    }
                   });
                 } else if (onReply) {
                   // Use current behavior for detail view
@@ -248,15 +265,28 @@ const PostCard: React.FC<PostCardProps> = ({
               <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               <span className="text-xs sm:text-sm">{post.replies}</span>
             </Button>
-            <Button 
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={!privateKey}
+              className="text-muted-foreground hover:text-info p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowQuoteDialog(true);
+              }}
+            >
+              <MessageSquareQuote className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="text-xs sm:text-sm">{post.quotes}</span>
+            </Button>
+            <Button
               variant="ghost"
               size="sm"
               disabled={post.downVoted || post.upVoted || isSubmittingVote || !privateKey}
               className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
                 post.downVoted || !privateKey
-                  ? 'text-muted-foreground' 
-                  : post.upVoted 
-                  ? 'text-success' 
+                  ? 'text-muted-foreground'
+                  : post.upVoted
+                  ? 'text-success'
                   : 'text-muted-foreground hover:text-success'
               }`}
               onClick={handleUpVote}
@@ -268,15 +298,15 @@ const PostCard: React.FC<PostCardProps> = ({
               )}
               <span className="text-xs sm:text-sm">{post.upVotes || 0}</span>
             </Button>
-            <Button 
+            <Button
               variant="ghost"
               size="sm"
               disabled={post.upVoted || post.downVoted || isSubmittingVote || !privateKey}
               className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
                 post.upVoted || !privateKey
-                  ? 'text-muted-foreground' 
-                  : post.downVoted 
-                  ? 'text-destructive' 
+                  ? 'text-muted-foreground'
+                  : post.downVoted
+                  ? 'text-destructive'
                   : 'text-muted-foreground hover:text-destructive'
               }`}
               onClick={handleDownVote}
@@ -288,19 +318,6 @@ const PostCard: React.FC<PostCardProps> = ({
               )}
               <span className="text-xs sm:text-sm">{post.downVotes || 0}</span>
             </Button>
-            {/* TODO - Repost implementation
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-success' : 'text-secondary-action'}`}
-              // TO BE IMPLEMENTED - Repost count click functionality and hover effects
-              // className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${post.reposted ? 'text-success' : 'text-secondary-action hover:text-success hover:bg-success-hover'}`}
-              // onClick={() => onRepost(post.id)}
-            >
-              <Repeat2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-              <span className="text-xs sm:text-sm">{post.reposts}</span>
-            </Button>
-            */}
           </div>
         </div>
       </div>
@@ -314,6 +331,14 @@ const PostCard: React.FC<PostCardProps> = ({
         displayName={post.author.name}
         userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
+      />
+
+      {/* Quote Dialog */}
+      <QuoteDialog
+        isOpen={showQuoteDialog}
+        onClose={() => setShowQuoteDialog(false)}
+        postId={post.id}
+        quotedAuthorPubkey={post.author.pubkey}
       />
     </div>
   );
