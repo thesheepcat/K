@@ -89,21 +89,21 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
   // Save settings whenever they change (backup mechanism)
   useEffect(() => {
-    const settings = { 
-      selectedNetwork, 
-      apiBaseUrl, 
-      kaspaConnectionType, 
+    const settings = {
+      selectedNetwork,
+      apiBaseUrl,
+      kaspaConnectionType,
       customKaspaNodeUrl,
       theme
     };
-    
+
     // Don't save on initial load (when all values are defaults)
-    const isInitialLoad = selectedNetwork === 'testnet-10' && 
-                         apiBaseUrl === 'http://localhost:3000' && 
-                         kaspaConnectionType === 'resolver' && 
+    const isInitialLoad = selectedNetwork === 'testnet-10' &&
+                         apiBaseUrl === 'https://indexer.kaspatalk.net' &&
+                         kaspaConnectionType === 'resolver' &&
                          customKaspaNodeUrl === '' &&
                          theme === 'light';
-    
+
     if (!isInitialLoad) {
       try {
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));

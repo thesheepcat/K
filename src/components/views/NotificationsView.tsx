@@ -11,7 +11,7 @@ interface NotificationData {
   timestamp: number;
   userNickname?: string;
   userProfileImage?: string;
-  contentType: 'post' | 'reply' | 'vote';
+  contentType: 'post' | 'reply' | 'vote' | 'quote';
   cursor: string;
   voteType?: 'upvote' | 'downvote' | null;
   mentionBlockTime?: number | null;
