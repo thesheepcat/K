@@ -273,25 +273,6 @@ k:1:quote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad
   ```
 ---
 
-### ❌ Watching a user (not yet confirmed)
-- User B activates the "watching" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page.
-
- ```mermaid
-sequenceDiagram
-    actor B as Bob (front-end)
-    B->>Bob's indexer: I want to watch Alice!
-    actor A as Alice (front-end)
-    A->>Alice Kaspa node: I love Kaspa!
-    Alice Kaspa node-->>Bob Kaspa node: I love Kaspa!
-    Bob Kaspa node->>Bob's indexer: I love Kaspa!
-    Bob's indexer->>B: I love Kaspa!
-```
-**Protocol specifications**
-No protocol definition is required.
-
----
-
-
 ### ❌ Endorsing (suggesting) users (not yet confirmed)
 - User A like User B so much that he feels like User B deserve an endorsement, due to the value of his contents;
 - User A broadcast an "endorsement" message to all his supporting users, suggesting to follow and support User B;

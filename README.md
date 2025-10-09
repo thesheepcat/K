@@ -81,9 +81,9 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 
 ### ❌ Future Features (not yet available)  
-- ❌ **Reposting**: Share others' content with your network
 - ❌ **Following/Unfollowing**: Manage your content feed
 - ❌ **User endorsements**: Promote and suggest other users
+- ❌ **Personal indexer**: A light and clean indexer for personal use
 
 ---
 
