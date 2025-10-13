@@ -18,6 +18,8 @@ interface UserPostCardProps {
   onClick?: () => void;
   showUnblockButton?: boolean;
   onUnblock?: (userPubkey: string) => void;
+  showUnfollowButton?: boolean;
+  onUnfollow?: (userPubkey: string) => void;
 }
 
 const UserPostCard: React.FC<UserPostCardProps> = ({
@@ -26,11 +28,14 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   isComment = false,
   onClick,
   showUnblockButton = false,
-  onUnblock
+  onUnblock,
+  showUnfollowButton = false,
+  onUnfollow
 }) => {
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   const [isSubmittingUnblock, setIsSubmittingUnblock] = useState(false);
+  const [isSubmittingUnfollow, setIsSubmittingUnfollow] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
   
@@ -82,6 +87,50 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       });
     } finally {
       setIsSubmittingUnblock(false);
+    }
+  };
+
+  const handleUnfollow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!privateKey || !post.author.pubkey || isSubmittingUnfollow) return;
+
+    try {
+      setIsSubmittingUnfollow(true);
+
+      // Send unfollow transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for following actions
+        type: 'follow' as any, // Cast as any since it's a new type
+        followingAction: 'unfollow',
+        followedUserPubkey: post.author.pubkey
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success('Unfollow transaction successful!', {
+          description: (
+            <div className="space-y-1">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+            </div>
+          ),
+          duration: 5000,
+        });
+
+        // Call the callback to notify parent component
+        if (onUnfollow) {
+          onUnfollow(post.author.pubkey);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting unfollow:', error);
+      toast.error('Error submitting unfollow', {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingUnfollow(false);
     }
   };
 
@@ -158,6 +207,20 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
                   ) : null}
                   Unblock
+                </Button>
+              )}
+              {showUnfollowButton && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isSubmittingUnfollow || !privateKey}
+                  onClick={handleUnfollow}
+                  className="rounded-none text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                >
+                  {isSubmittingUnfollow ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
+                  ) : null}
+                  Unfollow
                 </Button>
               )}
             </div>

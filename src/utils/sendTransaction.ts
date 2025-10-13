@@ -10,13 +10,15 @@ function encodeToBase64(text: string): string {
 export interface TransactionOptions {
   privateKey: string;
   userMessage: string;
-  type: 'post' | 'reply' | 'broadcast' | 'vote' | 'block' | 'quote';
+  type: 'post' | 'reply' | 'broadcast' | 'vote' | 'block' | 'quote' | 'follow';
   postId?: string; // Required for replies, votes, and quotes
   mentionedPubkeys?: string[]; // Array of pubkeys to mention
   vote?: 'upvote' | 'downvote'; // Required for vote type
   mentionedPubkey?: string; // Single pubkey for vote/quote transactions (author's pubkey)
   blockingAction?: 'block' | 'unblock'; // Required for block type
   blockedUserPubkey?: string; // Required for block type
+  followingAction?: 'follow' | 'unfollow'; // Required for follow type
+  followedUserPubkey?: string; // Required for follow type
   networkId?: string; // Optional network override, defaults to context network
 }
 
@@ -27,7 +29,7 @@ export interface TransactionResult {
 }
 
 export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {
-    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, blockingAction, blockedUserPubkey, networkId: overrideNetworkId } = options;
+    const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, blockingAction, blockedUserPubkey, followingAction, followedUserPubkey, networkId: overrideNetworkId } = options;
     
     try {
         // Ensure Kaspa SDK is loaded
@@ -176,6 +178,24 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
             });
 
             payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}block:${userPublicKey}:${messageSignature}:${blockingAction}:${blockedUserPubkey}`;
+        } else if (type === 'follow') {
+            // Format: k:1:follow:sender_pubkey:sender_signature:following_action:followed_user_pubkey
+            if (!followingAction || (followingAction !== 'follow' && followingAction !== 'unfollow')) {
+                throw new Error('Valid following action (follow/unfollow) is required for follow transactions');
+            }
+            if (!followedUserPubkey) {
+                throw new Error('Followed user pubkey is required for follow transactions');
+            }
+            // Sign the string: following_action:followed_user_pubkey
+            signatureData = `${followingAction}:${followedUserPubkey}`;
+
+            messageSignature = signMessage({
+                message: signatureData,
+                privateKey: privateKeyObject,
+                noAuxRand: false
+            });
+
+            payload = `${K_PROTOCOL_PREFIX}${K_PROTOCOL_VERSION}follow:${userPublicKey}:${messageSignature}:${followingAction}:${followedUserPubkey}`;
         } else if (type === 'quote') {
             // Format: k:1:quote:sender_pubkey:sender_signature:content_id:base64_encoded_message:mentioned_pubkey
             if (!postId) {

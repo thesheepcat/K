@@ -270,6 +270,168 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 - `prevCursor`: Timestamp cursor for fetching newer posts (use with `after` parameter)
 - Both cursors are `null` when no more posts are available in that direction
 
+### 2.1. Get Contents Following
+
+Fetch all content (posts, replies, and quotes) from users that the requester is following. This endpoint provides a comprehensive feed of followed users' activities with pagination support and voting status:
+
+```bash
+# First page (latest 10 content items)
+curl "http://localhost:3000/get-contents-following?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+
+# Next page (older content)
+curl "http://localhost:3000/get-contents-following?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&before=1703185000"
+
+# Check for newer content
+curl "http://localhost:3000/get-contents-following?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&after=1703190000"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the content (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of content items to return (max: 100, min: 1)
+- `before` (optional): Return content created before this timestamp (for pagination to older content)
+- `after` (optional): Return content created after this timestamp (for fetching newer content)
+
+**Key Features:**
+- **Comprehensive Content Feed**: Returns posts, replies, AND quotes from followed users
+- **Follow-Based Filtering**: Only shows content from users the requester explicitly follows (via k_follows table)
+- **Full Enrichment**: Includes voting status (upvotes/downvotes), reply counts, quote counts, and user profile data
+- **Efficient Query**: Uses INNER JOIN with k_follows table for optimal performance
+
+**Content Types Included:**
+1. **Posts**: Original posts from followed users
+2. **Replies**: Replies to any content (including replies to non-followed users' posts)
+3. **Quotes**: Quotes of any content with full referenced content details
+
+**User Profile Information:**
+Each content item includes optional user profile fields:
+- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
+
+**Content Type Support:**
+
+1. **Regular Posts** (`contentType: "post"`):
+   - `isQuote`: false
+   - `quote`: null
+   - `parentPostId`: null
+
+2. **Quotes** (`contentType: "quote"`):
+   - `isQuote`: true
+   - `quote`: Object containing full referenced content data
+     - `referencedContentId`: Transaction ID of the quoted content
+     - `referencedMessage`: Base64 encoded message of the quoted content
+     - `referencedSenderPubkey`: Public key of the quoted content's author
+     - `referencedNickname`: Base64 encoded nickname of quoted author (optional)
+     - `referencedProfileImage`: Base64 encoded profile image of quoted author (optional)
+   - `parentPostId`: null
+
+3. **Replies** (`contentType: "reply"`):
+   - `isQuote`: false
+   - `quote`: null
+   - `parentPostId`: null
+   - Note: Replies are displayed as standalone content without parent post references
+
+**Response Example:**
+```json
+{
+  "posts": [
+    {
+      "id": "8541597df5aa9daf5540f3b38a42ac403dfe543b72e39277b05b6394f4e6cb75",
+      "userPublicKey": "0287262bc8947850979b71b2aefc7410f2d1cefb35079a5055d6f69a68e9212b01",
+      "postContent": "Q3VycmVudGx5IGFuZHJvaWQg8J+YhSA=",
+      "signature": "9b74630c10a9150c962bc226031b313aaea54eb8d24bab1d0aa8798d3b9d1b5d...",
+      "timestamp": 1759897190827,
+      "repliesCount": 0,
+      "upVotesCount": 0,
+      "downVotesCount": 0,
+      "quotesCount": 0,
+      "repostsCount": 0,
+      "parentPostId": null,
+      "mentionedPubkeys": ["02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f"],
+      "isUpvoted": false,
+      "isDownvoted": false,
+      "userNickname": "QWN1dGU=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP...",
+      "blockedUser": false,
+      "contentType": "reply",
+      "isQuote": false
+    },
+    {
+      "id": "fdc28c4f1566e0f1813007184d4f652c17536f479be8bb3ff8757c706dbcb93e",
+      "userPublicKey": "033d01709a02bf78f95e09cd00ba93ad8fb7c8ac11e6d3f871a11062eeb2aa8cd8",
+      "postContent": "R3JlYXQgYW5hbHlzaXMh",
+      "signature": "8a5c2e9f1a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d...",
+      "timestamp": 1759880000000,
+      "repliesCount": 2,
+      "upVotesCount": 3,
+      "downVotesCount": 0,
+      "quotesCount": 1,
+      "repostsCount": 0,
+      "parentPostId": null,
+      "mentionedPubkeys": [],
+      "isUpvoted": false,
+      "isDownvoted": false,
+      "userNickname": "S2FzcGEgU2lsdmVy",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlE...",
+      "blockedUser": false,
+      "contentType": "quote",
+      "isQuote": true,
+      "quote": {
+        "referencedContentId": "63488ae3f764fbb7302fc6ebebf8bea8b1c1f15bffd50e85a6ec757544d0e258",
+        "referencedMessage": "TGludXgsIFdpbmRvd3Mgb3IgQW5kcm9pZD8=",
+        "referencedSenderPubkey": "02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f",
+        "referencedNickname": "VGhlU2hlZXBDYXRPZmZpY2lhbA==",
+        "referencedProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlE..."
+      }
+    },
+    {
+      "id": "7d36086b2de960967084042c1bf3efa36c3a7d7cf20867090592fb0185b5b0ac",
+      "userPublicKey": "033d01709a02bf78f95e09cd00ba93ad8fb7c8ac11e6d3f871a11062eeb2aa8cd8",
+      "postContent": "VGVzdGluZyBvdXQgSyBvbiBpT1MuIFdvcmtzIGdyZWF0...",
+      "signature": "92e4c6118d35b28a69b83287c94795bb66a19732fb68815060a351aab8321630...",
+      "timestamp": 1759855491756,
+      "repliesCount": 1,
+      "upVotesCount": 6,
+      "downVotesCount": 0,
+      "quotesCount": 0,
+      "repostsCount": 0,
+      "parentPostId": null,
+      "mentionedPubkeys": [],
+      "isUpvoted": true,
+      "isDownvoted": false,
+      "userNickname": "S2FzcGEgU2lsdmVy",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlE...",
+      "blockedUser": false,
+      "contentType": "post",
+      "isQuote": false
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1759855491756:456",
+    "prevCursor": "1759897190827:123"
+  }
+}
+```
+
+**Pagination Metadata:**
+- `hasMore`: Boolean indicating if more content is available for pagination
+- `nextCursor`: Compound cursor (timestamp:id) for fetching older content (use with `before` parameter)
+- `prevCursor`: Compound cursor (timestamp:id) for fetching newer content (use with `after` parameter)
+- Both cursors are `null` when no more content is available in that direction
+
+**Use Cases:**
+- Building a comprehensive activity feed of followed users
+- Showing all types of content (posts, replies, quotes) in chronological order
+- Creating a "Following Timeline" feature similar to Twitter's "Following" feed
+- Monitoring all activities from specific users of interest
+
+**Implementation Details:**
+- Uses INNER JOIN with k_follows table to filter content by followed users FIRST
+- Queries k_contents table for posts, replies, and quotes (content_type IN ('post', 'reply', 'quote'))
+- Enriches results with voting statistics, reply counts, quote counts
+- Includes user profile data and referenced content details for quotes
+- Single optimized SQL query for maximum performance
+
 ### 3. Get Mentions
 
 Fetch posts where a specific user has been mentioned with voting status. This endpoint requires pagination parameters:
@@ -432,7 +594,10 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
   "timestamp": 1703190000,
   "userNickname": "QWxpY2U=",
   "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-  "blockedUser": false
+  "blockedUser": false,
+  "followedUser": true,
+  "followersCount": 42,
+  "followingCount": 13
 }
 ```
 
@@ -445,11 +610,17 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 - `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
 - `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
 - `blockedUser`: Boolean indicating whether the requester has blocked this user
+- `followedUser`: Boolean indicating whether the requester is following this user
+- `followersCount`: Number of users following this user (how many followers they have)
+- `followingCount`: Number of users this user is following
 
-**Block Status Logic:**
-The `blockedUser` field indicates whether the requesting user (`requesterPubkey`) has blocked the target user (`user`). This is determined by checking the `k_blocks` table for records where:
-- `sender_pubkey` = `requesterPubkey` (the requester did the blocking)
-- `blocked_user_pubkey` = `user` (the target user was blocked)
+**Block and Follow Status Logic:**
+- The `blockedUser` field indicates whether the requesting user (`requesterPubkey`) has blocked the target user (`user`). This is determined by checking the `k_blocks` table for records where `sender_pubkey` = `requesterPubkey` and `blocked_user_pubkey` = `user`.
+- The `followedUser` field indicates whether the requesting user (`requesterPubkey`) is following the target user (`user`). This is determined by checking the `k_follows` table for records where `sender_pubkey` = `requesterPubkey` and `followed_user_pubkey` = `user`.
+
+**Follower Counts:**
+- `followersCount`: Total count from `k_follows` table where `followed_user_pubkey` = `user` (how many people follow this user)
+- `followingCount`: Total count from `k_follows` table where `sender_pubkey` = `user` (how many people this user follows)
 
 **Error Responses:**
 - `400 Bad Request`: Invalid or missing parameters
@@ -511,7 +682,90 @@ This endpoint performs an INNER JOIN between `k_blocks` and `k_broadcasts` table
 
 **Note:** This endpoint returns users in the order they were blocked (most recent blocks first). The response format matches `get-users` with pagination support, but includes only users that have been blocked by the requesting user.
 
-### 7. Get User Posts
+### 7. Get Followed Users
+Fetch a paginated list of users followed by the requester:
+
+```bash
+curl "http://localhost:3000/get-followed-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the followed users list (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of followed users to return (max: 100, min: 1)
+- `before` (optional): Return followed users created before this timestamp (for pagination to older followed users)
+- `after` (optional): Return followed users created after this timestamp (for fetching newer followed users)
+
+**Key Features:**
+- **Follow-Based Listing**: Returns only users that the requester actively follows
+- **User Profile Information**: Includes complete profile data (nickname, profile image)
+- **Chronological Ordering**: Ordered by follow timestamp (most recent first by default)
+- **Pagination Support**: Compound cursor pagination for efficient navigation through large follow lists
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "df6833cf130bb52635880ae32dd966b745eb314defd719bc8666e713f984d7de",
+      "userPublicKey": "033d01709a02bf78f95e09cd00ba93ad8fb7c8ac11e6d3f871a11062eeb2aa8cd8",
+      "postContent": "",
+      "signature": "60dd813e34bbebde2daf0ba4965d196ce1430efd70f34908a6186ac69469205dac20209932cfe8240bccf7c74b2fadf7d4a347a851a54b1450a77ce9fd8b1603",
+      "timestamp": 1760300191896,
+      "userNickname": "S2FzcGEgU2lsdmVy",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    },
+    {
+      "id": "e9470864f893fa82742d6c021fd29d9235e0f0034d4ebe63d273c746f2896234",
+      "userPublicKey": "038ea9ca1fe1f22cc8074cc576e0870cf50f773c90c1f4830fd6ba6f60771cc1f3",
+      "postContent": "",
+      "signature": "e305ae9a8b0a5cd5ff4bf96e1bdc9cc361147a7e95c897dae14d7f4515099023940f747f7ae66b7e1db642bb7955638f0d76904f1c21fda5116e3edfa0fe1728",
+      "timestamp": 1760300160957,
+      "userNickname": "anRtYWM1OA==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    }
+  ],
+  "pagination": {
+    "hasMore": false,
+    "nextCursor": null,
+    "prevCursor": "1760300191896_3"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of followed user objects with complete profile information
+- `pagination`: Standard pagination metadata with compound cursors (timestamp:id format)
+- `followedUser`: Always `true` for all users in this response
+- `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
+
+**Database Query Logic:**
+This endpoint performs an INNER JOIN between `k_follows` and `k_broadcasts` tables:
+1. Finds all records in `k_follows` where `sender_pubkey` = `requesterPubkey`
+2. Joins with `k_broadcasts` to get user profile data for each `followed_user_pubkey`
+3. Returns the broadcast/profile information for all followed users
+4. Orders by `block_time` DESC (most recent follows first)
+
+**Use Cases:**
+- Display a user's "Following" list in their profile
+- Show who the user is currently following
+- Manage follow relationships in the UI
+- Navigate through large lists of followed users with pagination
+
+**Implementation Details:**
+- Uses compound cursor pagination (timestamp:id) for consistent results
+- Automatically enriches user data with profile information from k_broadcasts
+- Preserves the timestamp when the follow action occurred
+- Supports bidirectional pagination with `before` and `after` parameters
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+**Note:** This endpoint returns users in the order they were followed (most recent follows first). The response format matches `get-users` with pagination support, but includes only users that are currently followed by the requesting user.
+
+### 8. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash

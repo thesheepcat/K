@@ -163,32 +163,32 @@ const PostCard: React.FC<PostCardProps> = ({
   };
   const avatarSize = isDetailView ? "h-12 w-12" : isComment ? "h-8 w-8" : "h-10 w-10";
   const contentTextSize = isDetailView ? "text-lg" : "text-base";
-  
+
   // Check if message is longer than 500 characters and truncate if needed
   const MAX_CHARS = 500;
   const isLongMessage = post.content.length > MAX_CHARS;
-  const displayContent = isDetailView || !isLongMessage 
-    ? post.content 
+  const displayContent = isDetailView || !isLongMessage
+    ? post.content
     : post.content.substring(0, MAX_CHARS) + '.....';
-  
+
   return (
-    <div 
+    <div
       className={`border-b border-border sm:border-l sm:border-r p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
       onClick={handleCardClick}
     >
       <div className="flex space-x-2 sm:space-x-3">
-        <Avatar 
+        <Avatar
           className={`${avatarSize} flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
           onClick={(e) => {
             e.stopPropagation();
             setShowUserDetailsDialog(true);
           }}
         >
-          <AvatarImage src={displayAvatar} />
-          <AvatarFallback className="bg-muted text-muted-foreground">
-            {post.author.name.split(' ').map(n => n[0]).join('')}
-          </AvatarFallback>
-        </Avatar>
+            <AvatarImage src={displayAvatar} />
+            <AvatarFallback className="bg-muted text-muted-foreground">
+              {post.author.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
