@@ -9,10 +9,12 @@ import ResponsiveLayout from "./components/layout/ResponsiveLayout";
 import MyPosts from "./components/views/MyPostsView.tsx";
 import MyReplies from "./components/views/MyRepliesView.tsx";
 import Watching from "./components/views/WatchingView.tsx";
+import Following from "./components/views/FollowingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
 import BlockedUsersView from "./components/views/BlockedUsersView.tsx";
+import FollowedUsersView from "./components/views/FollowedUsersView.tsx";
 import PostDetailView from "./components/views/PostDetailView.tsx";
 import UserPostsView from "./components/views/UserPostsView.tsx";
 import ProfileView from "./components/views/ProfileView.tsx";
@@ -31,9 +33,11 @@ const MainApp: React.FC = () => {
   const [myPostsData, setMyPostsData] = useState<Post[]>([]); // Only server posts, no local posts
   const [myRepliesData, setMyRepliesData] = useState<Post[]>([]);
   const [watchingData, setWatchingData] = useState<Post[]>([]);
+  const [followingData, setFollowingData] = useState<Post[]>([]);
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
   const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
+  const [followedUsersData, setFollowedUsersData] = useState<Post[]>([]);
   useEffect(() => {
     // Hide the static HTML splash screen and load Kaspa WASM
     const loadApp = async () => {
@@ -94,6 +98,7 @@ const MainApp: React.FC = () => {
     setMyPostsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setMyRepliesData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
+    setFollowingData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
   };
 
@@ -111,6 +116,7 @@ const MainApp: React.FC = () => {
     setMyPostsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setMyRepliesData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
+    setFollowingData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
   };
 
@@ -125,6 +131,7 @@ const MainApp: React.FC = () => {
     setMyPostsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setMyRepliesData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setWatchingData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
+    setFollowingData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
   };
 
@@ -140,6 +147,10 @@ const MainApp: React.FC = () => {
     setWatchingData(serverPosts);
   };
 
+  const handleFollowingPostsUpdate = (serverPosts: Post[]) => {
+    setFollowingData(serverPosts);
+  };
+
   const handleMentionsPostsUpdate = (serverPosts: Post[]) => {
     setMentionsData(serverPosts);
   };
@@ -150,6 +161,10 @@ const MainApp: React.FC = () => {
 
   const handleBlockedUsersPostsUpdate = (serverPosts: Post[]) => {
     setBlockedUsersData(serverPosts);
+  };
+
+  const handleFollowedUsersPostsUpdate = (serverPosts: Post[]) => {
+    setFollowedUsersData(serverPosts);
   };
 
   
@@ -173,10 +188,22 @@ const MainApp: React.FC = () => {
       <SessionTimeoutWarning />
       <ResponsiveLayout>
         <Routes>
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
-              <MyPosts 
+              <Watching
+                posts={watchingData}
+                onUpVote={handleUpVote}
+                onDownVote={handleDownVote}
+                onRepost={handleRepost}
+                onServerPostsUpdate={handleWatchingPostsUpdate}
+              />
+            }
+          />
+          <Route
+            path="/my-posts"
+            element={
+              <MyPosts
                 posts={myPostsData}
                 onUpVote={handleUpVote}
                 onDownVote={handleDownVote}
@@ -184,30 +211,31 @@ const MainApp: React.FC = () => {
                 onPost={handlePost}
                 onServerPostsUpdate={handleServerPostsUpdate}
               />
-            } 
+            }
           />
-          <Route 
-            path="/my-replies" 
+          <Route
+            path="/my-replies"
             element={
-              <MyReplies 
+              <MyReplies
                 posts={myRepliesData}
                 onUpVote={handleUpVote}
                 onDownVote={handleDownVote}
                 onRepost={handleRepost}
                 onServerPostsUpdate={handleMyRepliesPostsUpdate}
               />
-            } 
-          /><Route 
-    path="/watching" 
+            }
+          />
+  <Route
+    path="/following"
     element={
-      <Watching 
-        posts={watchingData}
+      <Following
+        posts={followingData}
         onUpVote={handleUpVote}
         onDownVote={handleDownVote}
         onRepost={handleRepost}
-        onServerPostsUpdate={handleWatchingPostsUpdate}
+        onServerPostsUpdate={handleFollowingPostsUpdate}
       />
-    } 
+    }
   />
   <Route
     path="/mentions"
@@ -244,7 +272,16 @@ const MainApp: React.FC = () => {
               />
             }
           />
-          <Route 
+          <Route
+            path="/followed-users"
+            element={
+              <FollowedUsersView
+                posts={followedUsersData}
+                onServerPostsUpdate={handleFollowedUsersPostsUpdate}
+              />
+            }
+          />
+          <Route
             path="/post/:postId" 
             element={
               <PostDetailView 

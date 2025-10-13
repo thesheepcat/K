@@ -223,7 +223,6 @@ sequenceDiagram
 
 Action: `quote`
 
-
 **Payload Format:**
 ```
 k:1:quote:sender_pubkey:sender_signature:content_id:base64_encoded_message:mentioned_pubkey
@@ -254,9 +253,11 @@ k:1:quote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad
     Alice Kaspa node->>Alice's indexer: I want to block Bob!
     Alice's indexer->>A: Bob is blocked!
 ```
+
 **Protocol Specifications**
   Action: `block`
-  **Payload Format:**
+
+**Payload Format:**
   ```
   k:1:block:sender_pubkey:sender_signature:blocking_action:blocked_user_pubkey
   ```
@@ -271,6 +272,44 @@ k:1:quote:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad
   ```
   k:1:block:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:block:030f657a3c77eab35c8f3d8d7bcf4ee1ca3aac7f991d0e3abacdb17e3c5de3b2f7
   ```
+---
+
+### ✅ Following/unfollowing users
+- User B, who already activated a K account last month, receive the broadcast message from User A and decides to follow him;
+- User B activates the "following" process: everytime User A posts something new, User B is alerted and visualize this new content ona dedicated sesction of K;
+- When User B activate the following process, User A is notified: now he knows User B is following him; in addition, everyone else in the network knows User A is supported by User B; 
+- In the meantime, User C, another long time K user, received User A broadcast and start following and receiving contents when User A posts something.
+
+
+```mermaid
+sequenceDiagram
+    actor B as Bob (front-end)
+    B->>Bob Kaspa node: I follow Alice!
+    Bob Kaspa node-->>Alice Kaspa node: I follow Alice!
+    Alice Kaspa node->>Alice's indexer: I follow Alice!
+    actor A as Alice (front-end)
+    Alice's indexer->>A: I follow Alice!
+```
+
+**Protocol Specifications**
+
+Action: `follow`
+
+**Payload Format:**
+```
+k:1:follow:sender_pubkey:sender_signature:following_action:followed_user_pubkey
+```
+
+### Field Descriptions- 
+  - `sender_pubkey`: The public key of the message sender
+  - `sender_signature`: Digital signature for consistency verification
+  - `following_action`: The value defining the following action (follow/unfollow)
+  - `followed_user_pubkey`: The pubkey of the user being followed/unfollowed
+
+### Example Usage
+```
+k:1:follow:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:follow:030f657a3c77eab35c8f3d8d7bcf4ee1ca3aac7f991d0e3abacdb17e3c5de3b2f7
+```
 ---
 
 ### ❌ Endorsing (suggesting) users (not yet confirmed)
@@ -315,59 +354,5 @@ k:1:suggest:sender_pubkey:sender_signature:suggested_pubkey:base64_encoded_messa
 k:1:suggest:02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f:fad0be9e2e4576708e15a4e06b7dd97badab1e585bbe15542a20fe4eba016c1a681f759c9f51e5801d5eeafc6cc62491b064661abba8b4b96e8118b74039f397:0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798:SSBsb3ZlIGRlY2VudHJhbGl6YXRpb24h
 
 ```
-
----
-
-
-### ❌ Following/unfollowing and supporting/unsupporting a user (not yet confirmed)
-- User B, who already activated a K account last month, receive the broadcast message from User A and decides to follow him;
-- User B activates the "following" process: everytime User A posts something new, User B is alerted and visualize this new content on his K home page;
-- User B decides that User A contents are interesting, therefore he chooses to support him;
-- When activating the supporting process, User B is sending a certain amount of KAS to User A;
-- User A is notified: now he knows User B is supporting him; in addition, everyone else in the network knows User A is supported by User B; 
-- In the meantime, User C, another long time K user, received User A broadcast and start following and receiving notifications when User A posts something;
-- But User C doesn't like User A contents, therefore he doesn't activate the supporting process and, after few days, he also unfollow User A.
-
-
-```mermaid
-sequenceDiagram
-    actor B as Bob (front-end)
-    B->>Bob Kaspa node: I support Alice!
-    Bob Kaspa node-->>Alice Kaspa node: I support Alice!
-    Alice Kaspa node->>Alice's indexer: I support Alice!
-    actor A as Alice (front-end)
-    Alice's indexer->>A: I support Alice!
-```
-
-**Protocol Specifications**
-
-Action: `support`
-
-**Payload Format:**
-```
-k:1:support:message_body
-```
-
-**Message Body Structure:**
-```json
-{
-  "sender_pubkey": "",
-  "sender_signature": "",
-  "message": "",
-  "recipient_pubkey": ""
-}
-```
-
-### Example Usage
-```
-k:1:support:{"sender_pubkey":"abc123","sender_signature":"def456","message":"I support Alice!","recipient_pubkey":"xyz987"}
-```
-
-### Field Descriptions
-- `sender_pubkey`: The public key of the message sender
-- `sender_signature`: Digital signature for message verification
-- `message`: The message to post when supporting someone
-- `recipient_pubkey`: The pubkey of the user being supported
-
 
 ---

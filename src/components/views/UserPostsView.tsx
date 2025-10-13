@@ -59,9 +59,13 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
     userNickname?: string;
     userProfileImage?: string;
     blockedUser: boolean;
+    followedUser: boolean;
+    followersCount: number;
+    followingCount: number;
   } | null>(null);
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   const [isSubmittingBlock, setIsSubmittingBlock] = useState(false);
+  const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
 
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -329,6 +333,50 @@ const loadMorePosts = useCallback(async () => {
     }
   };
 
+  const handleFollow = async () => {
+    if (!privateKey || !userIdentifier || isSubmittingFollow) return;
+
+    try {
+      setIsSubmittingFollow(true);
+
+      // Determine the action based on current followed state
+      const action = userDetails?.followedUser ? 'unfollow' : 'follow';
+
+      // Send follow transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for following actions
+        type: 'follow' as any, // Cast as any since it's a new type
+        followingAction: action,
+        followedUserPubkey: userIdentifier
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success(`${action === 'follow' ? 'Follow' : 'Unfollow'} transaction successful!`, {
+          description: (
+            <div className="space-y-1">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+            </div>
+          ),
+          duration: 5000,
+        });
+
+        // Optimistically update the UI
+        setUserDetails(prev => prev ? { ...prev, followedUser: !prev.followedUser } : null);
+      }
+    } catch (error) {
+      console.error(`Error submitting ${userDetails?.followedUser ? 'unfollow' : 'follow'}:`, error);
+      toast.error(`Error submitting ${userDetails?.followedUser ? 'unfollow' : 'follow'}`, {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingFollow(false);
+    }
+  };
+
   // Generate dynamic avatar (must be called before any early returns)
   const jdenticonAvatar = useJdenticonAvatar(userIdentifier || '', 48);
 
@@ -425,25 +473,55 @@ const loadMorePosts = useCallback(async () => {
                   {decodedPostContent && (
                     <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{decodedPostContent}</p>
                   )}
+                  {userDetails && (
+                    <div className="flex gap-4 mt-2 text-sm">
+                      <div className="flex gap-1">
+                        <span className="font-semibold text-foreground">{userDetails.followingCount}</span>
+                        <span className="text-muted-foreground">Following</span>
+                      </div>
+                      <div className="flex gap-1">
+                        <span className="font-semibold text-foreground">{userDetails.followersCount}</span>
+                        <span className="text-muted-foreground">Followers</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center space-x-2">
                   {!isCurrentUser && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isSubmittingBlock || !privateKey}
-                      onClick={handleBlock}
-                      className={`rounded-none ${
-                        userDetails?.blockedUser
-                          ? 'text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground'
-                          : 'text-foreground border-border hover:bg-muted hover:text-foreground'
-                      }`}
-                    >
-                      {isSubmittingBlock ? (
-                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                      ) : null}
-                      {userDetails?.blockedUser ? 'Unblock' : 'Block'}
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSubmittingBlock || !privateKey}
+                        onClick={handleBlock}
+                        className={`rounded-none ${
+                          userDetails?.blockedUser
+                            ? 'text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground'
+                            : 'text-foreground border-border hover:bg-muted hover:text-foreground'
+                        }`}
+                      >
+                        {isSubmittingBlock ? (
+                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
+                        ) : null}
+                        {userDetails?.blockedUser ? 'Unblock' : 'Block'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSubmittingFollow || !privateKey}
+                        onClick={handleFollow}
+                        className={`rounded-none ${
+                          userDetails?.followedUser
+                            ? 'text-primary border-primary hover:bg-primary hover:text-primary-foreground'
+                            : 'text-foreground border-border hover:bg-muted hover:text-foreground'
+                        }`}
+                      >
+                        {isSubmittingFollow ? (
+                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
+                        ) : null}
+                        {userDetails?.followedUser ? 'Unfollow' : 'Follow'}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

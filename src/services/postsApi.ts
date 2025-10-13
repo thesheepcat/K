@@ -93,14 +93,14 @@ export const fetchFollowingPosts = async (requesterPubkey: string, options?: Pag
 export const fetchWatchingPosts = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedWatchingPostsResponse> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-posts-watching`);
-    
+
     // Requester pubkey parameter is mandatory
     url.searchParams.append('requesterPubkey', requesterPubkey);
-    
+
     // Limit is mandatory for get-posts-watching endpoint
     const limit = options?.limit || 10; // Default to 10 if not provided
     url.searchParams.append('limit', limit.toString());
-    
+
     // Before and after are optional
     if (options?.before) {
       url.searchParams.append('before', options.before);
@@ -124,6 +124,47 @@ export const fetchWatchingPosts = async (requesterPubkey: string, options?: Pagi
     return data;
   } catch (error) {
     console.error('Error fetching watching posts with pagination:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch contents (posts, replies, quotes) from followed users with pagination
+ */
+export const fetchFollowingContents = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedWatchingPostsResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-contents-following`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // Limit is mandatory for get-contents-following endpoint
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedWatchingPostsResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching following contents with pagination:', error);
     throw error;
   }
 };
@@ -250,6 +291,47 @@ export const fetchBlockedUsers = async (requesterPubkey: string, options?: Pagin
     return data;
   } catch (error) {
     console.error('Error fetching paginated blocked users:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch followed users from the server with pagination
+ */
+export const fetchFollowedUsers = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-followed-users`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching paginated followed users:', error);
     throw error;
   }
 };
@@ -466,6 +548,9 @@ export const fetchUserDetails = async (userPublicKey: string, requesterPubkey: s
   userNickname?: string;
   userProfileImage?: string;
   blockedUser: boolean;
+  followedUser: boolean;
+  followersCount: number;
+  followingCount: number;
 }> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-user-details`);
