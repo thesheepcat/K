@@ -4,9 +4,11 @@ import {
   fetchMyPosts,
   fetchFollowingPosts,
   fetchWatchingPosts,
+  fetchFollowingContents,
   fetchMentions,
   fetchUsers,
   fetchBlockedUsers,
+  fetchFollowedUsers,
   fetchUserDetails,
   fetchPostDetails,
   fetchPostReplies,
@@ -84,13 +86,13 @@ export const useKaspaPostsApi = () => {
   const fetchAndConvertWatchingPosts = useCallback(async (currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedWatchingPostsResponse['pagination'] }> => {
     try {
       const response = await fetchWatchingPosts(currentUserPubkey, options, apiBaseUrl);
-      
+
       // Defensive check for response structure
       if (!response) {
         console.error('fetchWatchingPosts returned null/undefined response');
         throw new Error('No response from fetchWatchingPosts');
       }
-      
+
       if (!response.pagination) {
         console.error('fetchWatchingPosts response missing pagination:', response);
         throw new Error('Response missing pagination data');
@@ -98,13 +100,41 @@ export const useKaspaPostsApi = () => {
 
       const posts = response.posts || [];
       const convertedPosts = await networkAwareConvertServerPostsToClientPosts(posts, currentUserPubkey);
-      
+
       return {
         posts: convertedPosts,
         pagination: response.pagination
       };
     } catch (error) {
       console.error('Error in fetchAndConvertWatchingPosts:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
+
+  const fetchAndConvertFollowingContents = useCallback(async (currentUserPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedWatchingPostsResponse['pagination'] }> => {
+    try {
+      const response = await fetchFollowingContents(currentUserPubkey, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchFollowingContents returned null/undefined response');
+        throw new Error('No response from fetchFollowingContents');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchFollowingContents response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerPostsToClientPosts(posts, currentUserPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertFollowingContents:', error);
       throw error;
     }
   }, [networkAwareConvertServerPostsToClientPosts, apiBaseUrl]);
@@ -194,6 +224,38 @@ export const useKaspaPostsApi = () => {
       };
     } catch (error) {
       console.error('Error in fetchAndConvertBlockedUsers:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
+  const fetchAndConvertFollowedUsers = useCallback(async (currentUserPubkey?: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      if (!currentUserPubkey) {
+        throw new Error('Current user public key is required for fetching followed users');
+      }
+
+      const response = await fetchFollowedUsers(currentUserPubkey, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchFollowedUsers returned null/undefined response');
+        throw new Error('No response from fetchFollowedUsers');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchFollowedUsers response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, currentUserPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertFollowedUsers:', error);
       throw error;
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
@@ -348,9 +410,11 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertMyPosts,
     fetchAndConvertFollowingPosts,
     fetchAndConvertWatchingPosts,
+    fetchAndConvertFollowingContents,
     fetchAndConvertMentions,
     fetchAndConvertUsers,
     fetchAndConvertBlockedUsers,
+    fetchAndConvertFollowedUsers,
     fetchAndConvertPostDetails,
     fetchAndConvertPostReplies,
     fetchAndConvertUserReplies,

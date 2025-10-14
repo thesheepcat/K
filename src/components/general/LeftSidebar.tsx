@@ -1,4 +1,4 @@
-import { User, Settings, MessageSquare, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell } from 'lucide-react';
+import { User, Settings, MessageSquare, MessageSquareReply, ScanEye, Users, LogOut, AtSign, UserX, Bell, UserRoundPlus, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,16 +38,16 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   }, [isAuthenticated, publicKey, apiBaseUrl]);
 
   const menuItems = [
-    { icon: MessageSquare, label: 'My posts', path: '/' },
+    { icon: ScanEye, label: 'Watching', path: '/' },
+    { icon: UserRoundPlus, label: 'Following', path: '/following' },
+    { icon: MessageSquare, label: 'My posts', path: '/my-posts' },
     { icon: MessageSquareReply, label: 'My replies', path: '/my-replies' },
-    //{ icon: UserRoundPlus, label: 'Following', path: '/following' },
-    { icon: ScanEye, label: 'Watching', path: '/watching' },
     { icon: AtSign, label: 'Mentions', path: '/mentions' },
     { icon: Bell, label: 'Notifications', path: '/notifications', showBadge: true },
-    
+
     { icon: Users, label: 'Users', path: '/users' },
+    { icon: UserCheck, label: 'Followed', path: '/followed-users' },
     { icon: UserX, label: 'Blocked', path: '/blocked-users' },
-    //{ icon: UserCheck, label: 'Promoted users', path: '/promoted' },
     { icon: User, label: 'Profile', path: '/profile' },
     { icon: Settings, label: 'Settings', path: '/settings' },
     { icon: LogOut, label: 'Logout', path: '/logout', isLogout: true },
@@ -73,11 +73,11 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   return (
     <div className={`${sidebarWidth} h-screen border-r border-border bg-background transition-all duration-300 ease-in-out ${
       isCollapsed && !isMobile ? 'p-2' : 'p-4'
-    } ${isMobile ? 'pt-20' : ''}`}>
-      <div className="mb-8 flex justify-center">
+    } ${isMobile ? 'pt-20' : ''} flex flex-col overflow-hidden`}>
+      <div className="mb-4 flex justify-center flex-shrink-0">
         <KaspaLogo className={`${logoSize} transition-all duration-300`} isDarkTheme={theme === 'dark'} />
       </div>
-      <nav className="space-y-3">
+      <nav className="space-y-3 overflow-y-auto flex-1">
         {menuItems.map((item) => (
           <Button
             key={item.label}

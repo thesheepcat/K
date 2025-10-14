@@ -77,13 +77,13 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **UI Themes**: Dark theme
 - ✅ **User blocking**: Spam protection and content filtering
 - ✅ **User notifications**: User is notified when mentioned
+- ✅ **Following/Unfollowing**: Manage your content feed
 - ✅ **Desktop app**: K available on desktop environment, without using the K site (on Linux and Windows)
 - ✅ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
 
 ### ❌ Future Features (not yet available)  
-- ❌ **Following/Unfollowing**: Manage your content feed
-- ❌ **User endorsements**: Promote and suggest other users
 - ❌ **Personal indexer**: A light and clean indexer for personal use
+- ❌ **User endorsements**: Promote and suggest other users
 
 ---
 
