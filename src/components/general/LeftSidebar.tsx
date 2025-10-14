@@ -73,11 +73,11 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   return (
     <div className={`${sidebarWidth} h-screen border-r border-border bg-background transition-all duration-300 ease-in-out ${
       isCollapsed && !isMobile ? 'p-2' : 'p-4'
-    } ${isMobile ? 'pt-20' : ''}`}>
-      <div className="mb-8 flex justify-center">
+    } ${isMobile ? 'pt-20' : ''} flex flex-col overflow-hidden`}>
+      <div className="mb-4 flex justify-center flex-shrink-0">
         <KaspaLogo className={`${logoSize} transition-all duration-300`} isDarkTheme={theme === 'dark'} />
       </div>
-      <nav className="space-y-3">
+      <nav className="space-y-3 overflow-y-auto flex-1">
         {menuItems.map((item) => (
           <Button
             key={item.label}
