@@ -3,6 +3,42 @@ import { generateAuthorInfo } from '@/utils/postUtils';
 import { Base64 } from 'js-base64';
 
 /**
+ * Health check response from the server
+ */
+export interface HealthCheckResponse {
+  network: string;
+  service: string;
+  status: string;
+  version: string;
+}
+
+/**
+ * Fetch health check from the server
+ */
+export const fetchHealthCheck = async (apiBaseUrl: string): Promise<HealthCheckResponse> => {
+  try {
+    const url = `${apiBaseUrl}/health`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: HealthCheckResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching health check:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch posts from the server for a specific user with pagination
  */
 export const fetchMyPosts = async (userPublicKey: string, requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedPostsResponse> => {

@@ -1,3 +1,5 @@
+import { KASPA_NETWORKS } from '@/constants/networks';
+
 class KaspaService {
   private static instance: KaspaService;
   private isLoaded: boolean = false;
@@ -84,9 +86,9 @@ class KaspaService {
       // Get public key
       const publicKeyObj = privateKeyObj.toPublicKey();
       const pubKey = publicKeyObj.toString();
-      
-      // Get address - use provided networkId or default to mainnet for backward compatibility
-      const targetNetwork = networkId || "mainnet";
+
+      // Get address - use provided networkId or default to mainnet
+      const targetNetwork = networkId || KASPA_NETWORKS.MAINNET;
       const addressObj = publicKeyObj.toAddress(targetNetwork);
       const addr = addressObj.toString();
       return {

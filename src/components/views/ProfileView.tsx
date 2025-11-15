@@ -8,6 +8,7 @@ import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { useKaspaAuth } from '@/hooks/useKaspaAuth';
 import kaspaService from '@/services/kaspaService';
 import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
+import { KASPA_NETWORKS } from '@/constants/networks';
 
 interface UtxoData {
   totalBalance: number;
@@ -676,7 +677,7 @@ const ProfileView: React.FC = () => {
                       <p className="text-sm text-warning font-medium">⚠️ Important</p>
                       <p className="text-xs text-warning/80 mt-1">
                         Double-check the destination address before sending. Transactions cannot be reversed.
-                        {selectedNetwork === 'mainnet' && ' You are using MAINNET - real KAS will be sent!'}
+                        {selectedNetwork === KASPA_NETWORKS.MAINNET && ' You are using MAINNET - real KAS will be sent!'}
                       </p>
                     </div>
                   </div>
@@ -704,7 +705,7 @@ const ProfileView: React.FC = () => {
                       type="text"
                       value={destinationAddress}
                       onChange={(e) => setDestinationAddress(e.target.value)}
-                      placeholder={`kaspa${selectedNetwork !== 'mainnet' ? 'test' : ''}:qq...`}
+                      placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
                       className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
