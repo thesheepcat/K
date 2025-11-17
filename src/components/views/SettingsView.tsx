@@ -172,7 +172,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleNetworkChange(e.target.value as KaspaNetwork)}
                     className="w-full"
                   >
-                    <SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>
+                    {/*<SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>*/}
                     <SelectOption value={KASPA_NETWORKS.TESTNET_10}>Testnet 10</SelectOption>
                   </Select>
                   <p className="text-xs text-muted-foreground">
