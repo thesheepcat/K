@@ -1,7 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import {
+  type KaspaNetwork,
+  DEFAULT_NETWORK,
+  getNetworkDisplayName as getNetworkDisplayNameUtil,
+  getNetworkRPCId as getNetworkRPCIdUtil,
+  isValidNetwork
+} from '@/constants/networks';
 
-export type KaspaNetwork = 'mainnet' | 'testnet-10' | 'testnet-11';
+export type { KaspaNetwork } from '@/constants/networks';
 export type KaspaConnectionType = 'resolver' | 'custom-node';
 export type Theme = 'light' | 'dark';
 
@@ -37,7 +44,7 @@ interface UserSettingsProviderProps {
 const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
-  const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>('testnet-10');
+  const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
   const [apiBaseUrl, setApiBaseUrlState] = useState<string>('https://indexer.kaspatalk.net');
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
@@ -49,9 +56,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
       if (storedSettings) {
         const settings = JSON.parse(storedSettings);
-        
-        if (settings.selectedNetwork && 
-            ['mainnet', 'testnet-10', 'testnet-11'].includes(settings.selectedNetwork)) {
+
+        if (settings.selectedNetwork && isValidNetwork(settings.selectedNetwork)) {
           setSelectedNetworkState(settings.selectedNetwork);
         }
         
@@ -98,7 +104,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     };
 
     // Don't save on initial load (when all values are defaults)
-    const isInitialLoad = selectedNetwork === 'testnet-10' &&
+    const isInitialLoad = selectedNetwork === DEFAULT_NETWORK &&
                          apiBaseUrl === 'https://indexer.kaspatalk.net' &&
                          kaspaConnectionType === 'resolver' &&
                          customKaspaNodeUrl === '' &&
@@ -165,21 +171,11 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   };
 
   const getNetworkDisplayName = (network: KaspaNetwork): string => {
-    switch (network) {
-      case 'mainnet':
-        return 'Mainnet';
-      case 'testnet-10':
-        return 'Testnet 10';
-      case 'testnet-11':
-        return 'Testnet 11';
-      default:
-        return network;
-    }
+    return getNetworkDisplayNameUtil(network);
   };
 
   const getNetworkRPCId = (network: KaspaNetwork): string => {
-    // Return the exact string needed for RPC connections
-    return network;
+    return getNetworkRPCIdUtil(network);
   };
 
   const value: UserSettingsContextType = {

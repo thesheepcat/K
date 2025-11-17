@@ -1,6 +1,7 @@
 import kaspaService from "../services/kaspaService";
 import { Base64 } from 'js-base64';
 import { toast } from "sonner";
+import { KASPA_NETWORKS } from "@/constants/networks";
 
 // Unicode-compatible base64 encoding function using js-base64 library
 function encodeToBase64(text: string): string {
@@ -37,9 +38,9 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
         const kaspa = kaspaService.getKaspa();
         
         const { Resolver, createTransactions, RpcClient, PrivateKey, PublicKey, signMessage, sompiToKaspaString } = kaspa;
-        
-        // Use override network or default to testnet-10 for backward compatibility
-        const connectionNetworkId = overrideNetworkId || "testnet-10";
+
+        // Use override network or default to mainnet
+        const connectionNetworkId = overrideNetworkId || KASPA_NETWORKS.MAINNET;
         
         // Get connection settings from user settings
         const storedSettings = localStorage.getItem('kaspa_user_settings');

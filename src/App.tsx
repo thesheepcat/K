@@ -23,6 +23,7 @@ import SettingsView from "./components/views/SettingsView.tsx";
 import { Toaster } from "@/components/ui/sonner";
 import { type Post } from "@/models/types";
 import kaspaService from "./services/kaspaService";
+import { useNetworkValidator } from "./hooks/useNetworkValidator";
 
 // Use HashRouter for Electron (file:// protocol), BrowserRouter for web
 const isElectron = typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
@@ -38,6 +39,10 @@ const MainApp: React.FC = () => {
   const [usersData, setUsersData] = useState<Post[]>([]);
   const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
   const [followedUsersData, setFollowedUsersData] = useState<Post[]>([]);
+
+  // Validate network after login
+  useNetworkValidator();
+
   useEffect(() => {
     // Hide the static HTML splash screen and load Kaspa WASM
     const loadApp = async () => {

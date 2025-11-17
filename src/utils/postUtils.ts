@@ -1,5 +1,6 @@
 import { type Post } from '@/models/types';
 import kaspaService from '@/services/kaspaService';
+import { KASPA_NETWORKS } from '@/constants/networks';
 
 /**
  * Recursively search for a post or reply by ID across all posts and their nested replies
@@ -144,12 +145,12 @@ export const pubkeyToKaspaAddress = async (pubkey: string, networkId?: string): 
   try {
     await kaspaService.ensureLoaded();
     const kaspa = kaspaService.getKaspa();
-    
+
     // Create public key object from the pubkey string
     const publicKeyObj = new kaspa.PublicKey(pubkey);
-    
-    // Get address - use provided networkId or default to mainnet for backward compatibility
-    const targetNetwork = networkId || "mainnet";
+
+    // Get address - use provided networkId or default to mainnet
+    const targetNetwork = networkId || KASPA_NETWORKS.MAINNET;
     const addressObj = publicKeyObj.toAddress(targetNetwork);
     return addressObj.toString();
   } catch (error) {
