@@ -25,6 +25,7 @@ dist-ssr
 *.sw?
 TO_DO.md
 build
+.claude
 
 # Capacitor - Keep configuration but ignore build artifacts and local files
 android/.gradle/

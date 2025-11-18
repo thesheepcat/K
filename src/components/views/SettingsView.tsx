@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectOption } from '@/components/ui/select';
 import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type Theme } from '@/contexts/UserSettingsContext';
+import { KASPA_NETWORKS } from '@/constants/networks';
 
 const SettingsView: React.FC = () => {
   const { 
@@ -171,15 +172,13 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleNetworkChange(e.target.value as KaspaNetwork)}
                     className="w-full"
                   >
-                    {/* Temporary deactivation of mainnet
-                    <SelectOption value="mainnet">Mainnet</SelectOption>}
-                    */}
-                    <SelectOption value="testnet-10">Testnet 10</SelectOption>
+                    {/*<SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>*/}
+                    <SelectOption value={KASPA_NETWORKS.TESTNET_10}>Testnet 10</SelectOption>
                   </Select>
                   <p className="text-xs text-muted-foreground">
                     Choose which Kaspa network to use for transactions and wallet operations.
-                    {selectedNetwork === 'mainnet' && ' ⚠️ Real KAS will be used!'}
-                    {selectedNetwork !== 'mainnet' && ' Test network - no real KAS.'}
+                    {selectedNetwork === KASPA_NETWORKS.MAINNET && ' ⚠️ Real KAS will be used!'}
+                    {selectedNetwork !== KASPA_NETWORKS.MAINNET && ' Test network - no real KAS.'}
                   </p>
                 </div>
               </div>
