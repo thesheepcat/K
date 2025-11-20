@@ -5,7 +5,6 @@ import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
-import { truncateKaspaAddress } from "@/utils/postUtils";
 import { LinkifiedText } from '@/utils/linkUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
@@ -181,16 +180,6 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                 }}
               >
                 {post.author.name}
-              </span>
-              <span
-                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer"
-                title={post.author.username}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/user/${post.author.pubkey}`);
-                }}
-              >
-                @{truncateKaspaAddress(post.author.username)}
               </span>
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0 ml-2">

@@ -82,9 +82,6 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                 </Button>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              User's chosen display name
-            </p>
           </div>
         )}
 
@@ -112,9 +109,6 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
               </Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Used for post identification and verification
-          </p>
         </div>
 
         {/* Kaspa Address Section */}
@@ -141,9 +135,6 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
               </Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            User's wallet address for receiving transactions
-          </p>
         </div>
 
         {/* Action Buttons */}

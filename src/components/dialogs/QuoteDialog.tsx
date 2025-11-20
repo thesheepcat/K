@@ -9,7 +9,6 @@ import EmojiPickerButton from '@/components/ui/emoji-picker';
 import { fetchPostDetails, convertServerPostToClientPost } from '@/services/postsApi';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toSvg } from 'jdenticon';
-import { truncateKaspaAddress } from '@/utils/postUtils';
 import { LinkifiedText } from '@/utils/linkUtils';
 import { type Post } from '@/models/types';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
@@ -175,11 +174,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 <div className="flex items-center space-x-1">
                   <span className="font-bold text-foreground text-sm truncate">
                     {quotedPost.author.name}
-                  </span>
-                  <span className="text-muted-foreground text-xs" title={quotedPost.author.username}>
-                    @{truncateKaspaAddress(quotedPost.author.username)}
-                  </span>
-                  <span className="text-muted-foreground text-xs">{quotedPost.timestamp}</span>
+                  </span>                  
                 </div>
                 <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
                   <LinkifiedText onMentionClick={() => {}}>{quotedPost.content}</LinkifiedText>

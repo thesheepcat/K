@@ -7,9 +7,9 @@ import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type Them
 import { KASPA_NETWORKS } from '@/constants/networks';
 
 const SettingsView: React.FC = () => {
-  const { 
-    selectedNetwork, 
-    setSelectedNetwork, 
+  const {
+    selectedNetwork,
+    setSelectedNetwork,
     getNetworkDisplayName,
     apiBaseUrl,
     setApiBaseUrl,
@@ -22,11 +22,18 @@ const SettingsView: React.FC = () => {
   } = useUserSettings();
 
   const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
-  
+  const [localApiBaseUrl, setLocalApiBaseUrl] = useState<string>(apiBaseUrl);
+
 
   const handleApiUrlChange = (value: string) => {
-    setApiBaseUrl(value);
-    showSaveFeedback('Server URL updated');
+    setLocalApiBaseUrl(value);
+  };
+
+  const handleApiUrlBlur = () => {
+    if (localApiBaseUrl !== apiBaseUrl) {
+      setApiBaseUrl(localApiBaseUrl);
+      showSaveFeedback('Server URL updated');
+    }
   };
 
   const handleConnectionTypeChange = (type: KaspaConnectionType) => {
@@ -141,8 +148,9 @@ const SettingsView: React.FC = () => {
                   </label>
                   <Input
                     type="url"
-                    value={apiBaseUrl}
+                    value={localApiBaseUrl}
                     onChange={(e) => handleApiUrlChange(e.target.value)}
+                    onBlur={handleApiUrlBlur}
                     placeholder={window.location.protocol === 'https:' ? '/api or https://your-backend.com' : 'http://localhost:3000'}
                     className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
