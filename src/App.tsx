@@ -189,7 +189,6 @@ const MainApp: React.FC = () => {
           }
         `}
       </style>
-      <Toaster />
       <SessionTimeoutWarning />
       <ResponsiveLayout>
         <Routes>
@@ -324,6 +323,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <UserSettingsProvider>
+        <Toaster />
         <MainApp />
       </UserSettingsProvider>
     </AuthProvider>

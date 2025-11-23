@@ -123,7 +123,7 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
                   placeholder="What's happening?"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 min-h-10 sm:min-h-12 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                  className="flex-1 min-h-10 sm:min-h-12 resize-none text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                 />
               </div>
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
@@ -136,9 +136,11 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
                 disabled={!content.trim() || isSubmitting}
                 className="px-4 sm:px-6 py-2 font-bold rounded-none text-sm sm:text-base"
               >
+                {isSubmitting && (
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
+                )}
                 {isSubmitting ? (
                   <>
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
                     <span className="hidden sm:inline">Posting...</span>
                     <span className="sm:hidden">...</span>
                   </>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Server, Network, Globe, Palette } from 'lucide-react';
+import { Server, Network, Globe, Palette, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectOption } from '@/components/ui/select';
@@ -67,44 +67,47 @@ const SettingsView: React.FC = () => {
       }}>
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Current Settings Summary */}
-          <Card className="border border-border rounded-none bg-muted">
+          <Card className="border border-border rounded-none">
             <CardContent className="p-6">
               <div className="space-y-4">
-                <h3 className="text-md font-semibold text-foreground">Current Configuration</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Info className="h-5 w-5 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold text-foreground">Current Configuration</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Network</label>
-                    <div className="bg-background border border-border p-2 text-xs">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Network</label>
+                    <div className="bg-muted border border-border p-2 text-sm">
                       {getNetworkDisplayName(selectedNetwork)}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Indexer</label>
-                    <div className="bg-background border border-border p-2 font-mono text-xs">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Indexer</label>
+                    <div className="bg-muted border border-border p-2 text-sm">
                       {apiBaseUrl}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Connection</label>
-                    <div className="bg-background border border-border p-2 text-xs">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Connection</label>
+                    <div className="bg-muted border border-border p-2 text-sm">
                       {kaspaConnectionType === 'resolver' ? 'Automatic (resolver)' : 'Custom Node'}
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Theme</label>
-                    <div className="bg-background border border-border p-2 text-xs capitalize">
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Theme</label>
+                    <div className="bg-muted border border-border p-2 text-sm capitalize">
                       {theme}
                     </div>
                   </div>
 
                   {kaspaConnectionType === 'custom-node' && (
                     <div>
-                      <label className="block text-xs font-medium text-muted-foreground mb-1">Node URL</label>
-                      <div className="bg-background border border-border p-2 font-mono text-xs break-all">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Node URL</label>
+                      <div className="bg-muted border border-border p-2 text-sm break-all">
                         {customKaspaNodeUrl || 'Not configured'}
                       </div>
                     </div>
@@ -160,7 +163,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleApiUrlChange(e.target.value)}
                     onBlur={handleApiUrlBlur}
                     placeholder={window.location.protocol === 'https:' ? '/api or https://your-backend.com' : 'http://localhost:3000'}
-                    className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
                 </div>
               </div>
@@ -201,7 +204,7 @@ const SettingsView: React.FC = () => {
                       value={customKaspaNodeUrl}
                       onChange={(e) => handleCustomNodeUrlChange(e.target.value)}
                       placeholder="wss://your-kaspa-node.com:16210 or 192.168.1.100:16210"
-                      className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <p className="text-xs text-muted-foreground">
                       Enter the IP address and port of your Kaspa node. Include protocol (ws:// or wss://) if needed.

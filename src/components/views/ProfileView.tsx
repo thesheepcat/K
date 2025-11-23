@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -28,8 +28,6 @@ const ProfileView: React.FC = () => {
   const [utxoError, setUtxoError] = useState<string | null>(null);
   const [networkAwareAddress, setNetworkAwareAddress] = useState<string | null>(null);
 
-  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-
   // Password confirmation dialog state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
@@ -42,12 +40,16 @@ const ProfileView: React.FC = () => {
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyFeedback(`${label} copied!`);
-      setTimeout(() => setCopyFeedback(null), 2000);
+      toast.success('Copied!', {
+        description: `${label} copied to clipboard`,
+        duration: 2000,
+      });
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
-      setCopyFeedback('Failed to copy');
-      setTimeout(() => setCopyFeedback(null), 2000);
+      toast.error('Copy failed', {
+        description: 'Failed to copy to clipboard',
+        duration: 2000,
+      });
     }
   };
 
@@ -426,7 +428,8 @@ const ProfileView: React.FC = () => {
         duration: 5000,
       });
 
-      // Clear form
+      // Clear form and reset sending state
+      setIsSending(false);
       setDestinationAddress('');
       setSendAmount('');
 
@@ -442,7 +445,6 @@ const ProfileView: React.FC = () => {
         description: errorMessage,
         duration: 5000,
       });
-    } finally {
       setIsSending(false);
     }
   };
@@ -465,19 +467,12 @@ const ProfileView: React.FC = () => {
         msOverflowStyle: 'none'
       }}>
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Copy Feedback */}
-          {copyFeedback && (
-            <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-none">
-              {copyFeedback}
-            </div>
-          )}
-
           {/* Identity Information */}
           <Card className="border border-border rounded-none">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
-                  <Key className="h-5 w-5 text-muted-foreground" />
+                  <User className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">Identity</h2>
                 </div>
                 
@@ -490,7 +485,7 @@ const ProfileView: React.FC = () => {
                     <Input
                       value={formatPublicKey(publicKey)}
                       readOnly
-                      className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       title={publicKey || 'Not available'}
                     />
                     <Button
@@ -515,7 +510,7 @@ const ProfileView: React.FC = () => {
                     <Input
                       value={formatAddress(networkAwareAddress)}
                       readOnly
-                      className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       title={networkAwareAddress || 'Not available'}
                     />
                     <Button
@@ -551,7 +546,7 @@ const ProfileView: React.FC = () => {
                       type={showPrivateKey ? 'text' : 'password'}
                       value={formatPrivateKey(privateKey)}
                       readOnly
-                      className="pr-20 font-mono text-sm bg-muted border-destructive/20 rounded-none focus-visible:ring-0"
+                      className="pr-20 text-sm bg-muted border-destructive/20 rounded-none focus-visible:ring-0"
                     />
                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
                       <button
@@ -572,7 +567,7 @@ const ProfileView: React.FC = () => {
                       </button>
                     </div>
                   </div>  
-                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Never share your private key with anyone!</p>
+                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Never share your private key!</p>
                 </div>
               </div>
             </CardContent>
@@ -609,7 +604,7 @@ const ProfileView: React.FC = () => {
                         <Input
                           value=""
                           readOnly
-                          className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
@@ -625,7 +620,7 @@ const ProfileView: React.FC = () => {
                         <Input
                           value=""
                           readOnly
-                          className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
@@ -655,7 +650,7 @@ const ProfileView: React.FC = () => {
                       <Input
                         value={`${formatKaspaAmount(utxoData.totalBalance)} KAS`}
                         readOnly
-                        className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       />
                     </div>
 
@@ -666,7 +661,7 @@ const ProfileView: React.FC = () => {
                       <Input
                         value={utxoData.utxoCount.toString()}
                         readOnly
-                        className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       />
                     </div>
                   </div>
@@ -701,7 +696,7 @@ const ProfileView: React.FC = () => {
                       value={destinationAddress}
                       onChange={(e) => setDestinationAddress(e.target.value)}
                       placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
-                      className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
                   </div>
@@ -717,7 +712,7 @@ const ProfileView: React.FC = () => {
                       placeholder="0.0"
                       step="0.1"
                       min="0"
-                      className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
                   </div>
@@ -738,16 +733,10 @@ const ProfileView: React.FC = () => {
                       disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim() || !sendAmount.trim()}
                       className="rounded-none"
                     >
-                      {isSending ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--primary-foreground))'}}></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          Send
-                        </>
+                      {isSending && (
+                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
                       )}
+                      {isSending ? 'Sending...' : 'Send'}
                     </Button>
                   </div>
                 </div>

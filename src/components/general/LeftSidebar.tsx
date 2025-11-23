@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import notificationService from '@/services/notificationService';
 import KaspaLogo from '../icons/KaspaLogo';
+import LogoutConfirmDialog from '@/components/dialogs/LogoutConfirmDialog';
 import { useState, useEffect } from 'react';
 
 interface LeftSidebarProps {
@@ -19,6 +20,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
   const { logout, isAuthenticated, publicKey } = useAuth();
   const { theme, apiBaseUrl } = useUserSettings();
   const [notificationCount, setNotificationCount] = useState(0);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // Subscribe to notification count changes
   useEffect(() => {
@@ -55,11 +57,18 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
 
   const handleNavigation = (path: string, isLogout?: boolean) => {
     if (isLogout) {
-      logout();
+      setShowLogoutDialog(true);
     } else {
       navigate(path);
     }
     // Close mobile menu after navigation
+    if (isMobile && onMobileMenuClose) {
+      onMobileMenuClose();
+    }
+  };
+
+  const handleLogoutConfirm = () => {
+    logout();
     if (isMobile && onMobileMenuClose) {
       onMobileMenuClose();
     }
@@ -103,6 +112,13 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
           </Button>
         ))}
       </nav>
+
+      {/* Logout Confirmation Dialog */}
+      <LogoutConfirmDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogoutConfirm}
+      />
     </div>
   );
 };

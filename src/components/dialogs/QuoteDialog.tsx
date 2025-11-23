@@ -191,14 +191,10 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
             disabled={!content.trim() || isSubmitting || !privateKey}
             className="px-6 py-2 font-bold rounded-none"
           >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
-                Posting...
-              </>
-            ) : (
-              'Post'
+            {isSubmitting && (
+              <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
             )}
+            {isSubmitting ? 'Posting...' : 'Post'}
           </Button>
         </div>
       </div>

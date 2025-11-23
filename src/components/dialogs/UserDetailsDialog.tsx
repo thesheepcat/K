@@ -95,7 +95,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
           </div>
           <div className="bg-muted border border-border p-3 rounded-none">
             <div className="flex items-center justify-between">
-              <code className="text-sm font-mono text-foreground break-all flex-1 mr-2">
+              <code className="text-sm text-foreground break-all flex-1 mr-2">
                 {userPubkey}
               </code>
               <Button
@@ -121,7 +121,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
           </div>
           <div className="bg-muted border border-border p-3 rounded-none">
             <div className="flex items-center justify-between">
-              <code className="text-sm font-mono text-foreground break-all flex-1 mr-2">
+              <code className="text-sm text-foreground break-all flex-1 mr-2">
                 {userAddress}
               </code>
               <Button

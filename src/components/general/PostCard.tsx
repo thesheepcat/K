@@ -162,6 +162,8 @@ const PostCard: React.FC<PostCardProps> = ({
   };
   const avatarSize = isDetailView ? "h-12 w-12" : isComment ? "h-8 w-8" : "h-10 w-10";
   const contentTextSize = isDetailView ? "text-lg" : "text-base";
+  const authorNameSize = isDetailView ? "text-lg" : "text-base";
+  const timestampSize = isDetailView ? "text-base" : "text-xs sm:text-sm";
 
   // Check if message is longer than 500 characters and truncate if needed
   const MAX_CHARS = 500;
@@ -191,8 +193,8 @@ const PostCard: React.FC<PostCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
-              <span 
-                className="font-bold text-foreground truncate hover:underline cursor-pointer"
+              <span
+                className={`font-bold text-foreground truncate hover:underline cursor-pointer ${authorNameSize}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/user/${post.author.pubkey}`);
@@ -201,7 +203,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 {post.author.name}
               </span>
             </div>
-            <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
+            <span className={`text-muted-foreground ${timestampSize} flex-shrink-0 ml-2`}>{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
             <LinkifiedText onMentionClick={handleMentionClick}>{displayContent}</LinkifiedText>

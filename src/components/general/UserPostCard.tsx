@@ -192,9 +192,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   onClick={handleUnblock}
                   className="rounded-none text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  {isSubmittingUnblock ? (
+                  {isSubmittingUnblock && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                  ) : null}
+                  )}
                   Unblock
                 </Button>
               )}
@@ -206,9 +206,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   onClick={handleUnfollow}
                   className="rounded-none text-primary border-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  {isSubmittingUnfollow ? (
+                  {isSubmittingUnfollow && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                  ) : null}
+                  )}
                   Unfollow
                 </Button>
               )}

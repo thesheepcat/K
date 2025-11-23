@@ -357,14 +357,10 @@ const IntroduceComposeBox: React.FC<IntroduceComposeBoxProps> = ({ onPost }) => 
               disabled={!nickname.trim() || !content.trim() || isSubmitting || isOverLimit}
               className="px-4 sm:px-6 py-2 font-bold rounded-lg hover:rounded-lg text-sm sm:text-base"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
-                  Introducing...
-                </>
-              ) : (
-                'Introduce Yourself'
+              {isSubmitting && (
+                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
               )}
+              {isSubmitting ? 'Introducing...' : 'Introduce Yourself'}
             </Button>
           </div>
         </div>
