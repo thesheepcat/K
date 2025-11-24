@@ -598,7 +598,6 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
                         onUpVote={onUpVote}
                         onDownVote={onDownVote}
                         onRepost={onRepost}
-                        isComment={true}
                         onReply={handleReply}
                         context="detail"
                       />

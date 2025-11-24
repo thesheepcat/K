@@ -17,11 +17,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
+        padding-top: 20vh;
         z-index: 9999;
         font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
         margin: 0;
-        padding: 0;
         box-sizing: border-box;
       }
       
@@ -54,33 +54,33 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.4rem !important; /* reduced by 30% from 2rem - keep this stable */
+        gap: 22.4px !important; /* fixed pixel size - keep this stable */
         margin: 0;
         padding: 0;
       }
-      
+
       #initial-splash .splash-logo {
         margin: 0;
         padding: 0;
       }
-      
+
       #initial-splash .splash-logo svg {
-        height: 8rem; /* h-32 w-32 */
-        width: 8rem;
+        height: 128px; /* h-32 w-32 - fixed pixel size */
+        width: 128px;
         display: block;
       }
-      
+
       @media (min-width: 640px) {
         #initial-splash .splash-logo svg {
-          height: 10rem; /* sm:h-40 sm:w-40 */
-          width: 10rem;
+          height: 160px; /* sm:h-40 sm:w-40 - fixed pixel size */
+          width: 160px;
         }
       }
-      
+
       @media (min-width: 768px) {
         #initial-splash .splash-logo svg {
-          height: 12rem; /* md:h-48 md:w-48 */
-          width: 12rem;
+          height: 192px; /* md:h-48 md:w-48 - fixed pixel size */
+          width: 192px;
         }
       }
       
@@ -91,56 +91,56 @@
       }
       
       #initial-splash .splash-title {
-        font-size: 1.25rem; /* text-xl */
+        font-size: 20px; /* text-xl - fixed pixel size */
         font-weight: 600; /* font-semibold */
         color: #1f2937; /* text-gray-800 */
-        margin: 0 0 0.5rem 0 !important; /* mb-2 - keep this stable */
+        margin: 0 0 8px 0 !important; /* mb-2 - keep this stable */
         padding: 0;
         line-height: 1.2;
       }
-      
+
       @media (min-width: 640px) {
         #initial-splash .splash-title {
-          font-size: 1.5rem; /* sm:text-2xl */
+          font-size: 24px; /* sm:text-2xl - fixed pixel size */
         }
       }
-      
+
       @media (min-width: 768px) {
         #initial-splash .splash-title {
-          font-size: 1.875rem; /* md:text-3xl */
+          font-size: 30px; /* md:text-3xl - fixed pixel size */
         }
       }
-      
+
       #initial-splash .splash-subtitle {
-        font-size: 1rem; /* text-base */
+        font-size: 16px; /* text-base - fixed pixel size */
         color: #4b5563; /* text-gray-600 */
         margin: 0;
         padding: 0;
         line-height: 1.2;
       }
-      
+
       @media (min-width: 640px) {
         #initial-splash .splash-subtitle {
-          font-size: 1.125rem; /* sm:text-lg */
+          font-size: 18px; /* sm:text-lg - fixed pixel size */
         }
       }
-      
+
       @media (min-width: 768px) {
         #initial-splash .splash-subtitle {
-          font-size: 1.25rem; /* md:text-xl */
+          font-size: 20px; /* md:text-xl - fixed pixel size */
         }
       }
       
       #initial-splash .splash-dots {
         display: flex;
-        gap: 0.5rem; /* space-x-2 */
+        gap: 8px; /* space-x-2 - fixed pixel size */
         margin: 0;
         padding: 0;
       }
-      
+
       #initial-splash .splash-dot {
-        width: 0.5rem; /* w-2 h-2 */
-        height: 0.5rem;
+        width: 8px; /* w-2 h-2 - fixed pixel size */
+        height: 8px;
         background: #9ca3af; /* bg-gray-400 */
         border-radius: 50%;
         animation: bounce 1.4s infinite ease-in-out;

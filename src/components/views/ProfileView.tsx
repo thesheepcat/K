@@ -234,24 +234,6 @@ const ProfileView: React.FC = () => {
     return key;
   };
 
-  const formatPublicKey = (key: string | null): string => {
-    if (!key) return 'Not available';
-    // Show first 8 and last 8 characters for public key
-    if (key.length > 16) {
-      return `${key.substring(0, 8)}...${key.substring(key.length - 8)}`;
-    }
-    return key;
-  };
-
-  const formatAddress = (addr: string | null): string => {
-    if (!addr) return 'Not available';
-    // Show first 12 and last 8 characters for address
-    if (addr.length > 20) {
-      return `${addr.substring(0, 12)}...${addr.substring(addr.length - 8)}`;
-    }
-    return addr;
-  };
-
   // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
   const kasToSompi = (kas: number): bigint => {
     return BigInt(Math.round(kas * 100000000));
@@ -483,10 +465,9 @@ const ProfileView: React.FC = () => {
                   </label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={formatPublicKey(publicKey)}
+                      value={publicKey || 'Not available'}
                       readOnly
                       className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                      title={publicKey || 'Not available'}
                     />
                     <Button
                       type="button"
@@ -503,15 +484,14 @@ const ProfileView: React.FC = () => {
 
                 {/* Kaspa Address Section */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-muted-foreground">                    
+                  <label className="block text-sm font-medium text-muted-foreground">
                     Your address
                   </label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={formatAddress(networkAwareAddress)}
+                      value={networkAwareAddress || 'Not available'}
                       readOnly
                       className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                      title={networkAwareAddress || 'Not available'}
                     />
                     <Button
                       type="button"
@@ -752,7 +732,7 @@ const ProfileView: React.FC = () => {
         onClose={() => setShowPasswordDialog(false)}
         onConfirm={handlePasswordConfirm}
         title="Reveal Private Key"
-        message="Please enter your password to reveal your private key. Never share your private key with anyone!"
+        message="Please enter your password to reveal your private key."
         isLoading={isVerifyingPassword}
       />
     </div>

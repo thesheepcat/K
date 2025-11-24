@@ -99,7 +99,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ isCollapsed = false, isMobile
           >
             <div className="relative inline-block">
               <item.icon
-                className={`h-8 w-8 transition-all duration-300`}
+                className={`size-5 transition-all duration-300`}
                 strokeWidth={location.pathname === item.path ? 2.7 : 2}
               />
               {item.showBadge && notificationCount > 0 && (

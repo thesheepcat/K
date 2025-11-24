@@ -54,7 +54,6 @@ const UnlockSession: React.FC = () => {
         <div className="text-center mb-8">
           <KaspaLogo className="h-20 w-20 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
-          <p className="text-base text-muted-foreground mt-2">Enter your password to unlock your session</p>
         </div>
 
         <Card className="border border-border rounded-none shadow-lg">

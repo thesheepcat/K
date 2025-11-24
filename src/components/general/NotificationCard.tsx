@@ -216,7 +216,6 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
         <UserDetailsDialog
           userPubkey={notification.userPublicKey}
           userAddress={notification.userPublicKey} // Using pubkey as address placeholder
-          displayName={displayName}
           userNickname={decodedNickname}
           isOpen={showUserDetailsDialog}
           onClose={() => setShowUserDetailsDialog(false)}

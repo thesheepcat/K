@@ -622,7 +622,6 @@ const loadMorePosts = useCallback(async () => {
           onClose={() => setShowUserDetailsDialog(false)}
           userPubkey={userPubkey || ''}
           userAddress={authorInfo.username}
-          displayName={authorInfo.name}
           userNickname={decodedNickname || authorInfo.nickname}
           onNavigateToUserPosts={
             // Show button if viewing another user's posts, hide if viewing own posts

@@ -229,7 +229,6 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
         onClose={() => setShowUserDetailsDialog(false)}
         userPubkey={post.author.pubkey}
         userAddress={post.author.username}
-        displayName={post.author.name}
         userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
       />
