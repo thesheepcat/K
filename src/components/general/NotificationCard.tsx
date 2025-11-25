@@ -4,9 +4,9 @@ import { ThumbsUp, ThumbsDown, MessageCircle, MessageSquareQuote } from "lucide-
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
-import { truncateKaspaAddress } from "@/utils/postUtils";
 import { LinkifiedText } from '@/utils/linkUtils';
 import { Base64 } from 'js-base64';
+import { formatAuthorDisplayName } from '@/utils/postUtils';
 
 interface NotificationData {
   id: string;
@@ -53,7 +53,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
 
   // Generate avatar and author info
   const avatarDataUrl = useJdenticonAvatar(notification.userPublicKey, 40);
-  const displayName = decodedNickname || truncateKaspaAddress(notification.userPublicKey);
+  const displayName = decodedNickname || formatAuthorDisplayName(notification.userPublicKey);
 
   // Handle mention clicks similar to PostCard
   const handleMentionClick = (pubkey: string) => {
@@ -216,7 +216,6 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
         <UserDetailsDialog
           userPubkey={notification.userPublicKey}
           userAddress={notification.userPublicKey} // Using pubkey as address placeholder
-          displayName={displayName}
           userNickname={decodedNickname}
           isOpen={showUserDetailsDialog}
           onClose={() => setShowUserDetailsDialog(false)}

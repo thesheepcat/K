@@ -1673,3 +1673,156 @@ When implementing pagination on the server side:
 4. **Sorting**:
    - All results should be sorted by timestamp in descending order (newest first)
    - This ensures consistent pagination behavior
+
+---
+
+## System Monitoring Endpoints
+
+### GET /health
+
+Returns the health status of the API server and database connection.
+
+#### Request
+
+No parameters required.
+
+#### Response
+
+**Status Code**: `200 OK`
+
+```json
+{
+  "status": "healthy",
+  "service": "k-webserver",
+  "version": "0.1.0",
+  "network": "mainnet"
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Always "healthy" when server is operational |
+| `service` | string | Name of the service (from CARGO_PKG_NAME) |
+| `version` | string | Version of the service (from CARGO_PKG_VERSION) |
+| `network` | string | Kaspa network type (e.g., "mainnet", "testnet-11", "unknown") |
+
+#### Notes
+
+- This endpoint enforces rate limiting (same as other API endpoints)
+- The `network` value is queried from the database `k_vars` table on every request
+- Returns `"unknown"` for network if database query fails
+- Useful for health checks and monitoring systems
+
+---
+
+### GET /stats
+
+Returns database statistics including counts of all major record types.
+
+#### Request
+
+No parameters required.
+
+#### Response
+
+**Status Code**: `200 OK`
+
+```json
+{
+  "broadcasts": 1250,
+  "posts": 8432,
+  "replies": 3890,
+  "quotes": 567,
+  "votes": 15420,
+  "follows": 2340,
+  "blocks": 45
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `broadcasts` | integer | Total number of user broadcasts (profiles) in `k_broadcasts` table |
+| `posts` | integer | Total number of posts in `k_contents` table (content_type = 'post') |
+| `replies` | integer | Total number of replies in `k_contents` table (content_type = 'reply') |
+| `quotes` | integer | Total number of quotes in `k_contents` table (content_type = 'quote') |
+| `votes` | integer | Total number of votes (upvotes + downvotes) in `k_votes` table |
+| `follows` | integer | Total number of follow relationships in `k_follows` table |
+| `blocks` | integer | Total number of block relationships in `k_blocks` table |
+
+#### Error Responses
+
+**Status Code**: `500 INTERNAL_SERVER_ERROR`
+
+```json
+{
+  "error": "Failed to retrieve database statistics",
+  "code": "INTERNAL_ERROR"
+}
+```
+
+#### Notes
+
+- This endpoint enforces rate limiting (same as other API endpoints)
+- All counts are retrieved in a single optimized database query
+- Useful for analytics dashboards and monitoring overall system usage
+
+---
+
+### GET /metrics
+
+Returns Prometheus-formatted metrics for HTTP server monitoring.
+
+#### Request
+
+No parameters required.
+
+#### Response
+
+**Status Code**: `200 OK`
+
+**Content-Type**: `text/plain; version=0.0.4`
+
+```
+# HELP axum_http_requests_total Total number of HTTP requests processed
+# TYPE axum_http_requests_total counter
+axum_http_requests_total{method="GET",status="200",endpoint="/health"} 1523
+
+# HELP axum_http_requests_pending Number of HTTP requests currently being processed
+# TYPE axum_http_requests_pending gauge
+axum_http_requests_pending{method="GET",endpoint="/get-posts"} 2
+
+# HELP axum_http_requests_duration_seconds HTTP request latency in seconds
+# TYPE axum_http_requests_duration_seconds histogram
+axum_http_requests_duration_seconds_bucket{method="GET",status="200",endpoint="/get-posts",le="0.005"} 142
+axum_http_requests_duration_seconds_bucket{method="GET",status="200",endpoint="/get-posts",le="0.01"} 198
+axum_http_requests_duration_seconds_bucket{method="GET",status="200",endpoint="/get-posts",le="+Inf"} 250
+axum_http_requests_duration_seconds_sum{method="GET",status="200",endpoint="/get-posts"} 1.234
+axum_http_requests_duration_seconds_count{method="GET",status="200",endpoint="/get-posts"} 250
+```
+
+#### Metrics Exposed
+
+| Metric Name | Type | Description | Labels |
+|-------------|------|-------------|--------|
+| `axum_http_requests_total` | Counter | Cumulative count of HTTP requests processed | method, status, endpoint |
+| `axum_http_requests_pending` | Gauge | Current number of in-flight HTTP requests | method, endpoint |
+| `axum_http_requests_duration_seconds` | Histogram | Distribution of HTTP request latency | method, status, endpoint |
+
+#### Metric Labels
+
+- **method**: HTTP method (e.g., "GET", "POST")
+- **status**: HTTP status code (e.g., "200", "404", "500")
+- **endpoint**: API endpoint path (e.g., "/health", "/get-posts", "/stats")
+
+#### Notes
+
+- This endpoint follows the Prometheus exposition format
+- Metrics are automatically collected by the `axum-prometheus` middleware
+- Designed for consumption by Prometheus monitoring systems
+- Latency histogram includes standard Prometheus bucket sizes
+- All API endpoints are tracked, including monitoring endpoints themselves
+- Note: This endpoint currently does NOT enforce rate limiting (unlike `/health` and `/stats`) to allow continuous monitoring scrapes

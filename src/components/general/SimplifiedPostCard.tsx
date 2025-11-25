@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { type QuoteData } from "@/models/types";
 import { toSvg } from 'jdenticon';
-import { truncateKaspaAddress } from "@/utils/postUtils";
 import { LinkifiedText } from '@/utils/linkUtils';
 
 interface SimplifiedPostCardProps {
@@ -46,9 +45,6 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
           <div className="flex items-center space-x-1">
             <span className="font-bold text-foreground text-sm truncate">
               {displayName}
-            </span>
-            <span className="text-muted-foreground text-xs" title={quote.referencedSenderPubkey}>
-              @{truncateKaspaAddress(quote.referencedSenderPubkey)}
             </span>
           </div>
           <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">

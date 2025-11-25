@@ -9,7 +9,6 @@ import EmojiPickerButton from '@/components/ui/emoji-picker';
 import { fetchPostDetails, convertServerPostToClientPost } from '@/services/postsApi';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toSvg } from 'jdenticon';
-import { truncateKaspaAddress } from '@/utils/postUtils';
 import { LinkifiedText } from '@/utils/linkUtils';
 import { type Post } from '@/models/types';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
@@ -151,7 +150,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 className="flex-1 min-h-20 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
             </div>
-            <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
+            {/*<EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />*/}
           </div>
         </div>
 
@@ -175,11 +174,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 <div className="flex items-center space-x-1">
                   <span className="font-bold text-foreground text-sm truncate">
                     {quotedPost.author.name}
-                  </span>
-                  <span className="text-muted-foreground text-xs" title={quotedPost.author.username}>
-                    @{truncateKaspaAddress(quotedPost.author.username)}
-                  </span>
-                  <span className="text-muted-foreground text-xs">{quotedPost.timestamp}</span>
+                  </span>                  
                 </div>
                 <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
                   <LinkifiedText onMentionClick={() => {}}>{quotedPost.content}</LinkifiedText>
@@ -196,14 +191,10 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
             disabled={!content.trim() || isSubmitting || !privateKey}
             className="px-6 py-2 font-bold rounded-none"
           >
-            {isSubmitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
-                Posting...
-              </>
-            ) : (
-              'Post'
+            {isSubmitting && (
+              <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
             )}
+            {isSubmitting ? 'Posting...' : 'Post'}
           </Button>
         </div>
       </div>

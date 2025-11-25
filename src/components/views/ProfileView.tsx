@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Wallet, Key, CreditCard, Send, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { useKaspaAuth } from '@/hooks/useKaspaAuth';
 import kaspaService from '@/services/kaspaService';
 import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
 import { KASPA_NETWORKS } from '@/constants/networks';
+import { toast } from 'sonner';
+import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
 
 interface UtxoData {
   totalBalance: number;
@@ -27,8 +29,6 @@ const ProfileView: React.FC = () => {
   const [utxoError, setUtxoError] = useState<string | null>(null);
   const [networkAwareAddress, setNetworkAwareAddress] = useState<string | null>(null);
 
-  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-
   // Password confirmation dialog state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
@@ -37,18 +37,20 @@ const ProfileView: React.FC = () => {
   const [destinationAddress, setDestinationAddress] = useState('');
   const [sendAmount, setSendAmount] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [sendError, setSendError] = useState<string | null>(null);
-  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyFeedback(`${label} copied!`);
-      setTimeout(() => setCopyFeedback(null), 2000);
+      toast.success('Copied!', {
+        description: `${label} copied to clipboard`,
+        duration: 2000,
+      });
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
-      setCopyFeedback('Failed to copy');
-      setTimeout(() => setCopyFeedback(null), 2000);
+      toast.error('Copy failed', {
+        description: 'Failed to copy to clipboard',
+        duration: 2000,
+      });
     }
   };
 
@@ -233,24 +235,6 @@ const ProfileView: React.FC = () => {
     return key;
   };
 
-  const formatPublicKey = (key: string | null): string => {
-    if (!key) return 'Not available';
-    // Show first 8 and last 8 characters for public key
-    if (key.length > 16) {
-      return `${key.substring(0, 8)}...${key.substring(key.length - 8)}`;
-    }
-    return key;
-  };
-
-  const formatAddress = (addr: string | null): string => {
-    if (!addr) return 'Not available';
-    // Show first 12 and last 8 characters for address
-    if (addr.length > 20) {
-      return `${addr.substring(0, 12)}...${addr.substring(addr.length - 8)}`;
-    }
-    return addr;
-  };
-
   // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
   const kasToSompi = (kas: number): bigint => {
     return BigInt(Math.round(kas * 100000000));
@@ -259,36 +243,49 @@ const ProfileView: React.FC = () => {
   // Send coins function
   const handleSendCoins = async () => {
     if (!privateKey || !networkAwareAddress) {
-      setSendError('Private key or address not available');
+      toast.error('Transaction failed', {
+        description: 'Private key or address not available',
+        duration: 5000,
+      });
       return;
     }
 
     if (!destinationAddress.trim()) {
-      setSendError('Please enter a destination address');
+      toast.error('Transaction failed', {
+        description: 'Please enter a destination address',
+        duration: 5000,
+      });
       return;
     }
 
     if (!sendAmount.trim() || isNaN(parseFloat(sendAmount)) || parseFloat(sendAmount) <= 0) {
-      setSendError('Please enter a valid amount greater than 0');
+      toast.error('Transaction failed', {
+        description: 'Please enter a valid amount greater than 0',
+        duration: 5000,
+      });
       return;
     }
 
     const amountKAS = parseFloat(sendAmount);
-    
+
     if (!utxoData || utxoData.totalBalance === 0) {
-      setSendError('No funds available or UTXO data not loaded');
+      toast.error('Transaction failed', {
+        description: 'No funds available or UTXO data not loaded',
+        duration: 5000,
+      });
       return;
     }
 
     const availableKAS = utxoData.totalBalance / 100000000;
     if (amountKAS > availableKAS) {
-      setSendError(`Insufficient funds. Available: ${formatKaspaAmount(utxoData.totalBalance)} KAS`);
+      toast.error('Transaction failed', {
+        description: `Insufficient funds. Available: ${formatKaspaAmount(utxoData.totalBalance)} KAS`,
+        duration: 5000,
+      });
       return;
     }
 
     setIsSending(true);
-    setSendError(null);
-    setSendSuccess(null);
 
     try {
       await kaspaService.ensureLoaded();
@@ -403,10 +400,21 @@ const ProfileView: React.FC = () => {
       console.log(`Successfully sent ${amountKAS} KAS to ${destinationAddressObject.toString()}`);
       console.log(`Total fees: ${formatKaspaAmount(Number(totalFees))} KAS`);
 
-      // Clear form and show success
+      // Show success toast
+      toast.success('Transaction successful!', {
+        description: (
+          <div className="space-y-1">
+            <div>Successfully sent {amountKAS} KAS to {destinationAddress}</div>
+            <div>Transaction fee: {formatKaspaAmount(Number(totalFees))} KAS</div>
+          </div>
+        ),
+        duration: 5000,
+      });
+
+      // Clear form and reset sending state
+      setIsSending(false);
       setDestinationAddress('');
       setSendAmount('');
-      setSendSuccess(`Successfully sent ${amountKAS} KAS to ${destinationAddress}. Transaction fee: ${formatKaspaAmount(Number(totalFees))} KAS`);
 
       // Refresh UTXO data to show updated balance
       setTimeout(() => {
@@ -416,8 +424,10 @@ const ProfileView: React.FC = () => {
     } catch (error) {
       console.error('Error sending coins:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to send coins';
-      setSendError(errorMessage);
-    } finally {
+      toast.error('Transaction failed', {
+        description: errorMessage,
+        duration: 5000,
+      });
       setIsSending(false);
     }
   };
@@ -426,8 +436,6 @@ const ProfileView: React.FC = () => {
   const clearSendForm = () => {
     setDestinationAddress('');
     setSendAmount('');
-    setSendError(null);
-    setSendSuccess(null);
   };
 
   return (
@@ -435,7 +443,6 @@ const ProfileView: React.FC = () => {
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
         <h1 className="text-lg sm:text-xl font-bold">Profile</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">Your wallet and identity information</p>
       </div>
 
       <div className="flex-1 overflow-y-scroll p-3 sm:p-4" style={{
@@ -443,33 +450,28 @@ const ProfileView: React.FC = () => {
         msOverflowStyle: 'none'
       }}>
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Copy Feedback */}
-          {copyFeedback && (
-            <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-none">
-              {copyFeedback}
-            </div>
-          )}
+          {/* Your Profile Section */}
+          <ProfileIntroduceBox />
 
           {/* Identity Information */}
           <Card className="border border-border rounded-none">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
-                  <Key className="h-5 w-5 text-muted-foreground" />
+                  <User className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">Identity</h2>
                 </div>
-                
+
                 {/* Public Key Section */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-muted-foreground">
-                    Public Key
+                    Your public key
                   </label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={formatPublicKey(publicKey)}
+                      value={publicKey || 'Not available'}
                       readOnly
-                      className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                      title={publicKey || 'Not available'}
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <Button
                       type="button"
@@ -482,21 +484,18 @@ const ProfileView: React.FC = () => {
                       <Copy className="h-3 w-3" />
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Used for post identification and verification</p>
                 </div>
 
                 {/* Kaspa Address Section */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-muted-foreground">
-                    <Wallet className="h-4 w-4 inline mr-2" />
-                    Kaspa Address
+                    Your address
                   </label>
                   <div className="flex items-center gap-2">
                     <Input
-                      value={formatAddress(networkAwareAddress)}
+                      value={networkAwareAddress || 'Not available'}
                       readOnly
-                      className="font-mono text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                      title={networkAwareAddress || 'Not available'}
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <Button
                       type="button"
@@ -509,7 +508,6 @@ const ProfileView: React.FC = () => {
                       <Copy className="h-3 w-3" />
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Your wallet address for {getNetworkDisplayName(selectedNetwork)}</p>
                 </div>
               </div>
             </CardContent>
@@ -522,23 +520,17 @@ const ProfileView: React.FC = () => {
                 <div className="flex items-center space-x-2 mb-4">
                   <Key className="h-5 w-5 text-destructive" />
                   <h2 className="text-lg font-semibold text-destructive">Private Key</h2>
-                </div>
-                
-                <div className="bg-destructive/20 border border-destructive/30 p-4 rounded-none mb-4">
-                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Never share your private key with anyone!</p>
-                  <p className="text-xs text-destructive/80 mt-1">Your private key gives full control over your wallet and funds.</p>
-                </div>
-                
+                </div>    
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-destructive">
-                    Private Key
+                    Your private key
                   </label>
                   <div className="relative">
                     <Input
                       type={showPrivateKey ? 'text' : 'password'}
                       value={formatPrivateKey(privateKey)}
                       readOnly
-                      className="pr-20 font-mono text-sm bg-background border-destructive/20 rounded-none focus-visible:ring-0"
+                      className="pr-20 text-sm bg-muted border-destructive/20 rounded-none focus-visible:ring-0"
                     />
                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
                       <button
@@ -558,8 +550,8 @@ const ProfileView: React.FC = () => {
                         <Copy className="h-4 w-4" />
                       </button>
                     </div>
-                  </div>
-                  <p className="text-xs text-destructive">Keep this secret and secure! Only reveal when you need to copy it.</p>
+                  </div>  
+                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Never share your private key!</p>
                 </div>
               </div>
             </CardContent>
@@ -587,9 +579,38 @@ const ProfileView: React.FC = () => {
                 </div>
 
                 {isLoadingUtxo && (
-                  <div className="bg-muted border border-border p-4 rounded-none text-center">
-                    <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto mb-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
-                    <p className="text-sm text-muted-foreground">Loading wallet data...</p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-muted-foreground">
+                        Total balance
+                      </label>
+                      <div className="relative">
+                        <Input
+                          value=""
+                          readOnly
+                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-muted-foreground">
+                        UTXOs count
+                      </label>
+                      <div className="relative">
+                        <Input
+                          value=""
+                          readOnly
+                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -606,26 +627,26 @@ const ProfileView: React.FC = () => {
 
                 {utxoData && !isLoadingUtxo && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-muted-foreground mb-1">Total Balance</label>
-                        <div className="bg-background border border-border p-3 font-mono text-sm">
-                          {formatKaspaAmount(utxoData.totalBalance)} KAS
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-muted-foreground mb-1">UTXOs Count</label>
-                        <div className="bg-background border border-border p-3 font-mono text-sm">
-                          {utxoData.utxoCount}
-                        </div>
-                      </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-muted-foreground">
+                        Total balance
+                      </label>
+                      <Input
+                        value={`${formatKaspaAmount(utxoData.totalBalance)} KAS`}
+                        readOnly
+                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      />
                     </div>
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-muted-foreground mb-1">Active Network</label>
-                      <div className="bg-background border border-border p-3 text-sm">
-                        {getNetworkDisplayName(selectedNetwork)}
-                      </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-muted-foreground">
+                        UTXOs count
+                      </label>
+                      <Input
+                        value={utxoData.utxoCount.toString()}
+                        readOnly
+                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      />
                     </div>
                   </div>
                 )}
@@ -648,53 +669,6 @@ const ProfileView: React.FC = () => {
                   <h2 className="text-lg font-semibold">Send Coins</h2>
                 </div>
 
-                {/* Send Success Message */}
-                {sendSuccess && (
-                  <div className="bg-success/10 border border-success/20 p-4 rounded-none">
-                    <p className="text-sm text-success font-medium">✅ Transaction Successful</p>
-                    <p className="text-xs text-success/80 mt-1">{sendSuccess}</p>
-                  </div>
-                )}
-
-                {/* Send Error Message */}
-                {sendError && (
-                  <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-none">
-                    <div className="flex items-start space-x-2">
-                      <AlertCircle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm text-destructive font-medium">Transaction Failed</p>
-                        <p className="text-xs text-destructive/80 mt-1">{sendError}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Warning Message */}
-                <div className="bg-warning/10 border border-warning/20 p-4 rounded-none">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm text-warning font-medium">⚠️ Important</p>
-                      <p className="text-xs text-warning/80 mt-1">
-                        Double-check the destination address before sending. Transactions cannot be reversed.
-                        {selectedNetwork === KASPA_NETWORKS.MAINNET && ' You are using MAINNET - real KAS will be sent!'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Current Balance Display */}
-                {utxoData && (
-                  <div className="bg-muted border border-border p-3 rounded-none">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Available Balance:</span>
-                      <span className="font-mono text-sm font-medium">
-                        {formatKaspaAmount(utxoData.totalBalance)} KAS
-                      </span>
-                    </div>
-                  </div>
-                )}
-
                 {/* Send Form */}
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -706,14 +680,11 @@ const ProfileView: React.FC = () => {
                       value={destinationAddress}
                       onChange={(e) => setDestinationAddress(e.target.value)}
                       placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
-                      className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Enter the {getNetworkDisplayName(selectedNetwork)} address to send coins to
-                    </p>
                   </div>
-
+                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Double-check the destination address!</p>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-muted-foreground">
                       Amount (KAS)
@@ -722,37 +693,16 @@ const ProfileView: React.FC = () => {
                       type="number"
                       value={sendAmount}
                       onChange={(e) => setSendAmount(e.target.value)}
-                      placeholder="0.00000000"
-                      step="0.00000001"
+                      placeholder="0.0"
+                      step="0.1"
                       min="0"
-                      className="font-mono text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Amount in KAS to send (minimum: 0.00000001 KAS)
-                    </p>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 pt-2">
-                    <Button
-                      onClick={handleSendCoins}
-                      disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim() || !sendAmount.trim()}
-                      className="flex-1 rounded-none bg-foreground text-background hover:bg-foreground/80"
-                    >
-                      {isSending ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--background))'}}></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4 mr-2" />
-                          Send Coins
-                        </>
-                      )}
-                    </Button>
-
+                  <div className="flex justify-end gap-3 pt-2">
                     <Button
                       onClick={clearSendForm}
                       disabled={isSending}
@@ -761,30 +711,19 @@ const ProfileView: React.FC = () => {
                     >
                       Clear
                     </Button>
+
+                    <Button
+                      onClick={handleSendCoins}
+                      disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim() || !sendAmount.trim()}
+                      className="rounded-none"
+                    >
+                      {isSending && (
+                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
+                      )}
+                      {isSending ? 'Sending...' : 'Send'}
+                    </Button>
                   </div>
                 </div>
-
-                {/* Transaction Fee Information */}
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p className="font-medium">Transaction Information:</p>
-                  <p>• Network fees are automatically calculated and deducted</p>
-                  <p>• Transactions are typically confirmed within minutes</p>
-                  <p>• Your balance will update automatically after confirmation</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Information Footer */}
-          <Card className="border border-border rounded-none bg-muted">
-            <CardContent className="p-6">
-              <div className="text-center text-sm text-muted-foreground space-y-2">
-                <p className="font-medium">Security Information</p>
-                <p>Your wallet information is fetched directly from the Kaspa network.</p>
-                <p>Private keys are stored locally in your browser and never transmitted to our servers.</p>
-                <p className="text-xs text-muted-foreground/60 mt-2">
-                  Configure network settings and connection preferences in Settings.
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -797,7 +736,7 @@ const ProfileView: React.FC = () => {
         onClose={() => setShowPasswordDialog(false)}
         onConfirm={handlePasswordConfirm}
         title="Reveal Private Key"
-        message="Please enter your password to reveal your private key. Never share your private key with anyone!"
+        message="Please enter your password to reveal your private key."
         isLoading={isVerifyingPassword}
       />
     </div>

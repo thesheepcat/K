@@ -189,7 +189,6 @@ const MainApp: React.FC = () => {
           }
         `}
       </style>
-      <Toaster />
       <SessionTimeoutWarning />
       <ResponsiveLayout>
         <Routes>
@@ -263,7 +262,6 @@ const MainApp: React.FC = () => {
             element={
               <UsersView
                 posts={usersData}
-                onPost={handlePost}
                 onServerPostsUpdate={handleUsersPostsUpdate}
               />
             }
@@ -324,6 +322,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <UserSettingsProvider>
+        <Toaster />
         <MainApp />
       </UserSettingsProvider>
     </AuthProvider>

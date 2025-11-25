@@ -1,19 +1,17 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
-import IntroduceComposeBox from '../general/IntroduceComposeBox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 
 interface UsersViewProps {
   posts: Post[];
-  onPost: (content: string) => void;
   onServerPostsUpdate: (posts: Post[]) => void;
 }
 
 const POLLING_INTERVAL = 5000; // 5 seconds
 
-const UsersView: React.FC<UsersViewProps> = ({ posts, onPost, onServerPostsUpdate }) => {
+const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => {
       const { publicKey } = useAuth();
       const { fetchAndConvertUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
     const [isLoading, setIsLoading] = useState(false);
@@ -225,6 +223,27 @@ const loadMoreUsers = useCallback(async () => {
     };
   }, [loadMoreUsers]);
 
+  // Check if content fills the container and load more if needed
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || isLoading) return;
+
+    const checkAndLoadMore = () => {
+      const { scrollHeight, clientHeight } = scrollContainer;
+      const hasScrollbar = scrollHeight > clientHeight;
+
+      // If there's no scrollbar and we have more content to load, load it
+      if (!hasScrollbar && hasMoreRef.current && !isLoadingMoreRef.current && posts.length > 0) {
+        loadMoreUsers();
+      }
+    };
+
+    // Check after a short delay to ensure rendering is complete
+    const timeoutId = setTimeout(checkAndLoadMore, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [posts, isLoading, loadMoreUsers]);
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
@@ -240,8 +259,7 @@ const loadMoreUsers = useCallback(async () => {
           )}
         </div>
       </div>
-      <IntroduceComposeBox onPost={onPost} />
-      <div 
+      <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-scroll" 
         style={{
