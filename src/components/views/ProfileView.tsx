@@ -10,6 +10,7 @@ import kaspaService from '@/services/kaspaService';
 import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
 import { KASPA_NETWORKS } from '@/constants/networks';
 import { toast } from 'sonner';
+import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
 
 interface UtxoData {
   totalBalance: number;
@@ -449,6 +450,9 @@ const ProfileView: React.FC = () => {
         msOverflowStyle: 'none'
       }}>
         <div className="max-w-2xl mx-auto space-y-6">
+          {/* Your Profile Section */}
+          <ProfileIntroduceBox />
+
           {/* Identity Information */}
           <Card className="border border-border rounded-none">
             <CardContent className="p-6">
@@ -457,7 +461,7 @@ const ProfileView: React.FC = () => {
                   <User className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">Identity</h2>
                 </div>
-                
+
                 {/* Public Key Section */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-muted-foreground">

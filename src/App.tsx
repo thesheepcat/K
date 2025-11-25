@@ -262,7 +262,6 @@ const MainApp: React.FC = () => {
             element={
               <UsersView
                 posts={usersData}
-                onPost={handlePost}
                 onServerPostsUpdate={handleUsersPostsUpdate}
               />
             }

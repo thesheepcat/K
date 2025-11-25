@@ -150,7 +150,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 className="flex-1 min-h-20 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
             </div>
-            <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
+            {/*<EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />*/}
           </div>
         </div>
 

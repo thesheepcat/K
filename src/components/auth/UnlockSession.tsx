@@ -88,7 +88,7 @@ const UnlockSession: React.FC = () => {
               <div className="pt-4 border-t border-border space-y-2">
                 <Button
                   type="submit"
-                  disabled={loading || !password.trim()}
+                  disabled={loading}
                   className="text-base w-full py-3 font-bold rounded-none"
                 >
                   <Lock className="h-4 w-4 mr-2" />
