@@ -34,21 +34,21 @@ const LogoutConfirmDialog: React.FC<LogoutConfirmDialogProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 border-t border-border space-y-2">
-          <Button
-            onClick={handleConfirm}
-            className="text-base w-full py-3 font-bold rounded-none"
-          >
-            Yes, Use Different Account
-          </Button>
-
+        <div className="pt-4 border-t border-border space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:space-x-2">
           <Button
             type="button"
             onClick={onClose}
             variant="outline"
-            className="text-base w-full py-3 font-bold rounded-none"
+            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-2 sm:order-1"
           >
             Cancel
+          </Button>
+
+          <Button
+            onClick={handleConfirm}
+            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-1 sm:order-2"
+          >
+            Yes, Use Different Account
           </Button>
         </div>
       </div>

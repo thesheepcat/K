@@ -223,6 +223,27 @@ const loadMoreUsers = useCallback(async () => {
     };
   }, [loadMoreUsers]);
 
+  // Check if content fills the container and load more if needed
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || isLoading) return;
+
+    const checkAndLoadMore = () => {
+      const { scrollHeight, clientHeight } = scrollContainer;
+      const hasScrollbar = scrollHeight > clientHeight;
+
+      // If there's no scrollbar and we have more content to load, load it
+      if (!hasScrollbar && hasMoreRef.current && !isLoadingMoreRef.current && posts.length > 0) {
+        loadMoreUsers();
+      }
+    };
+
+    // Check after a short delay to ensure rendering is complete
+    const timeoutId = setTimeout(checkAndLoadMore, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [posts, isLoading, loadMoreUsers]);
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}

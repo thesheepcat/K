@@ -113,11 +113,21 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 border-t border-border space-y-2">
+        <div className="pt-4 border-t border-border space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:space-x-2">
+          <Button
+            type="button"
+            onClick={handleClose}
+            disabled={isLoading}
+            variant="outline"
+            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-2 sm:order-1"
+          >
+            Cancel
+          </Button>
+
           <Button
             type="submit"
             disabled={isLoading || !password.trim()}
-            className="text-base w-full py-3 font-bold rounded-none"
+            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-1 sm:order-2"
           >
             {isLoading ? (
               <>
@@ -125,21 +135,8 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
                 Verifying...
               </>
             ) : (
-              <>
-                <Lock className="h-4 w-4 mr-2" />
-                Confirm
-              </>
+              'Confirm'
             )}
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleClose}
-            disabled={isLoading}
-            variant="outline"
-            className="text-base w-full py-3 font-bold rounded-none"
-          >
-            Cancel
           </Button>
         </div>
       </form>
