@@ -5,7 +5,7 @@ import Dialog from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
-import EmojiPickerButton from '@/components/ui/emoji-picker';
+// import EmojiPickerButton from '@/components/ui/emoji-picker';
 import { fetchPostDetails, convertServerPostToClientPost } from '@/services/postsApi';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toSvg } from 'jdenticon';
@@ -58,23 +58,24 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
     }
   }, [isOpen, postId, publicKey, apiBaseUrl, networkId]);
 
-  const handleEmojiSelect = (emoji: string) => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const newContent = content.substring(0, start) + emoji + content.substring(end);
-      setContent(newContent);
+  // Emoji picker functionality (currently hidden, kept for future use)
+  // const handleEmojiSelect = (emoji: string) => {
+  //   const textarea = textareaRef.current;
+  //   if (textarea) {
+  //     const start = textarea.selectionStart;
+  //     const end = textarea.selectionEnd;
+  //     const newContent = content.substring(0, start) + emoji + content.substring(end);
+  //     setContent(newContent);
 
-      // Set cursor position after the emoji
-      setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-      }, 0);
-    } else {
-      setContent(content + emoji);
-    }
-  };
+  //     // Set cursor position after the emoji
+  //     setTimeout(() => {
+  //       textarea.focus();
+  //       textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+  //     }, 0);
+  //   } else {
+  //     setContent(content + emoji);
+  //   }
+  // };
 
   const handlePost = async () => {
     if (content.trim() && privateKey && !isSubmitting) {
