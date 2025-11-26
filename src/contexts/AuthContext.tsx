@@ -259,6 +259,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Clear stored encrypted key from localStorage (full logout)
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('k_notifications_cursor');
     setHasStoredKeyState(false);
   };
 

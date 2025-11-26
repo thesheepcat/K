@@ -113,7 +113,7 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 border-t border-border space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:space-x-2">
+        <div className="pt-4 border-t border-border flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0">
           <Button
             type="button"
             onClick={handleClose}
@@ -126,7 +126,7 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
 
           <Button
             type="submit"
-            disabled={isLoading || !password.trim()}
+            disabled={isLoading}
             className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-1 sm:order-2"
           >
             {isLoading ? (

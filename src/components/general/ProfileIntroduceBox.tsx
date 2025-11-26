@@ -323,18 +323,6 @@ const ProfileIntroduceBox: React.FC = () => {
   const nicknameCharactersRemaining = MAX_NICKNAME_CHARACTERS - nickname.length;
   const isOverLimit = charactersRemaining < 0 || nicknameCharactersRemaining < 0;
 
-  if (isLoading) {
-    return (
-      <Card className="border border-border rounded-none">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="border border-border rounded-none">
       <CardContent className="p-6">
@@ -344,7 +332,7 @@ const ProfileIntroduceBox: React.FC = () => {
               <User className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Your Profile</h2>
             </div>
-            {!isEditing && (
+            {!isEditing && !isLoading && (
               <Button
                 onClick={() => setIsEditing(true)}
                 size="sm"
@@ -359,44 +347,80 @@ const ProfileIntroduceBox: React.FC = () => {
           {!isEditing ? (
             // Display mode
             <div className="space-y-4">
-              {profileImagePreview && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-muted-foreground">
-                    Image
-                  </label>
-                  <div className="flex items-center space-x-3">
+              {/* Image section - always show with placeholder if loading */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  Image
+                </label>
+                <div className="flex items-center space-x-3">
+                  {isLoading ? (
+                    <div className="relative w-12 h-12 bg-muted border border-border">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                      </div>
+                    </div>
+                  ) : profileImagePreview ? (
                     <img
                       src={profileImagePreview}
                       alt="Profile"
                       className="w-12 h-12 object-cover border border-border"
                     />
-                  </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-muted border border-border"></div>
+                  )}
                 </div>
-              )}
+              </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-muted-foreground">
                   Nickname
                 </label>
-                <Input
-                  value={nickname}
-                  readOnly
-                  placeholder="No nickname set"
-                  className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                />
+                {isLoading ? (
+                  <div className="relative">
+                    <Input
+                      value=""
+                      readOnly
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                    </div>
+                  </div>
+                ) : (
+                  <Input
+                    value={nickname}
+                    readOnly
+                    placeholder="No nickname set"
+                    className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                  />
+                )}
               </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-muted-foreground">
                   Message
                 </label>
-                <Textarea
-                  value={content}
-                  readOnly
-                  placeholder="No message set"
-                  className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
-                  rows={3}
-                />
+                {isLoading ? (
+                  <div className="relative">
+                    <Textarea
+                      value=""
+                      readOnly
+                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
+                      rows={3}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                    </div>
+                  </div>
+                ) : (
+                  <Textarea
+                    value={content}
+                    readOnly
+                    placeholder="No message set"
+                    className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
+                    rows={3}
+                  />
+                )}
               </div>
             </div>
           ) : (

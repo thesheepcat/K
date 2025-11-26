@@ -80,9 +80,9 @@ While K has the potential to become a feature-rich, widely-adopted platform, the
 - ✅ **Following/Unfollowing**: Manage your content feed
 - ✅ **Desktop app**: K available on desktop environment, without using the K site (on Linux and Windows)
 - ✅ **Mobile app**: K available on smartphone environment, without using the K site (on Android)
+- ✅ **Personal indexer**: A light and clean indexer for personal use
 
 ### ❌ Future Features (not yet available)  
-- ❌ **Personal indexer**: A light and clean indexer for personal use
 - ❌ **User endorsements**: Promote and suggest other users
 
 ---
@@ -252,7 +252,7 @@ The build process will generate an APK file that can be found in:
 4. **"How do you delete data? How do you prevent illegal content?**: Kaspa is an immutable decentralized ledger; it means that transactions (and their content) can't be deleted by anyone (except by the regular pruning process executed by the node itself). The so called "Illegal contents" are part of the decentralized and censorship resistant nature of K: they are a natural expression of the real "freedom of speech". Anyhow, as we understand this can be a tricky point for some users, we are exploring two mitigations:
 - Allowing the user to block contents from some other users, just by using a "Block user" feature on K webapp; in this way, the user will not see any more content from the user being blocked; this solution would act exclusively on K webapp (meaning that, if user changes device to open and use K, those "User blocks" are unknown by the new device/browser).
 - Allowing the user to propagate this "user block" to K-indexer; in this way, K-indexer would deleted any content from blocked users from K-indexer database (this would work for personally deployed indexers but it would be applicable for public indexers).
-5. **"On login page, the user is required to generate or insert a Kaspa private key. Is it safe to insert and keep user's private key in K?**: As general rule, we sugges to create a dedicated K identity and private key on the first use on K, avoiding to insert existing private key which could be already linked to user funds; once the private and public key, the user can fund small amount of KAS (ie. 4/5 KAS) to the K address, in order to allow the user to pay for network fees. In addition, here i share a dedicated document which aims to explain to both tech and non-tech people how authentication works in K, how private keys are managed, handled, saved, exposed, etc: [AUTHENTICATION MANAGEMENT](./AUTHENTICATION_MANAGEMENT.md).
+5. **"On login page, the user is required to generate or insert a Kaspa private key. Is it safe to insert and keep user's private key in K?**: As general rule, we suggest to create a dedicated K identity and private key on the first use on K, avoiding to insert any existing private key which could be already linked to user funds; once the private and public key, the user can fund small amount of KAS (ie. 4/5 KAS) to the K address, in order to allow the user to pay for network fees. In addition, here i share a dedicated document which aims to explain to both tech and non-tech people how authentication works in K, how private keys are managed, handled, saved, exposed, etc: [AUTHENTICATION MANAGEMENT](./AUTHENTICATION_MANAGEMENT.md).
 
 ---
 
