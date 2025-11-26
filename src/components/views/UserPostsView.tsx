@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 import { useJdenticonAvatar } from '@/hooks/useJdenticonAvatar';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
-import { generateAuthorInfo, truncateKaspaAddress } from '@/utils/postUtils';
+import { generateAuthorInfo } from '@/utils/postUtils';
 import { Base64 } from 'js-base64';
 import { toast } from 'sonner';
 
@@ -211,41 +211,76 @@ const loadMorePosts = useCallback(async () => {
   // Set up polling with stable references
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     const startPolling = () => {
       interval = setInterval(async () => {
         // Check if we still have a userPubkey
         if (!userPubkeyRef.current) return;
-        
+
         try {
           const options = {
             limit: 10
           };
-          
+
           const response = await fetchFunctionRef.current(userPubkeyRef.current, publicKeyRef.current ?? '', options);
-          
+
           // Defensive check for response structure
           if (!response || !response.pagination) {
             console.error('Invalid polling response structure:', response);
             return;
           }
 
-          // Only update if we got new posts (compare with first post timestamp)
-          if ((response.posts || []).length > 0 && postsRef.current.length > 0) {
-            const newestExistingTimestamp = postsRef.current[0]?.timestamp;
-            const newestServerPost = response.posts[0];
-            
-            if (newestServerPost && newestServerPost.timestamp !== newestExistingTimestamp) {
-              // Reset the list with fresh data from server
-              setPostsRef.current(response.posts || []);
+          // Check if server data has any changes compared to local data
+          const serverPosts = response.posts || [];
+          const localPosts = postsRef.current;
+
+          let hasChanges = false;
+
+          // Check if post count differs
+          if (serverPosts.length !== localPosts.length) {
+            hasChanges = true;
+          } else {
+            // Compare each post for changes in vote counts, timestamps, or other properties
+            for (let i = 0; i < Math.min(serverPosts.length, localPosts.length); i++) {
+              const serverPost = serverPosts[i];
+              const localPost = localPosts[i];
+
+              if (
+                serverPost.id !== localPost.id ||
+                serverPost.upVotes !== localPost.upVotes ||
+                serverPost.downVotes !== localPost.downVotes ||
+                serverPost.replies !== localPost.replies ||
+                serverPost.reposts !== localPost.reposts ||
+                serverPost.timestamp !== localPost.timestamp ||
+                serverPost.upVoted !== localPost.upVoted ||
+                serverPost.downVoted !== localPost.downVoted ||
+                serverPost.reposted !== localPost.reposted
+              ) {
+                hasChanges = true;
+                break;
+              }
+            }
+          }
+
+          if (hasChanges) {
+            // Only update the first page of posts to preserve infinite scroll state
+            const currentPosts = postsRef.current;
+
+            if (currentPosts.length <= 10) {
+              // If we only have first page loaded, replace all
+              setPostsRef.current(serverPosts);
               setHasMore(response.pagination.hasMore);
               setNextCursor(response.pagination.nextCursor);
+            } else {
+              // If we have more than first page, only update the first 10 posts
+              // to preserve the user's scroll position and additional loaded content
+              const updatedPosts = [
+                ...serverPosts.slice(0, Math.min(serverPosts.length, 10)),
+                ...currentPosts.slice(10)
+              ];
+              setPostsRef.current(updatedPosts);
+              // Don't update pagination state as it would affect infinite scroll
             }
-          } else if (postsRef.current.length === 0) {
-            // If no posts exist locally, update with server data
-            setPostsRef.current(response.posts || []);
-            setHasMore(response.pagination.hasMore);
-            setNextCursor(response.pagination.nextCursor);
           }
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user posts';
@@ -465,11 +500,6 @@ const loadMorePosts = useCallback(async () => {
                   <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
                     {isCurrentUser ? 'My posts' : `${decodedNickname || authorInfo?.name || 'Loading...'}`}
                   </h1>
-                  {authorInfo?.username && (
-                    <span className="text-sm sm:text-lg text-muted-foreground truncate">
-                      @{truncateKaspaAddress(authorInfo.username, 6, 6)}
-                    </span>
-                  )}
                   {decodedPostContent && (
                     <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{decodedPostContent}</p>
                   )}
@@ -500,9 +530,9 @@ const loadMorePosts = useCallback(async () => {
                             : 'text-foreground border-border hover:bg-muted hover:text-foreground'
                         }`}
                       >
-                        {isSubmittingBlock ? (
+                        {isSubmittingBlock && (
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                        ) : null}
+                        )}
                         {userDetails?.blockedUser ? 'Unblock' : 'Block'}
                       </Button>
                       <Button
@@ -516,9 +546,9 @@ const loadMorePosts = useCallback(async () => {
                             : 'text-foreground border-border hover:bg-muted hover:text-foreground'
                         }`}
                       >
-                        {isSubmittingFollow ? (
+                        {isSubmittingFollow && (
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                        ) : null}
+                        )}
                         {userDetails?.followedUser ? 'Unfollow' : 'Follow'}
                       </Button>
                     </>
@@ -592,8 +622,7 @@ const loadMorePosts = useCallback(async () => {
           onClose={() => setShowUserDetailsDialog(false)}
           userPubkey={userPubkey || ''}
           userAddress={authorInfo.username}
-          displayName={authorInfo.name}
-          userNickname={authorInfo.nickname}
+          userNickname={decodedNickname || authorInfo.nickname}
           onNavigateToUserPosts={
             // Show button if viewing another user's posts, hide if viewing own posts
             !isCurrentUser ? () => navigate(`/user/${encodeURIComponent(userIdentifier)}`) : undefined

@@ -574,7 +574,7 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
               {/* Replies Header */}
               {replies.length > 0 && (
                 <div className="px-4 py-3 bg-neutral border-b border-border flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-muted-foreground flex items-center">
+                  <h3 className="text-base font-semibold text-muted-foreground flex items-center">
                     <div className="w-3 h-3 rounded-full bg-primary/60 mr-2"></div>
                     Replies
                   </h3>
@@ -598,7 +598,6 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
                         onUpVote={onUpVote}
                         onDownVote={onDownVote}
                         onRepost={onRepost}
-                        isComment={true}
                         onReply={handleReply}
                         context="detail"
                       />

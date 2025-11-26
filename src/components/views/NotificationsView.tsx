@@ -239,6 +239,27 @@ const NotificationsView: React.FC<NotificationsProps> = ({ onNotificationsSeen }
     };
   }, [loadMoreNotifications]);
 
+  // Check if content fills the container and load more if needed
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || isLoading) return;
+
+    const checkAndLoadMore = () => {
+      const { scrollHeight, clientHeight } = scrollContainer;
+      const hasScrollbar = scrollHeight > clientHeight;
+
+      // If there's no scrollbar and we have more content to load, load it
+      if (!hasScrollbar && hasMoreRef.current && !isLoadingMoreRef.current && notifications.length > 0) {
+        loadMoreNotifications();
+      }
+    };
+
+    // Check after a short delay to ensure rendering is complete
+    const timeoutId = setTimeout(checkAndLoadMore, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [notifications, isLoading, loadMoreNotifications]);
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}

@@ -6,7 +6,6 @@ import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { useKaspaPostsApi } from "@/hooks/useKaspaPostsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Post } from "@/models/types";
-import { truncateKaspaAddress } from "@/utils/postUtils";
 
 const POLLING_INTERVAL = 10000; // 10 seconds
 
@@ -40,13 +39,6 @@ const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
               onClick={() => onUserClick(user.author.pubkey || '')}
             >
               {user.author.name}
-            </p>
-            <p 
-              className="text-sm text-muted-foreground hover:underline cursor-pointer"
-              onClick={() => onUserClick(user.author.pubkey || '')}
-              title={user.author.username}
-            >
-              @{truncateKaspaAddress(user.author.username)}
             </p>
           </div>
         </div>

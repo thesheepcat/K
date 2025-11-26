@@ -83,8 +83,6 @@ class NotificationService {
     this.intervalId = setInterval(() => {
       this.fetchNotificationCount();
     }, 10000);
-
-    console.log('Notification polling started for user:', userPubkey);
   }
 
   /**
@@ -100,7 +98,6 @@ class NotificationService {
     this.notificationCount = 0;
     // Don't clear the cursor here - it should persist across sessions
     this.notifyListeners(0);
-    console.log('Notification polling stopped');
   }
 
   /**
@@ -131,7 +128,6 @@ class NotificationService {
   updateLatestNotificationCursor(cursor: string | null): void {
     this.latestNotificationCursor = cursor;
     this.persistCursor(cursor);
-    console.log('Updated latest notification cursor:', cursor);
   }
 
   /**
@@ -144,7 +140,6 @@ class NotificationService {
         const data = JSON.parse(persistedData);
         if (data.cursor && typeof data.cursor === 'string') {
           this.latestNotificationCursor = data.cursor;
-          console.log('Loaded persisted notification cursor:', data.cursor);
         }
       }
     } catch (error) {
@@ -165,10 +160,8 @@ class NotificationService {
           timestamp: Date.now()
         };
         localStorage.setItem(NotificationService.CURSOR_STORAGE_KEY, JSON.stringify(data));
-        console.log('Persisted notification cursor:', cursor);
       } else {
         localStorage.removeItem(NotificationService.CURSOR_STORAGE_KEY);
-        console.log('Cleared persisted notification cursor');
       }
     } catch (error) {
       console.error('Error persisting notification cursor:', error);
@@ -213,8 +206,6 @@ class NotificationService {
       }
 
       const data: NotificationCountResponse = await response.json();
-
-      console.log('[NotificationService] Notification count:', data.count);
 
       // Update notification count
       this.notificationCount = data.count;

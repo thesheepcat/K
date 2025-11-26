@@ -4,9 +4,25 @@
   border-color: hsl(var(--border));
 }
 
+html, body {
+  font-size: var(--text-base);
+}
+
 body {
   color: hsl(var(--foreground));
   background: hsl(var(--background));
+}
+
+@layer theme {
+  :root, :host {
+    /* Font sizes - Override Tailwind defaults */
+    --text-xs: 11px;    /*Original value: '12px'*/
+    --text-sm: 13px;    /*Original value: '14px'*/
+    --text-base: 15px;  /*Original value: '16px'*/
+    --text-lg: 17px;    /*Original value: '18px'*/
+    --text-xl: 20px;    /*Original value: '20px'*/
+    --text-2xl: 24px;   /*Original value: '24px'*/
+  }
 }
 
 :root {
@@ -25,9 +41,9 @@ body {
   --muted-foreground: 0 0% 32.5%;
   --accent: 0 0% 96.1%;
   --accent-foreground: 0 0% 0%;
-  --destructive: 0 85% 50%; 
+  --destructive: 0 85% 50%;
   --destructive-foreground: 0 0% 85%;
-  --border: 0 0% 90.2%; 
+  --border: 0 0% 90.2%;
   --input: 0 0% 89.8%;
   --ring: 0 0% 3.9%;
   --radius: 0.5rem;
@@ -300,6 +316,41 @@ body {
   }
 }
 
+@keyframes loader-circle-white {
+  0% {
+    transform: rotate(0deg);
+    border-top-color: white;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+  25% {
+    border-top-color: white;
+    border-right-color: white;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+  50% {
+    border-top-color: white;
+    border-right-color: white;
+    border-bottom-color: white;
+    border-left-color: transparent;
+  }
+  75% {
+    border-top-color: white;
+    border-right-color: white;
+    border-bottom-color: white;
+    border-left-color: white;
+  }
+  100% {
+    transform: rotate(360deg);
+    border-top-color: white;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+  }
+}
+
 .animate-spin {
   animation: spin 1s linear infinite !important;
   transform-origin: center;
@@ -310,8 +361,13 @@ body {
   transform-origin: center;
 }
 
+.animate-loader-circle-white {
+  animation: loader-circle-white 1.2s ease-in-out infinite !important;
+  transform-origin: center;
+}
+
 /* Ensure spinner elements have proper display */
-div.animate-spin, div.animate-loader-circle {
+div.animate-spin, div.animate-loader-circle, div.animate-loader-circle-white {
   display: inline-block;
 }
 

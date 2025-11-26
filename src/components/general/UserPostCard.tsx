@@ -5,7 +5,6 @@ import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
-import { truncateKaspaAddress } from "@/utils/postUtils";
 import { LinkifiedText } from '@/utils/linkUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
@@ -182,16 +181,6 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
               >
                 {post.author.name}
               </span>
-              <span
-                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer"
-                title={post.author.username}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/user/${post.author.pubkey}`);
-                }}
-              >
-                @{truncateKaspaAddress(post.author.username)}
-              </span>
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
               <span className="text-muted-foreground text-xs sm:text-sm">{post.timestamp}</span>
@@ -203,9 +192,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   onClick={handleUnblock}
                   className="rounded-none text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  {isSubmittingUnblock ? (
+                  {isSubmittingUnblock && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                  ) : null}
+                  )}
                   Unblock
                 </Button>
               )}
@@ -217,9 +206,9 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   onClick={handleUnfollow}
                   className="rounded-none text-primary border-primary hover:bg-primary hover:text-primary-foreground"
                 >
-                  {isSubmittingUnfollow ? (
+                  {isSubmittingUnfollow && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-                  ) : null}
+                  )}
                   Unfollow
                 </Button>
               )}
@@ -240,7 +229,6 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
         onClose={() => setShowUserDetailsDialog(false)}
         userPubkey={post.author.pubkey}
         userAddress={post.author.username}
-        displayName={post.author.name}
         userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
       />

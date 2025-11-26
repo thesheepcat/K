@@ -144,36 +144,29 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 min-h-14 resize-none text-sm rounded-none bg-transparent border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                className="flex-1 min-h-14 resize-none text-base rounded-none bg-transparent border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
-            <div className="flex justify-between items-center mt-2">
-              <div className="text-xs text-muted-foreground">
-                Press Esc to cancel • Cmd+Enter to reply
-              </div>
+            <div className="flex justify-end items-center mt-2">
               <div className="flex space-x-2">
                 <Button
                   onClick={onCancel}
                   variant="ghost"
                   disabled={isSubmitting}
-                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-sm rounded-none"
+                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-base rounded-none"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleReply}
                   disabled={!content.trim() || isSubmitting}
-                  className="px-4 py-1 text-sm font-bold rounded-none"
+                  className="px-4 py-1 text-base font-bold rounded-none"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-2" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
-                      Replying...
-                    </>
-                  ) : (
-                    'Reply'
+                  {isSubmitting && (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
                   )}
+                  {isSubmitting ? 'Replying...' : 'Reply'}
                 </Button>
               </div>
             </div>

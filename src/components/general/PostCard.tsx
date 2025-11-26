@@ -6,7 +6,6 @@ import { type Post } from "@/models/types";
 import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
-import { truncateKaspaAddress } from "@/utils/postUtils";
 import { toast } from "sonner";
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
@@ -20,18 +19,16 @@ interface PostCardProps {
   onDownVote?: (id: string) => void;
   onRepost?: (id: string) => void;
   isDetailView?: boolean;
-  isComment?: boolean;
   onClick?: () => void;
   onReply?: (postId: string) => void;
   context?: 'detail' | 'list'; // New prop to indicate where the PostCard is being rendered
 }
 
-const PostCard: React.FC<PostCardProps> = ({ 
-  post, 
+const PostCard: React.FC<PostCardProps> = ({
+  post,
   onUpVote,
   onDownVote,
-  isDetailView = false, 
-  isComment = false, 
+  isDetailView = false,
   onClick,
   onReply,
   context = 'list'
@@ -53,7 +50,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const { sendTransaction } = useKaspaTransactions();
   
   // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
-  const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
+  const avatarSizePixels = isDetailView ? 48 : 40;
   const jdenticonAvatar = useJdenticonAvatar(post.author.pubkey || post.author.username, avatarSizePixels);
   
   // Use profile image if available, otherwise use generated avatar
@@ -161,8 +158,10 @@ const PostCard: React.FC<PostCardProps> = ({
       navigate(`/post/${post.id}`, { state: { post } });
     }
   };
-  const avatarSize = isDetailView ? "h-12 w-12" : isComment ? "h-8 w-8" : "h-10 w-10";
+  const avatarSize = isDetailView ? "h-12 w-12" : "h-10 w-10";
   const contentTextSize = isDetailView ? "text-lg" : "text-base";
+  const authorNameSize = isDetailView ? "text-lg" : "text-base";
+  const timestampSize = isDetailView ? "text-base" : "text-xs sm:text-sm";
 
   // Check if message is longer than 500 characters and truncate if needed
   const MAX_CHARS = 500;
@@ -192,8 +191,8 @@ const PostCard: React.FC<PostCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
-              <span 
-                className="font-bold text-foreground truncate hover:underline cursor-pointer"
+              <span
+                className={`font-bold text-foreground truncate hover:underline cursor-pointer ${authorNameSize}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/user/${post.author.pubkey}`);
@@ -201,18 +200,8 @@ const PostCard: React.FC<PostCardProps> = ({
               >
                 {post.author.name}
               </span>
-              <span 
-                className="text-muted-foreground cursor-help hidden sm:inline hover:underline cursor-pointer" 
-                title={post.author.username}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/user/${post.author.pubkey}`);
-                }}
-              >
-                @{truncateKaspaAddress(post.author.username)}
-              </span>
             </div>
-            <span className="text-muted-foreground text-xs sm:text-sm flex-shrink-0 ml-2">{post.timestamp}</span>
+            <span className={`text-muted-foreground ${timestampSize} flex-shrink-0 ml-2`}>{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
             <LinkifiedText onMentionClick={handleMentionClick}>{displayContent}</LinkifiedText>
@@ -291,11 +280,13 @@ const PostCard: React.FC<PostCardProps> = ({
               }`}
               onClick={handleUpVote}
             >
-              {isSubmittingVote ? (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-              ) : (
-                <ThumbsUp className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.upVoted ? 'fill-current' : ''}`} />
-              )}
+              <div className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex items-center justify-center flex-shrink-0">
+                {isSubmittingVote ? (
+                  <div className="w-[8px] h-[8px] sm:w-[12px] sm:h-[12px] border-2 border-transparent rounded-full animate-loader-circle"></div>
+                ) : (
+                  <ThumbsUp className={`h-3 w-3 sm:h-4 sm:w-4 ${post.upVoted ? 'fill-current' : ''}`} />
+                )}
+              </div>
               <span className="text-xs sm:text-sm">{post.upVotes || 0}</span>
             </Button>
             <Button
@@ -311,11 +302,13 @@ const PostCard: React.FC<PostCardProps> = ({
               }`}
               onClick={handleDownVote}
             >
-              {isSubmittingVote ? (
-                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
-              ) : (
-                <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 mr-1 ${post.downVoted ? 'fill-current' : ''}`} />
-              )}
+              <div className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex items-center justify-center flex-shrink-0">
+                {isSubmittingVote ? (
+                  <div className="w-[8px] h-[8px] sm:w-[12px] sm:h-[12px] border-2 border-transparent rounded-full animate-loader-circle"></div>
+                ) : (
+                  <ThumbsDown className={`h-3 w-3 sm:h-4 sm:w-4 ${post.downVoted ? 'fill-current' : ''}`} />
+                )}
+              </div>
               <span className="text-xs sm:text-sm">{post.downVotes || 0}</span>
             </Button>
           </div>
@@ -328,7 +321,6 @@ const PostCard: React.FC<PostCardProps> = ({
         onClose={() => setShowUserDetailsDialog(false)}
         userPubkey={post.author.pubkey}
         userAddress={post.author.username}
-        displayName={post.author.name}
         userNickname={post.author.nickname}
         onNavigateToUserPosts={() => navigate(`/user/${post.author.pubkey}`)}
       />
