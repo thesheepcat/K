@@ -157,11 +157,12 @@ const PostDetailView: React.FC<PostDetailViewProps> = ({ onUpVote, onDownVote, o
         const updatedPost = await fetchAndConvertPostDetails(postId, publicKey);
         setCurrentPost(prev => {
           // Only update if there are actual changes to avoid unnecessary re-renders
-          if (!prev || 
-              prev.upVotes !== updatedPost.upVotes || 
-              prev.downVotes !== updatedPost.downVotes || 
-              prev.reposts !== updatedPost.reposts || 
+          if (!prev ||
+              prev.upVotes !== updatedPost.upVotes ||
+              prev.downVotes !== updatedPost.downVotes ||
+              prev.reposts !== updatedPost.reposts ||
               prev.replies !== updatedPost.replies ||
+              prev.quotes !== updatedPost.quotes ||
               prev.upVoted !== updatedPost.upVoted ||
               prev.downVoted !== updatedPost.downVoted) {
             return updatedPost;
