@@ -97,21 +97,6 @@ const LoginForm: React.FC = () => {
         <Card className="border border-border rounded-none shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Key Generation Section */}
-              <div className="space-y-3">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="button"
-                    onClick={handleGenerateKeyPair}
-                    disabled={loading}
-                    className="text-base flex-1 bg-muted text-muted-foreground hover:bg-muted/80 border border-border rounded-none"
-                  >
-                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-loader-circle' : ''}`} />
-                    Generate New Identity
-                  </Button>
-                </div>
-              </div>
-
               {/* Private Key Input */}
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
@@ -149,70 +134,93 @@ const LoginForm: React.FC = () => {
                 </div>
               </div>
 
-              {/* Password Input */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <label htmlFor="password" className="block text-base font-medium text-foreground">
-                    Password (for encryption)
-                  </label>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password to encrypt your private key"
-                    className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                  />
-                  <button
+              {/* Key Generation Section */}
+              {!privateKey.trim() && (
+                <div className="space-y-3">
+                  <Button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                    onClick={handleGenerateKeyPair}
+                    disabled={loading}
+                    className="text-base w-full py-3 font-bold rounded-none"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-loader-circle' : ''}`} />
+                    Generate New Identity
+                  </Button>
                 </div>
-              </div>
+              )}
+
+              {/* Password Input */}
+              {privateKey.trim() && (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <label htmlFor="password" className="block text-base font-medium text-foreground">
+                      Password (for encryption)
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password to encrypt your private key"
+                      maxLength={50}
+                      className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Confirm Password Input */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <label htmlFor="confirmPassword" className="block text-base font-medium text-foreground">
-                    Confirm Password
-                  </label>
+              {privateKey.trim() && (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                    <label htmlFor="confirmPassword" className="block text-base font-medium text-foreground">
+                      Confirm Password
+                    </label>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
+                      maxLength={50}
+                      className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
-                    className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
+              )}
 
-              <div className="pt-4 border-t border-border space-y-2">
-                <Button
-                  type="submit"
-                  disabled={loading || !privateKey.trim() || !password.trim() || !confirmPassword.trim()}
-                  className="text-base w-full py-3 font-bold rounded-none"
-                >
-                  <Key className="h-4 w-4 mr-2" />
-                  {loading ? 'Signing In...' : 'Sign In'}
-                </Button>
-              </div>
+              {privateKey.trim() && (
+                <div className="pt-4 border-t border-border space-y-2">
+                  <Button
+                    type="submit"
+                    disabled={loading || !privateKey.trim() || !password.trim() || !confirmPassword.trim()}
+                    className="text-base w-full py-3 font-bold rounded-none"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    {loading ? 'Signing In...' : 'Sign In'}
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>
