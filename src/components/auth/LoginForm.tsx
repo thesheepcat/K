@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Eye, EyeOff, Key, Copy, RefreshCw, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 import KaspaLogo from '../icons/KaspaLogo';
 import { toast } from 'sonner';
 
 const LoginForm: React.FC = () => {
   const { login, generateNewKeyPair } = useAuth();
+  const { theme } = useUserSettings();
   const [privateKey, setPrivateKey] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -87,7 +89,7 @@ const LoginForm: React.FC = () => {
     <div className="min-h-screen bg-background flex items-start justify-center pt-16 p-4">
       <div className="w-full max-w-md md:max-w-xl">
         <div className="text-center mb-8">
-          <KaspaLogo className="h-20 w-20 mx-auto mb-4" />
+          <KaspaLogo className="h-20 w-20 mx-auto mb-4" isDarkTheme={theme === 'dark'} />
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Your voice. Your ideas. Uncensored. 
           </h1>

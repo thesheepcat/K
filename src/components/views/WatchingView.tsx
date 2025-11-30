@@ -236,7 +236,7 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}
-      <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
+      <div className="bg-background/80 backdrop-blur-md border-b border-border p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Watching</h1>
         </div>

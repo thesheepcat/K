@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Server, Network, Globe, Palette, Info } from 'lucide-react';
+import { Server, Network, Globe, Palette, Info, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectOption } from '@/components/ui/select';
 import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type Theme } from '@/contexts/UserSettingsContext';
 import { KASPA_NETWORKS } from '@/constants/networks';
+import { fetchHealthCheck, type HealthCheckResponse } from '@/services/postsApi';
+import { toast } from 'sonner';
+import { normalizeApiUrl } from '@/utils/urlUtils';
 
 const SettingsView: React.FC = () => {
   const {
@@ -22,15 +26,42 @@ const SettingsView: React.FC = () => {
   } = useUserSettings();
 
   const [localApiBaseUrl, setLocalApiBaseUrl] = useState<string>(apiBaseUrl);
+  const [healthData, setHealthData] = useState<HealthCheckResponse | null>(null);
+  const [isCheckingHealth, setIsCheckingHealth] = useState<boolean>(false);
 
+  const handleCheckHealth = async () => {
+    setIsCheckingHealth(true);
+    try {
+      const data = await fetchHealthCheck(apiBaseUrl);
+      setHealthData(data);
+      toast.success('Health check completed', {
+        description: `Connected to ${data.service} v${data.version} on ${data.network}`
+      });
+    } catch (error) {
+      console.error('Failed to check health:', error);
+      setHealthData(null);
+      toast.error('Health check failed', {
+        description: 'Unable to connect to the indexer server. Please verify the URL.'
+      });
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
 
   const handleApiUrlChange = (value: string) => {
     setLocalApiBaseUrl(value);
   };
 
   const handleApiUrlBlur = () => {
-    if (localApiBaseUrl !== apiBaseUrl) {
-      setApiBaseUrl(localApiBaseUrl);
+    // Normalize the URL (removes trailing slashes, adds protocol if needed)
+    const normalized = normalizeApiUrl(localApiBaseUrl);
+
+    // Update local state with normalized value
+    setLocalApiBaseUrl(normalized);
+
+    // Save if different from current value
+    if (normalized !== apiBaseUrl) {
+      setApiBaseUrl(normalized);
     }
   };
 
@@ -158,13 +189,40 @@ const SettingsView: React.FC = () => {
                     Indexer URL
                   </label>
                   <Input
-                    type="url"
+                    type="text"
                     value={localApiBaseUrl}
                     onChange={(e) => handleApiUrlChange(e.target.value)}
                     onBlur={handleApiUrlBlur}
-                    placeholder={window.location.protocol === 'https:' ? '/api or https://your-backend.com' : 'http://localhost:3000'}
+                    placeholder={window.location.protocol === 'https:' ? '/api or https://indexer.example.com' : '/api or http://localhost:3000'}
                     className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Supports: /api, example.com, example.com:5000, https://example.com, http://192.168.1.1:5200
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    Indexer Version
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={healthData ? healthData.version : 'Click to refresh data'}
+                      readOnly
+                      className="text-sm rounded-none border-input-thin bg-muted"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleCheckHealth}
+                      disabled={isCheckingHealth}
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-none"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isCheckingHealth ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
