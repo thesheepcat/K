@@ -1,7 +1,7 @@
 {
   "name": "K",
   "private": true,
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "author": {
     "name": "K Team",
@@ -32,6 +32,7 @@
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@capacitor/status-bar": "^7.0.3",
+    "@capgo/capacitor-navigation-bar": "^7.3.16",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "4.1.13",

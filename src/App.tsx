@@ -25,6 +25,7 @@ import { type Post } from "@/models/types";
 import kaspaService from "./services/kaspaService";
 import { useNetworkValidator } from "./hooks/useNetworkValidator";
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { NavigationBar } from '@capgo/capacitor-navigation-bar';
 
 // Use HashRouter for Electron (file:// protocol), BrowserRouter for web
 const isElectron = typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
@@ -45,22 +46,32 @@ const MainApp: React.FC = () => {
   // Validate network after login
   useNetworkValidator();
 
-  // Update status bar style when theme changes
+  // Update status bar and navigation bar style when theme changes
   useEffect(() => {
-    const updateStatusBar = async () => {
+    const updateBars = async () => {
       try {
         if (theme === 'dark') {
           await StatusBar.setStyle({ style: Style.Dark });
+          await StatusBar.setBackgroundColor({ color: '#141414' }); // Dark background
+          await NavigationBar.setNavigationBarColor({
+            color: '#141414', // Dark navigation bar
+            darkButtons: false // Light buttons for dark background
+          });
         } else {
           await StatusBar.setStyle({ style: Style.Light });
+          await StatusBar.setBackgroundColor({ color: '#ffffff' }); // White background
+          await NavigationBar.setNavigationBarColor({
+            color: '#ffffff', // White navigation bar
+            darkButtons: true // Dark buttons for light background
+          });
         }
       } catch (error) {
-        // StatusBar API not available (web or other platforms)
-        console.log('StatusBar API not available');
+        // StatusBar/NavigationBar API not available (web or other platforms)
+        console.log('StatusBar/NavigationBar API not available');
       }
     };
 
-    updateStatusBar();
+    updateBars();
   }, [theme]);
 
   useEffect(() => {
