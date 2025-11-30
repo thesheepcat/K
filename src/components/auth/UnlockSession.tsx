@@ -4,12 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Eye, EyeOff, Lock, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 import KaspaLogo from '../icons/KaspaLogo';
 import LogoutConfirmDialog from '@/components/dialogs/LogoutConfirmDialog';
 import { toast } from 'sonner';
 
 const UnlockSession: React.FC = () => {
   const { unlockSession, logout } = useAuth();
+  const { theme } = useUserSettings();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,7 @@ const UnlockSession: React.FC = () => {
     <div className="min-h-screen bg-background flex items-start justify-center pt-16 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <KaspaLogo className="h-20 w-20 mx-auto mb-4" />
+          <KaspaLogo className="h-20 w-20 mx-auto mb-4" isDarkTheme={theme === 'dark'} />
           <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
         </div>
 

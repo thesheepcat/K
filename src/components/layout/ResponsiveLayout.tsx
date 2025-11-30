@@ -49,7 +49,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
       <div className="flex w-full max-w-7xl bg-background shadow-lg relative h-full">
         {/* Mobile Header - Fixed at top */}
         {(screenSize === 'sm' || screenSize === 'md') && (
-          <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm">
+          <div className="fixed left-0 right-0 z-50 bg-background border-b border-border shadow-sm" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
             <div className="relative flex items-center px-4 py-3 max-w-7xl mx-auto">
               <Button
                 variant="ghost"
@@ -79,15 +79,18 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
         )}
 
         {/* Left Sidebar */}
-        <div className={`
-          ${(screenSize === 'sm' || screenSize === 'md') ? 
-            `fixed left-0 z-40 transform transition-transform duration-300 ease-in-out ${
-              isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-            }` : 
-            'relative'
-          }
-          ${(screenSize === 'sm' || screenSize === 'md') ? 'top-0 h-screen' : 'h-full'}
-        `}>
+        <div
+          className={`
+            ${(screenSize === 'sm' || screenSize === 'md') ?
+              `fixed left-0 z-40 transform transition-transform duration-300 ease-in-out ${
+                isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+              }` :
+              'relative'
+            }
+            ${(screenSize === 'sm' || screenSize === 'md') ? 'h-screen' : 'h-full'}
+          `}
+          style={(screenSize === 'sm' || screenSize === 'md') ? { top: 'env(safe-area-inset-top, 0px)' } : undefined}
+        >
           <LeftSidebar 
             isCollapsed={showCollapsedLeftSidebar}
             isMobile={screenSize === 'sm' || screenSize === 'md'}
@@ -102,7 +105,10 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
           ${showCollapsedLeftSidebar ? 'ml-0' : ''}
           ${showFullLeftSidebar ? 'ml-0' : ''}
         `}>
-          <div className={`h-full ${isMobile ? 'mt-16' : ''}`}>
+          <div
+            className="h-full"
+            style={isMobile ? { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' } : undefined}
+          >
             {children}
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { HashRouter, BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { UserSettingsProvider } from "./contexts/UserSettingsContext";
+import { UserSettingsProvider, useUserSettings } from "./contexts/UserSettingsContext";
 import LoginForm from "./components/auth/LoginForm";
 import UnlockSession from "./components/auth/UnlockSession";
 import SessionTimeoutWarning from "./components/auth/SessionTimeoutWarning";
@@ -24,6 +24,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { type Post } from "@/models/types";
 import kaspaService from "./services/kaspaService";
 import { useNetworkValidator } from "./hooks/useNetworkValidator";
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 // Use HashRouter for Electron (file:// protocol), BrowserRouter for web
 const isElectron = typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
@@ -31,6 +32,7 @@ const Router = isElectron ? HashRouter : BrowserRouter;
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, hasStoredKey } = useAuth();
+  const { theme } = useUserSettings();
   const [myPostsData, setMyPostsData] = useState<Post[]>([]); // Only server posts, no local posts
   const [myRepliesData, setMyRepliesData] = useState<Post[]>([]);
   const [watchingData, setWatchingData] = useState<Post[]>([]);
@@ -42,6 +44,24 @@ const MainApp: React.FC = () => {
 
   // Validate network after login
   useNetworkValidator();
+
+  // Update status bar style when theme changes
+  useEffect(() => {
+    const updateStatusBar = async () => {
+      try {
+        if (theme === 'dark') {
+          await StatusBar.setStyle({ style: Style.Dark });
+        } else {
+          await StatusBar.setStyle({ style: Style.Light });
+        }
+      } catch (error) {
+        // StatusBar API not available (web or other platforms)
+        console.log('StatusBar API not available');
+      }
+    };
+
+    updateStatusBar();
+  }, [theme]);
 
   useEffect(() => {
     // Hide the static HTML splash screen and load Kaspa WASM
