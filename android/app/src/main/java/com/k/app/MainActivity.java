@@ -9,7 +9,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Disable edge-to-edge mode
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        // Enable edge-to-edge mode to remove extra padding
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
     }
 }

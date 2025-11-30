@@ -49,7 +49,10 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
       <div className="flex w-full max-w-7xl bg-background shadow-lg relative h-full">
         {/* Mobile Header - Fixed at top */}
         {(screenSize === 'sm' || screenSize === 'md') && (
-          <div className="fixed left-0 right-0 z-50 bg-background border-b border-border shadow-sm" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+          <div
+            className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border shadow-sm"
+            style={{ paddingTop: 'max(env(safe-area-inset-top), 24px)' }}
+          >
             <div className="relative flex items-center px-4 py-3 max-w-7xl mx-auto">
               <Button
                 variant="ghost"
@@ -82,14 +85,14 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
         <div
           className={`
             ${(screenSize === 'sm' || screenSize === 'md') ?
-              `fixed left-0 z-40 transform transition-transform duration-300 ease-in-out ${
+              `fixed left-0 top-0 z-40 transform transition-transform duration-300 ease-in-out ${
                 isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
               }` :
               'relative'
             }
             ${(screenSize === 'sm' || screenSize === 'md') ? 'h-screen' : 'h-full'}
           `}
-          style={(screenSize === 'sm' || screenSize === 'md') ? { top: 'env(safe-area-inset-top, 0px)' } : undefined}
+          style={(screenSize === 'sm' || screenSize === 'md') ? { paddingTop: 'max(env(safe-area-inset-top), 24px)' } : undefined}
         >
           <LeftSidebar 
             isCollapsed={showCollapsedLeftSidebar}
@@ -107,7 +110,7 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
         `}>
           <div
             className="h-full"
-            style={isMobile ? { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 4rem)' } : undefined}
+            style={isMobile ? { paddingTop: 'calc(max(env(safe-area-inset-top), 24px) + 4rem)' } : undefined}
           >
             {children}
           </div>
