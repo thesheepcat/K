@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { HashRouter, BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { UserSettingsProvider, useUserSettings } from "./contexts/UserSettingsContext";
 import LoginForm from "./components/auth/LoginForm";
@@ -26,10 +26,43 @@ import kaspaService from "./services/kaspaService";
 import { useNetworkValidator } from "./hooks/useNetworkValidator";
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { NavigationBar } from '@capgo/capacitor-navigation-bar';
+import { App as CapacitorApp } from '@capacitor/app';
 
 // Use HashRouter for Electron (file:// protocol), BrowserRouter for web
 const isElectron = typeof window !== 'undefined' && window.navigator.userAgent.includes('Electron');
 const Router = isElectron ? HashRouter : BrowserRouter;
+
+// Component to handle Android back button
+const BackButtonHandler: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let listenerHandle: any = null;
+
+    const setupBackButton = async () => {
+      listenerHandle = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          // If we can go back in the navigation history, do that
+          navigate(-1);
+        } else {
+          // If we're at the root and can't go back, exit the app
+          CapacitorApp.exitApp();
+        }
+      });
+    };
+
+    setupBackButton();
+
+    return () => {
+      if (listenerHandle) {
+        listenerHandle.remove();
+      }
+    };
+  }, [navigate, location]);
+
+  return null;
+};
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, hasStoredKey } = useAuth();
@@ -213,6 +246,7 @@ const MainApp: React.FC = () => {
   
   return (
     <Router>
+      <BackButtonHandler />
       <style>
         {`
           .overflow-y-scroll::-webkit-scrollbar {

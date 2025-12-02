@@ -40,7 +40,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
             }
           }}
           position="top-center"
-          offset="80px"
           {...props}
         />
       </div>
