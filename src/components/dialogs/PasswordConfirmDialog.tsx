@@ -97,6 +97,12 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onFocus={(e) => {
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  window.scrollBy(0, -100);
+                }, 300);
+              }}
               placeholder="Enter your password"
               className="pr-12 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               disabled={isLoading}

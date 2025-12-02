@@ -569,3 +569,10 @@ button:active, .btn:active {
 [data-sonner-toast][data-type="error"] svg {
   color: hsl(var(--destructive)) !important;
 }
+
+/* Toast position override for mobile - 60px from top */
+@media (max-width: 1023px) {
+  [data-sonner-toaster] {
+    top: 60px !important;
+  }
+}
