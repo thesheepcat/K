@@ -29,8 +29,10 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.0",
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
+    "@capacitor/keyboard": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
     "@capgo/capacitor-navigation-bar": "^7.3.16",
     "@radix-ui/react-avatar": "^1.1.10",

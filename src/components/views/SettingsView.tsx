@@ -167,6 +167,7 @@ const SettingsView: React.FC = () => {
                     className="w-full"
                   >
                     {/*<SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>*/}
+                    <SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>
                     <SelectOption value={KASPA_NETWORKS.TESTNET_10}>Testnet 10</SelectOption>
                   </Select>
                     {selectedNetwork === KASPA_NETWORKS.MAINNET && <p className="text-sm text-destructive font-medium">⚠️ Warning: Real KAS will be used!</p>}
