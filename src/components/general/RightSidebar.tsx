@@ -159,13 +159,13 @@ const RightSidebar: React.FC = () => {
 
   return (
     <div className="w-80 h-screen p-4 bg-background">
-      <Card className="border-border rounded-none  gap-2">
+      <Card className="border-border gap-2">
         <CardHeader>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold text-foreground">Meet new users</h3>
           </div>
           {error && (
-            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
               Error: {error}
             </div>
           )}

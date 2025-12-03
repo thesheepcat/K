@@ -29,7 +29,7 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
 
   return (
     <div
-      className={`border border-border p-3 bg-muted rounded-none transition-colors ${
+      className={`border border-border p-3 bg-muted rounded-md transition-colors ${
         onClick ? 'cursor-pointer hover:bg-accent hover:bg-opacity-30' : 'cursor-default'
       }`}
       onClick={onClick}

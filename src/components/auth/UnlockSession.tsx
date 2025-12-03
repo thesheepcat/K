@@ -58,7 +58,7 @@ const UnlockSession: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
         </div>
 
-        <Card className="border border-border rounded-none shadow-lg">
+        <Card className="border border-border shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
@@ -75,7 +75,7 @@ const UnlockSession: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    className="text-base pr-10 border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
                   <button
                     type="button"
@@ -91,7 +91,7 @@ const UnlockSession: React.FC = () => {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="text-base w-full py-3 font-bold rounded-none"
+                  className="text-base w-full py-3 font-bold"
                 >
                   <Lock className="h-4 w-4 mr-2" />
                   {loading ? 'Unlocking...' : 'Unlock Session'}
@@ -100,7 +100,7 @@ const UnlockSession: React.FC = () => {
                   type="button"
                   onClick={handleLogoutClick}
                   variant="outline"
-                  className="text-base w-full py-3 font-bold rounded-none"
+                  className="text-base w-full py-3 font-bold"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Use Different Account

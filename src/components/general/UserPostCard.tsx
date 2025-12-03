@@ -190,7 +190,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   size="sm"
                   disabled={isSubmittingUnblock || !privateKey}
                   onClick={handleUnblock}
-                  className="rounded-none text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
                   {isSubmittingUnblock && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
@@ -204,7 +204,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   size="sm"
                   disabled={isSubmittingUnfollow || !privateKey}
                   onClick={handleUnfollow}
-                  className="rounded-none text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                  className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
                 >
                   {isSubmittingUnfollow && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
