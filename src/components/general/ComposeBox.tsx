@@ -110,9 +110,9 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
       <CardContent className="p-3 sm:p-4">
         <div className="flex space-x-2 sm:space-x-3">
           {/* Removing avatar
-          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 rounded-none flex-shrink-0">
+          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
             <AvatarImage src={userAvatar} />
-            <AvatarFallback className="bg-muted text-muted-foreground rounded-none text-xs sm:text-sm">You</AvatarFallback>
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs sm:text-sm">You</AvatarFallback>
           </Avatar>
           */}
           <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
                   placeholder="What's happening?"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="flex-1 min-h-10 sm:min-h-12 resize-none text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                  className="flex-1 min-h-10 sm:min-h-12 resize-none text-base border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                 />
               </div>
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
@@ -134,7 +134,7 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
               <Button
                 onClick={handlePost}
                 disabled={!content.trim() || isSubmitting}
-                className="px-4 sm:px-6 py-2 font-bold rounded-none text-sm sm:text-base"
+                className="px-4 sm:px-6 py-2 font-bold text-sm sm:text-base"
               >
                 {isSubmitting && (
                   <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>

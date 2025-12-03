@@ -98,7 +98,7 @@ const SettingsView: React.FC = () => {
       }}>
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Current Settings Summary */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
@@ -109,28 +109,28 @@ const SettingsView: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Network</label>
-                    <div className="bg-muted border border-border p-2 text-sm">
+                    <div className="bg-muted border border-border p-2 text-sm rounded-md">
                       {getNetworkDisplayName(selectedNetwork)}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Indexer</label>
-                    <div className="bg-muted border border-border p-2 text-sm">
+                    <div className="bg-muted border border-border p-2 text-sm rounded-md">
                       {apiBaseUrl}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Connection</label>
-                    <div className="bg-muted border border-border p-2 text-sm">
+                    <div className="bg-muted border border-border p-2 text-sm rounded-md">
                       {kaspaConnectionType === 'resolver' ? 'Automatic (resolver)' : 'Custom Node'}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Theme</label>
-                    <div className="bg-muted border border-border p-2 text-sm capitalize">
+                    <div className="bg-muted border border-border p-2 text-sm capitalize rounded-md">
                       {theme}
                     </div>
                   </div>
@@ -138,7 +138,7 @@ const SettingsView: React.FC = () => {
                   {kaspaConnectionType === 'custom-node' && (
                     <div>
                       <label className="block text-sm font-medium text-muted-foreground mb-1">Node URL</label>
-                      <div className="bg-muted border border-border p-2 text-sm break-all">
+                      <div className="bg-muted border border-border p-2 text-sm break-all rounded-md">
                         {customKaspaNodeUrl || 'Not configured'}
                       </div>
                     </div>
@@ -149,7 +149,7 @@ const SettingsView: React.FC = () => {
           </Card>
 
           {/* Kaspa Network Settings */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
@@ -166,7 +166,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleNetworkChange(e.target.value as KaspaNetwork)}
                     className="w-full"
                   >
-                    {/*<SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>*/}
+                    {/*<SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>*/}                    
                     <SelectOption value={KASPA_NETWORKS.TESTNET_10}>Testnet 10</SelectOption>
                   </Select>
                     {selectedNetwork === KASPA_NETWORKS.MAINNET && <p className="text-sm text-destructive font-medium">⚠️ Warning: Real KAS will be used!</p>}
@@ -176,7 +176,7 @@ const SettingsView: React.FC = () => {
           </Card>
 
           {/* Indexer Settings */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
@@ -194,7 +194,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleApiUrlChange(e.target.value)}
                     onBlur={handleApiUrlBlur}
                     placeholder={window.location.protocol === 'https:' ? '/api or https://indexer.example.com' : '/api or http://localhost:3000'}
-                    className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
                   <p className="text-xs text-muted-foreground">
                     Supports: /api, example.com, example.com:5000, https://example.com, http://192.168.1.1:5200
@@ -210,7 +210,7 @@ const SettingsView: React.FC = () => {
                       type="text"
                       value={healthData ? healthData.version : 'Click to refresh data'}
                       readOnly
-                      className="text-sm rounded-none border-input-thin bg-muted"
+                      className="text-sm border-input-thin bg-muted"
                     />
                     <Button
                       type="button"
@@ -218,7 +218,6 @@ const SettingsView: React.FC = () => {
                       disabled={isCheckingHealth}
                       size="sm"
                       variant="ghost"
-                      className="rounded-none"
                     >
                       <RefreshCw className={`h-4 w-4 ${isCheckingHealth ? 'animate-spin' : ''}`} />
                     </Button>
@@ -229,14 +228,14 @@ const SettingsView: React.FC = () => {
           </Card>
 
           {/* Kaspa Connection Settings */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Globe className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">Kaspa Connection</h2>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
                     Connection Type
@@ -262,7 +261,7 @@ const SettingsView: React.FC = () => {
                       value={customKaspaNodeUrl}
                       onChange={(e) => handleCustomNodeUrlChange(e.target.value)}
                       placeholder="wss://your-kaspa-node.com:16210 or 192.168.1.100:16210"
-                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <p className="text-xs text-muted-foreground">
                       Enter the IP address and port of your Kaspa node. Include protocol (ws:// or wss://) if needed.
@@ -275,7 +274,7 @@ const SettingsView: React.FC = () => {
           </Card>
 
           {/* Appearance Settings */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">

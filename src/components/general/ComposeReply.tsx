@@ -127,13 +127,13 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
   };
 
   return (
-    <Card className="border-0 border-t border-border bg-compose rounded-none">
+    <Card className="border-0 border-t border-border bg-compose">
       <CardContent className="p-3">
         <div className="flex space-x-2">
           {/* Removing avatar
-          <Avatar className="h-8 w-8 rounded-none">
+          <Avatar className="h-8 w-8">
             <AvatarImage src={userAvatar} />
-            <AvatarFallback className="bg-muted text-muted-foreground rounded-none text-xs">You</AvatarFallback>
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs">You</AvatarFallback>
           </Avatar>
           */}
           <div className="flex-1">
@@ -144,7 +144,7 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="flex-1 min-h-14 resize-none text-base rounded-none bg-transparent border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                className="flex-1 min-h-14 resize-none text-base bg-transparent border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
@@ -154,14 +154,14 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
                   onClick={onCancel}
                   variant="ghost"
                   disabled={isSubmitting}
-                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-base rounded-none"
+                  className="text-muted-foreground hover:bg-muted disabled:bg-muted disabled:text-muted-foreground px-4 py-1 text-base"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleReply}
                   disabled={!content.trim() || isSubmitting}
-                  className="px-4 py-1 text-base font-bold rounded-none"
+                  className="px-4 py-1 text-base font-bold"
                 >
                   {isSubmitting && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>

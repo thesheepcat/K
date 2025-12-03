@@ -232,9 +232,9 @@ const PostCard: React.FC<PostCardProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-info p-1 sm:p-2 rounded-none flex-1 flex justify-center min-w-0"
+              className="text-muted-foreground hover:text-info p-1 sm:p-2 flex-1 flex justify-center min-w-0"
               // TO BE IMPLEMENTED - Reply count click functionality and hover effects
-              //className="text-secondary-action hover:text-info hover:bg-interactive-hover p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
+              //className="text-secondary-action hover:text-info hover:bg-interactive-hover p-1 sm:p-2 flex-1 flex justify-center min-w-0"
               onClick={() => {
                 if (context === 'list') {
                   // Navigate to PostDetailView with reply intent
@@ -258,7 +258,7 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="ghost"
               size="sm"
               disabled={!privateKey}
-              className="text-muted-foreground hover:text-info p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0"
+              className="text-muted-foreground hover:text-info p-1 sm:p-2 flex-1 flex justify-center min-w-0"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowQuoteDialog(true);
@@ -271,7 +271,7 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="ghost"
               size="sm"
               disabled={post.downVoted || post.upVoted || isSubmittingVote || !privateKey}
-              className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
+              className={`p-1 sm:p-2 flex-1 flex justify-center min-w-0 ${
                 post.downVoted || !privateKey
                   ? 'text-muted-foreground'
                   : post.upVoted
@@ -293,7 +293,7 @@ const PostCard: React.FC<PostCardProps> = ({
               variant="ghost"
               size="sm"
               disabled={post.upVoted || post.downVoted || isSubmittingVote || !privateKey}
-              className={`p-1 sm:p-2 rounded-none hover:rounded-none flex-1 flex justify-center min-w-0 ${
+              className={`p-1 sm:p-2 flex-1 flex justify-center min-w-0 ${
                 post.upVoted || !privateKey
                   ? 'text-muted-foreground'
                   : post.downVoted

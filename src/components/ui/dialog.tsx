@@ -46,7 +46,7 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-popover border border-border rounded-none shadow-lg max-w-md sm:max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-popover border border-border rounded-xl shadow-lg max-w-md sm:max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -57,7 +57,7 @@ export const Dialog: React.FC<DialogProps> = ({ isOpen, onClose, children, title
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="p-2 hover:bg-muted rounded-none"
+              className="p-2 hover:bg-muted"
             >
               <X className="h-4 w-4" />
             </Button>

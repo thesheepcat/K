@@ -91,7 +91,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                 Nickname
               </label>
             </div>
-            <div className="bg-muted border border-border p-2 rounded-none">
+            <div className="bg-muted border border-border p-2 rounded-md">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-foreground flex-1 mr-2">
                   {userNickname}
@@ -101,7 +101,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                   onClick={() => copyToClipboard(userNickname!, 'User nickname')}
                   size="sm"
                   variant="ghost"
-                  className="rounded-none flex-shrink-0"
+                  className="flex-shrink-0"
                 >
                   <Copy className="h-3 w-3" />
                 </Button>
@@ -118,7 +118,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
               Public Key
             </label>
           </div>
-          <div className="bg-muted border border-border p-2 rounded-none">
+          <div className="bg-muted border border-border p-2 rounded-md">
             <div className="flex items-center justify-between">
               <span className="text-sm text-foreground break-all flex-1 mr-2 font-sans">
                 {userPubkey}
@@ -128,7 +128,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                 onClick={() => copyToClipboard(userPubkey, 'Public key')}
                 size="sm"
                 variant="ghost"
-                className="rounded-none flex-shrink-0"
+                className="flex-shrink-0"
               >
                 <Copy className="h-3 w-3" />
               </Button>
@@ -144,7 +144,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
               Kaspa Address
             </label>
           </div>
-          <div className="bg-muted border border-border p-2 rounded-none">
+          <div className="bg-muted border border-border p-2 rounded-md">
             <div className="flex items-center justify-between">
               <span className="text-sm text-foreground break-all flex-1 mr-2 font-sans">
                 {userAddress}
@@ -154,7 +154,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                 onClick={() => copyToClipboard(userAddress, 'Kaspa address')}
                 size="sm"
                 variant="ghost"
-                className="rounded-none flex-shrink-0"
+                className="flex-shrink-0"
               >
                 <Copy className="h-3 w-3" />
               </Button>
@@ -170,7 +170,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
                 onNavigateToUserPosts();
                 onClose();
               }}
-              className="w-full py-3 font-bold rounded-none text-sm"
+              className="w-full py-3 font-bold text-sm"
             >
               See user's posts
             </Button>
@@ -178,7 +178,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({
           <Button
             onClick={onClose}
             variant="outline"
-            className="w-full py-3 font-bold rounded-none text-sm"
+            className="w-full py-3 font-bold text-sm"
           >
             Close
           </Button>

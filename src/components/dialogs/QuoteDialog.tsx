@@ -148,7 +148,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 placeholder="Add your comment..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="flex-1 min-h-20 resize-none text-sm sm:text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                className="flex-1 min-h-20 resize-none text-sm sm:text-base border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               />
             </div>
             {/*<EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />*/}
@@ -157,13 +157,13 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
 
         {/* Quoted post visualization */}
         {isLoadingPost && (
-          <div className="border border-border p-3 bg-muted rounded-none">
+          <div className="border border-border p-3 bg-muted rounded-md">
             <div className="text-sm text-muted-foreground">Loading post...</div>
           </div>
         )}
 
         {quotedPost && !isLoadingPost && (
-          <div className="border border-border p-3 bg-muted rounded-none">
+          <div className="border border-border p-3 bg-muted rounded-md">
             <div className="flex space-x-2">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src={displayAvatar} />
@@ -190,7 +190,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
           <Button
             onClick={handlePost}
             disabled={!content.trim() || isSubmitting || !privateKey}
-            className="px-6 py-2 font-bold rounded-none"
+            className="px-6 py-2 font-bold"
           >
             {isSubmitting && (
               <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>

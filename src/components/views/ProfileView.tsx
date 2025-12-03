@@ -496,7 +496,7 @@ const ProfileView: React.FC = () => {
           <ProfileIntroduceBox />
 
           {/* Identity Information */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
@@ -513,7 +513,7 @@ const ProfileView: React.FC = () => {
                     <Input
                       value={publicKey || 'Not available'}
                       readOnly
-                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <Button
                       type="button"
@@ -521,7 +521,6 @@ const ProfileView: React.FC = () => {
                       disabled={!publicKey}
                       size="sm"
                       variant="ghost"
-                      className="rounded-none"
                     >
                       <Copy className="h-3 w-3" />
                     </Button>
@@ -537,7 +536,7 @@ const ProfileView: React.FC = () => {
                     <Input
                       value={networkAwareAddress || 'Not available'}
                       readOnly
-                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <Button
                       type="button"
@@ -545,7 +544,6 @@ const ProfileView: React.FC = () => {
                       disabled={!networkAwareAddress}
                       size="sm"
                       variant="ghost"
-                      className="rounded-none"
                     >
                       <Copy className="h-3 w-3" />
                     </Button>
@@ -556,13 +554,13 @@ const ProfileView: React.FC = () => {
           </Card>
 
           {/* Private Key Section */}
-          <Card className="border border-destructive/20 rounded-none bg-destructive/10">
+          <Card className="border border-destructive/20 bg-destructive/10">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Key className="h-5 w-5 text-destructive" />
                   <h2 className="text-lg font-semibold text-destructive">Private Key</h2>
-                </div>    
+                </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-destructive">
                     Your private key
@@ -572,7 +570,7 @@ const ProfileView: React.FC = () => {
                       type={showPrivateKey ? 'text' : 'password'}
                       value={formatPrivateKey(privateKey)}
                       readOnly
-                      className="pr-20 text-sm bg-muted border-destructive/20 rounded-none focus-visible:ring-0"
+                      className="pr-20 text-sm bg-muted border-destructive/20 focus-visible:ring-0"
                     />
                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
                       <button
@@ -600,7 +598,7 @@ const ProfileView: React.FC = () => {
           </Card>
 
           {/* Wallet Balance Section */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
@@ -614,7 +612,6 @@ const ProfileView: React.FC = () => {
                     disabled={isLoadingUtxo}
                     size="sm"
                     variant="ghost"
-                    className="rounded-none"
                   >
                     <RefreshCw className={`h-4 w-4 ${isLoadingUtxo ? 'animate-loader-circle' : ''}`} />
                   </Button>
@@ -630,7 +627,7 @@ const ProfileView: React.FC = () => {
                         <Input
                           value=""
                           readOnly
-                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                          className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
@@ -646,7 +643,7 @@ const ProfileView: React.FC = () => {
                         <Input
                           value=""
                           readOnly
-                          className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                          className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                         />
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
@@ -657,7 +654,7 @@ const ProfileView: React.FC = () => {
                 )}
 
                 {utxoError && (
-                  <div className="bg-warning/10 border border-warning/20 p-4 rounded-none">
+                  <div className="bg-warning/10 border border-warning/20 p-4 rounded-md">
                     <p className="text-sm text-warning">
                       <strong>Note:</strong> {utxoError}
                     </p>
@@ -676,7 +673,7 @@ const ProfileView: React.FC = () => {
                       <Input
                         value={`${formatKaspaAmount(utxoData.totalBalance)} KAS`}
                         readOnly
-                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       />
                     </div>
 
@@ -687,14 +684,14 @@ const ProfileView: React.FC = () => {
                       <Input
                         value={utxoData.utxoCount.toString()}
                         readOnly
-                        className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       />
                     </div>
                   </div>
                 )}
 
                 {!utxoData && !isLoadingUtxo && !utxoError && (
-                  <div className="bg-muted border border-border p-4 rounded-none text-center text-muted-foreground">
+                  <div className="bg-muted border border-border p-4 rounded-md text-center text-muted-foreground">
                     <p className="text-sm">No wallet data loaded. Click refresh to load.</p>
                   </div>
               )}
@@ -703,7 +700,7 @@ const ProfileView: React.FC = () => {
           </Card>
 
           {/* Send Coins Section */}
-          <Card className="border border-border rounded-none">
+          <Card className="border border-border">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
@@ -722,7 +719,7 @@ const ProfileView: React.FC = () => {
                       value={destinationAddress}
                       onChange={(e) => setDestinationAddress(e.target.value)}
                       placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
-                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
                   </div>
@@ -738,7 +735,7 @@ const ProfileView: React.FC = () => {
                       placeholder="0.0"
                       step="0.1"
                       min="0"
-                      className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                       disabled={isSending}
                     />
                   </div>
@@ -749,7 +746,6 @@ const ProfileView: React.FC = () => {
                       onClick={clearSendForm}
                       disabled={isSending}
                       variant="outline"
-                      className="rounded-none"
                     >
                       Clear
                     </Button>
@@ -757,7 +753,6 @@ const ProfileView: React.FC = () => {
                     <Button
                       onClick={handleSendCoins}
                       disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim() || !sendAmount.trim()}
-                      className="rounded-none"
                     >
                       {isSending && (
                         <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
@@ -777,8 +772,6 @@ const ProfileView: React.FC = () => {
         isOpen={showPasswordDialog}
         onClose={() => setShowPasswordDialog(false)}
         onConfirm={handlePasswordConfirm}
-        title="Reveal Private Key"
-        message="Please enter your password to reveal your private key."
         isLoading={isVerifyingPassword}
       />
     </div>
