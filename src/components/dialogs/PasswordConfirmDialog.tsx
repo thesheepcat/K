@@ -18,8 +18,7 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = "Confirm Password",
-  message = "Please enter your password to continue",
+  title = "⚠️ Warning: You are revealing your private key!",
   isLoading = false
 }) => {
   const [password, setPassword] = useState('');
@@ -71,18 +70,6 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
   return (
     <Dialog isOpen={isOpen} onClose={handleClose} title={title}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Warning Message */}
-        <div className="bg-warning/10 border border-warning/20 p-4 rounded-none">
-          <div className="flex items-start space-x-2">
-            <div>
-              <p className="text-base text-destructive font-medium">⚠️ Security Verification</p>
-              <p className="text-base text-warning/80 mt-1">
-                {message}
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Password Input */}
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
@@ -104,7 +91,7 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
                 }, 300);
               }}
               placeholder="Enter your password"
-              className="pr-12 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+              className="pr-12 border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
               disabled={isLoading}
             />
             <button
@@ -119,13 +106,13 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-4 border-t border-border flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0">
+        <div className="pt-4 flex flex-col gap-2 sm:flex-row sm:justify-end sm:space-x-2 sm:gap-0">
           <Button
             type="button"
             onClick={handleClose}
             disabled={isLoading}
             variant="outline"
-            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-2 sm:order-1"
+            className="text-base w-full sm:w-auto py-3 font-bold order-2 sm:order-1"
           >
             Cancel
           </Button>
@@ -133,7 +120,7 @@ const PasswordConfirmDialog: React.FC<PasswordConfirmDialogProps> = ({
           <Button
             type="submit"
             disabled={isLoading}
-            className="text-base w-full sm:w-auto py-3 font-bold rounded-none order-1 sm:order-2"
+            className="text-base w-full sm:w-auto py-3 font-bold order-1 sm:order-2"
           >
             {isLoading ? (
               <>

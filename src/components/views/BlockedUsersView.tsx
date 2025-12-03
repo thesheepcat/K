@@ -12,8 +12,8 @@ interface BlockedUsersViewProps {
 const POLLING_INTERVAL = 10000; // 10 seconds
 
 const BlockedUsersView: React.FC<BlockedUsersViewProps> = ({ posts, onServerPostsUpdate }) => {
-      const { publicKey } = useAuth();
-      const { fetchAndConvertBlockedUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
+    const { publicKey } = useAuth();
+    const { fetchAndConvertBlockedUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [nextCursor, setNextCursor] = useState<string | null>(null);

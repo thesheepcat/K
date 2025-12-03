@@ -138,7 +138,7 @@ const LoginForm: React.FC = () => {
           <p className="text-xl text-muted-foreground mt-3">Create your new account in one click</p>
         </div>
 
-        <Card className="border border-border rounded-none shadow-lg">
+        <Card className="border border-border shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Private Key Input */}
@@ -156,7 +156,7 @@ const LoginForm: React.FC = () => {
                     value={privateKey}
                     onChange={(e) => setPrivateKey(e.target.value)}
                     placeholder="Generate your private key"
-                    className={`text-base rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 ${generatedKeys ? 'pr-20' : 'pr-10'}`}
+                    className={`text-base border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 ${generatedKeys ? 'pr-20' : 'pr-10'}`}
                   />
                   {generatedKeys && (
                     <button
@@ -185,7 +185,7 @@ const LoginForm: React.FC = () => {
                     type="button"
                     onClick={handleGenerateKeyPair}
                     disabled={loading}
-                    className="text-base w-full py-3 font-bold rounded-none"
+                    className="text-base w-full py-3 font-bold"
                   >
                     <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-loader-circle' : ''}`} />
                     Generate New Identity
@@ -216,7 +216,7 @@ const LoginForm: React.FC = () => {
                       }}
                       placeholder="Enter password to encrypt your private key"
                       maxLength={50}
-                      className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-base pr-10 border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <button
                       type="button"
@@ -252,7 +252,7 @@ const LoginForm: React.FC = () => {
                       }}
                       placeholder="Confirm your password"
                       maxLength={50}
-                      className="text-base pr-10 rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-base pr-10 border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <button
                       type="button"
@@ -270,7 +270,7 @@ const LoginForm: React.FC = () => {
                   <Button
                     type="submit"
                     disabled={loading || !privateKey.trim() || !password.trim() || !confirmPassword.trim()}
-                    className="text-base w-full py-3 font-bold rounded-none"
+                    className="text-base w-full py-3 font-bold"
                   >
                     <Key className="h-4 w-4 mr-2" />
                     {loading ? 'Signing In...' : 'Sign In'}

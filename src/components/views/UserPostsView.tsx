@@ -524,11 +524,11 @@ const loadMorePosts = useCallback(async () => {
                         size="sm"
                         disabled={isSubmittingBlock || !privateKey}
                         onClick={handleBlock}
-                        className={`rounded-none ${
+                        className={
                           userDetails?.blockedUser
                             ? 'text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground'
                             : 'text-foreground border-border hover:bg-muted hover:text-foreground'
-                        }`}
+                        }
                       >
                         {isSubmittingBlock && (
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
@@ -540,11 +540,11 @@ const loadMorePosts = useCallback(async () => {
                         size="sm"
                         disabled={isSubmittingFollow || !privateKey}
                         onClick={handleFollow}
-                        className={`rounded-none ${
+                        className={
                           userDetails?.followedUser
                             ? 'text-primary border-primary hover:bg-primary hover:text-primary-foreground'
                             : 'text-foreground border-border hover:bg-muted hover:text-foreground'
-                        }`}
+                        }
                       >
                         {isSubmittingFollow && (
                           <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>

@@ -324,7 +324,7 @@ const ProfileIntroduceBox: React.FC = () => {
   const isOverLimit = charactersRemaining < 0 || nicknameCharactersRemaining < 0;
 
   return (
-    <Card className="border border-border rounded-none">
+    <Card className="border border-border">
       <CardContent className="p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-4">
@@ -337,7 +337,6 @@ const ProfileIntroduceBox: React.FC = () => {
                 onClick={() => setIsEditing(true)}
                 size="sm"
                 variant="outline"
-                className="rounded-none"
               >
                 Edit
               </Button>
@@ -380,7 +379,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     <Input
                       value=""
                       readOnly
-                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
@@ -391,7 +390,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     value={nickname}
                     readOnly
                     placeholder="No nickname set"
-                    className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   />
                 )}
               </div>
@@ -405,7 +404,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     <Textarea
                       value=""
                       readOnly
-                      className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
+                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
                       rows={3}
                     />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -417,7 +416,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     value={content}
                     readOnly
                     placeholder="No message set"
-                    className="text-sm bg-muted rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
+                    className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0 resize-none"
                     rows={3}
                   />
                 )}
@@ -465,7 +464,6 @@ const ProfileIntroduceBox: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => fileInputRef.current?.click()}
-                      className="rounded-none"
                     >
                       {profileImagePreview ? 'Change Image' : 'Upload Image'}
                     </Button>
@@ -486,7 +484,7 @@ const ProfileIntroduceBox: React.FC = () => {
                   placeholder="Enter your nickname (max 20 characters)..."
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  className="text-sm rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                  className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                   maxLength={MAX_NICKNAME_CHARACTERS + 5}
                 />
                 <div className="flex justify-between items-center">
@@ -510,7 +508,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     placeholder="Share your message (max 100 characters)..."
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="flex-1 text-sm resize-none rounded-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    className="flex-1 text-sm resize-none border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     maxLength={MAX_CHARACTERS + 10}
                     rows={3}
                   />
@@ -531,14 +529,12 @@ const ProfileIntroduceBox: React.FC = () => {
                   onClick={handleCancel}
                   disabled={isSubmitting}
                   variant="outline"
-                  className="rounded-none"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSave}
                   disabled={!nickname.trim() || !content.trim() || isSubmitting || isOverLimit}
-                  className="rounded-none"
                 >
                   {isSubmitting && (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
