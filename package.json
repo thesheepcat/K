@@ -1,7 +1,7 @@
 {
   "name": "K",
   "private": true,
-  "version": "0.0.12",
+  "version": "0.0.13",
   "type": "module",
   "author": {
     "name": "K Team",
@@ -39,6 +39,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "4.1.13",
     "@types/crypto-js": "^4.2.2",
+    "@types/qrcode": "^1.5.6",
     "@types/react-router-dom": "^5.3.3",
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.7.1",
@@ -49,6 +50,7 @@
     "js-base64": "3.7.8",
     "lucide-react": "0.544.0",
     "next-themes": "^0.4.6",
+    "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "19.1.1",
     "react-router-dom": "7.9.1",
