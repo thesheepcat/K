@@ -17,25 +17,32 @@ const POLLING_INTERVAL = 5000; // 5 seconds
 const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepost, onServerPostsUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingNewer, setIsLoadingNewer] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [hasNewer, setHasNewer] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [prevCursor, setPrevCursor] = useState<string | null>(null);
   const { publicKey } = useAuth();
   const { fetchAndConvertWatchingPosts, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
-  
-  
-  
+
+  // Bidirectional pagination
+  const initialLoadDone = useRef(false);
+
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   // Use refs to store the latest values to avoid dependency issues
   const onServerPostsUpdateRef = useRef(onServerPostsUpdate);
   const fetchFunctionRef = useRef(fetchAndConvertWatchingPosts);
   const publicKeyRef = useRef(publicKey);
   const postsRef = useRef(posts);
   const nextCursorRef = useRef(nextCursor);
+  const prevCursorRef = useRef(prevCursor);
   const hasMoreRef = useRef(hasMore);
+  const hasNewerRef = useRef(hasNewer);
   const isLoadingMoreRef = useRef(isLoadingMore);
+  const isLoadingNewerRef = useRef(isLoadingNewer);
 
   // Update refs when values change
   onServerPostsUpdateRef.current = onServerPostsUpdate;
@@ -43,10 +50,13 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
   publicKeyRef.current = publicKey;
   postsRef.current = posts;
   nextCursorRef.current = nextCursor;
+  prevCursorRef.current = prevCursor;
   hasMoreRef.current = hasMore;
+  hasNewerRef.current = hasNewer;
   isLoadingMoreRef.current = isLoadingMore;
+  isLoadingNewerRef.current = isLoadingNewer;
 
-  const loadPosts = useCallback(async (reset: boolean = true) => {
+  const loadPosts = useCallback(async (reset: boolean = true, startFromTimestamp?: string) => {
     try {
       if (reset) {
         setIsLoading(true);
@@ -54,14 +64,16 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
       } else {
         setIsLoadingMore(true);
       }
-      
+
       const options: PaginationOptions = {
         limit: 10,
-        ...(reset ? {} : { before: nextCursorRef.current })
+        ...(startFromTimestamp ? { before: startFromTimestamp } : reset ? {} : { before: nextCursorRef.current })
       };
-      
+
+      console.log('[WatchingView] Loading posts with options:', options);
+
       const response = await fetchFunctionRef.current(publicKeyRef.current || '', options);
-      
+
       // Defensive check for response structure
       if (!response || !response.pagination) {
         console.error('Invalid response structure:', response);
@@ -69,11 +81,14 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
       }
 
       if (reset) {
+        console.log('[WatchingView] Loaded', response.posts?.length, 'posts. First post timestamp:', response.posts?.[0]?.timestamp);
         onServerPostsUpdateRef.current(response.posts || []);
         setNextCursor(response.pagination.nextCursor);
+        setPrevCursor(response.pagination.prevCursor);
         setHasMore(response.pagination.hasMore);
+        setHasNewer(!!response.pagination.prevCursor);
       } else {
-        // Append new posts to existing ones
+        // Append older posts to existing ones
         const updatedPosts = [...postsRef.current, ...(response.posts || [])];
         onServerPostsUpdateRef.current(updatedPosts);
         setNextCursor(response.pagination.nextCursor);
@@ -96,120 +111,95 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
     if (!hasMoreRef.current || isLoadingMoreRef.current) {
       return;
     }
-    
+
     await loadPosts(false);
   }, [loadPosts]);
 
+  const loadNewerPosts = useCallback(async () => {
+    if (!hasNewerRef.current || isLoadingNewerRef.current) {
+      return;
+    }
+
+    try {
+      setIsLoadingNewer(true);
+
+      const options: PaginationOptions = {
+        limit: 10,
+        after: prevCursorRef.current || undefined
+      };
+
+      const response = await fetchFunctionRef.current(publicKeyRef.current || '', options);
+
+      if (!response || !response.pagination) {
+        console.error('Invalid response structure:', response);
+        throw new Error('Invalid response from server');
+      }
+
+      // Prepend newer posts to existing ones
+      const updatedPosts = [...(response.posts || []), ...postsRef.current];
+      onServerPostsUpdateRef.current(updatedPosts);
+      setPrevCursor(response.pagination.prevCursor);
+      setHasNewer(!!response.pagination.prevCursor);
+    } catch (err) {
+      console.error('Error loading newer posts:', err);
+    } finally {
+      setIsLoadingNewer(false);
+    }
+  }, []);
+
 // Load posts on component mount and when network or apiBaseUrl changes
   useEffect(() => {
-    if (publicKey) {
-      // Use setTimeout to make this non-blocking
-      setTimeout(() => loadPosts(true), 0);
-    }
-  }, [publicKey, selectedNetwork, apiBaseUrl]);
+    if (publicKey && !initialLoadDone.current) {
+      initialLoadDone.current = true;
 
-  // Auto-refresh every 30 seconds (less aggressive to avoid interfering with infinite scroll)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Only refresh if user is near the top to avoid disrupting infinite scroll
-      const scrollContainer = scrollContainerRef.current;
-      if (scrollContainer && scrollContainer.scrollTop < 100) {
-        loadPosts(true);
+      // Check if we should return to a specific timestamp
+      const returnToTimestamp = sessionStorage.getItem('watchingView_returnToTimestamp');
+
+      if (returnToTimestamp) {
+        console.log('[WatchingView] Returning to timestamp:', returnToTimestamp);
+        sessionStorage.removeItem('watchingView_returnToTimestamp');
+        // Load posts starting from the saved timestamp
+        // Add 1ms to the timestamp so the clicked post is included in the results
+        const timestampPlusOne = (parseInt(returnToTimestamp) + 1).toString();
+        setTimeout(() => loadPosts(true, timestampPlusOne), 0);
+      } else {
+        // Normal load from the beginning
+        setTimeout(() => loadPosts(true), 0);
       }
-    }, 30000);
+    }
+  }, [publicKey, selectedNetwork, apiBaseUrl, loadPosts]);
 
-    return () => clearInterval(interval);
-  }, [loadPosts]);
-
-  // Set up polling with stable references
+  // Simplified polling - just check for new posts using prevCursor
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    const startPolling = () => {
-      interval = setInterval(async () => {
+    const interval = setInterval(async () => {
+      // If we have a prevCursor, check for newer posts
+      if (prevCursorRef.current && publicKeyRef.current) {
         try {
           const options: PaginationOptions = {
-            limit: 10
+            limit: 10,
+            after: prevCursorRef.current
           };
-          
-          const response = await fetchFunctionRef.current(publicKeyRef.current || '', options);
-          
-          // Defensive check for response structure
-          if (!response || !response.pagination) {
-            console.error('Invalid polling response structure:', response);
-            return;
-          }
 
-          // Check if server data has any changes compared to local data
-          const serverPosts = response.posts || [];
-          const localPosts = postsRef.current;
-          
-          let hasChanges = false;
-          
-          // Check if post count differs
-          if (serverPosts.length !== localPosts.length) {
-            hasChanges = true;
-          } else {
-            // Compare each post for changes in vote counts, timestamps, or other properties
-            for (let i = 0; i < Math.min(serverPosts.length, localPosts.length); i++) {
-              const serverPost = serverPosts[i];
-              const localPost = localPosts[i];
-              
-              if (
-                serverPost.id !== localPost.id ||
-                serverPost.upVotes !== localPost.upVotes ||
-                serverPost.downVotes !== localPost.downVotes ||
-                serverPost.replies !== localPost.replies ||
-                serverPost.reposts !== localPost.reposts ||
-                serverPost.timestamp !== localPost.timestamp ||
-                serverPost.upVoted !== localPost.upVoted ||
-                serverPost.downVoted !== localPost.downVoted ||
-                serverPost.reposted !== localPost.reposted
-              ) {
-                hasChanges = true;
-                break;
-              }
-            }
-          }
-          
-          if (hasChanges) {
-            // Only update the first page of posts to preserve infinite scroll state
-            const currentPosts = postsRef.current;
-            
-            if (currentPosts.length <= 10) {
-              // If we only have first page loaded, replace all
-              onServerPostsUpdateRef.current(serverPosts);
-              setHasMore(response.pagination.hasMore);
-              setNextCursor(response.pagination.nextCursor);
-            } else {
-              // If we have more than first page, only update the first 10 posts
-              // to preserve the user's scroll position and additional loaded content
-              const updatedPosts = [
-                ...serverPosts.slice(0, Math.min(serverPosts.length, 10)),
-                ...currentPosts.slice(10)
-              ];
-              onServerPostsUpdateRef.current(updatedPosts);
-              // Don't update pagination state as it would affect infinite scroll
-            }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
+
+          if (response && response.posts && response.posts.length > 0) {
+            // Found new posts, prepend them silently
+            const updatedPosts = [...response.posts, ...postsRef.current];
+            onServerPostsUpdateRef.current(updatedPosts);
+            setPrevCursor(response.pagination.prevCursor);
+            setHasNewer(!!response.pagination.prevCursor);
           }
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch watching posts';
-          setError(errorMessage);
-          console.error('Error fetching watching posts from server:', err);
+          console.error('Polling error:', err);
         }
-      }, POLLING_INTERVAL);
-    };
-
-    startPolling();
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
       }
-    };
-  }, [selectedNetwork, apiBaseUrl]); // Removed posts dependency since we use refs
+    }, POLLING_INTERVAL);
 
-  // Single scroll-based infinite scroll mechanism (works on both desktop and mobile)
+    return () => clearInterval(interval);
+  }, []);
+
+
+  // Bidirectional scroll-based infinite scroll mechanism
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     if (!scrollContainer) return;
@@ -217,10 +207,18 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-      const shouldLoadMore = distanceFromBottom < 300; // Load when within 300px of bottom
+      const distanceFromTop = scrollTop;
 
+      // Load older posts when scrolling down (near bottom)
+      const shouldLoadMore = distanceFromBottom < 300;
       if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
         loadMorePosts();
+      }
+
+      // Load newer posts when scrolling up (near top)
+      const shouldLoadNewer = distanceFromTop < 300;
+      if (shouldLoadNewer && hasNewerRef.current && !isLoadingNewerRef.current) {
+        loadNewerPosts();
       }
     };
 
@@ -229,7 +227,7 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [loadMorePosts]);
+  }, [loadMorePosts, loadNewerPosts]);
 
   
 
@@ -265,6 +263,14 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
           </div>
         ) : (
           <>
+            {/* Loading indicator at top for newer posts */}
+            {isLoadingNewer && (
+              <div className="p-4 text-center border-b border-border">
+                <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto"></div>
+                <p className="text-sm text-muted-foreground mt-2">Loading newer posts...</p>
+              </div>
+            )}
+
             {posts.map((post) => (
               <PostCard
                 key={post.id}
@@ -275,9 +281,7 @@ const Watching: React.FC<WatchingProps> = ({ posts, onUpVote, onDownVote, onRepo
                 context="list"
               />
             ))}
-            
-            
-            
+
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">

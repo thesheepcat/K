@@ -154,6 +154,9 @@ const PostCard: React.FC<PostCardProps> = ({
     if (onClick) {
       onClick();
     } else if (!isDetailView) {
+      // Save the clicked post raw timestamp for scroll restoration when returning
+      sessionStorage.setItem('watchingView_returnToTimestamp', post.rawTimestamp.toString());
+
       // Allow navigation for both posts and comments, passing post data
       navigate(`/post/${post.id}`, { state: { post } });
     }

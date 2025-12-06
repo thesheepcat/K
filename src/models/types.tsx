@@ -9,7 +9,8 @@ export interface Post {
     profileImage?: string; // Base64 profile image if available
   };
   content: string;
-  timestamp: string;
+  timestamp: string; // Formatted timestamp like "9d", "2h"
+  rawTimestamp: number; // Unix timestamp in milliseconds for API pagination
   upVotes: number;
   downVotes: number;
   reposts: number;

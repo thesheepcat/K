@@ -464,6 +464,7 @@ export const convertServerPostToClientPost = async (serverPost: ServerPost, curr
     author: authorInfo, // Use the properly formatted author info
     content: decodedContent,
     timestamp: timeString,
+    rawTimestamp: serverPost.timestamp, // Store raw timestamp for API pagination
     upVotes: serverPost.upVotesCount,
     downVotes: serverPost.downVotesCount || 0, // Default to 0 if not provided
     reposts: serverPost.repostsCount,
