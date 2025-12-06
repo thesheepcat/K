@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Dialog } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { useKaspaAuth } from '@/hooks/useKaspaAuth';
@@ -11,6 +12,7 @@ import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
 import { KASPA_NETWORKS } from '@/constants/networks';
 import { toast } from 'sonner';
 import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
+import QRCodeLib from 'qrcode';
 
 interface UtxoData {
   totalBalance: number;
@@ -32,6 +34,10 @@ const ProfileView: React.FC = () => {
   // Password confirmation dialog state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
+
+  // QR Code dialog state
+  const [showQRDialog, setShowQRDialog] = useState(false);
+  const [qrCodeDataURL, setQrCodeDataURL] = useState<string>('');
 
   // Send Coins state
   const [destinationAddress, setDestinationAddress] = useState('');
@@ -480,6 +486,37 @@ const ProfileView: React.FC = () => {
     setSendAmount('');
   };
 
+  // Generate and show QR code for address
+  const handleShowQRCode = async () => {
+    if (!networkAwareAddress) {
+      toast.error('Error', {
+        description: 'No address available',
+        duration: 2000,
+      });
+      return;
+    }
+
+    try {
+      // Generate QR code as data URL
+      const dataURL = await QRCodeLib.toDataURL(networkAwareAddress, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      });
+      setQrCodeDataURL(dataURL);
+      setShowQRDialog(true);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast.error('Error', {
+        description: 'Failed to generate QR code',
+        duration: 2000,
+      });
+    }
+  };
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
@@ -540,6 +577,15 @@ const ProfileView: React.FC = () => {
                     />
                     <Button
                       type="button"
+                      onClick={handleShowQRCode}
+                      disabled={!networkAwareAddress}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <QrCode className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
                       onClick={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
                       disabled={!networkAwareAddress}
                       size="sm"
@@ -548,6 +594,7 @@ const ProfileView: React.FC = () => {
                       <Copy className="h-3 w-3" />
                     </Button>
                   </div>
+                  <p className="text-sm text-destructive font-medium">⚠️ Warning: Send only small amounts of KAS (1-5 KAS max)!</p>
                 </div>
               </div>
             </CardContent>
@@ -774,6 +821,58 @@ const ProfileView: React.FC = () => {
         onConfirm={handlePasswordConfirm}
         isLoading={isVerifyingPassword}
       />
+
+      {/* QR Code Dialog */}
+      <Dialog
+        isOpen={showQRDialog}
+        onClose={() => setShowQRDialog(false)}
+        title="Your Kaspa Address"
+      >
+        <div className="flex flex-col items-center space-y-4">
+          {/* QR Code Image */}
+          {qrCodeDataURL && (
+            <div className="bg-white p-4 rounded-lg">
+              <img
+                src={qrCodeDataURL}
+                alt="QR Code"
+                className="w-full h-full"
+              />
+            </div>
+          )}
+
+          {/* Address Text */}
+          <div className="w-full space-y-2">
+            <label className="block text-sm font-medium text-muted-foreground">
+              Your address
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={networkAwareAddress || 'Not available'}
+                readOnly
+                className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+              />
+              <Button
+                type="button"
+                onClick={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
+                disabled={!networkAwareAddress}
+                size="sm"
+                variant="ghost"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+            <p className="text-sm text-destructive font-medium">⚠️ Warning: Send only small amounts of KAS (1-5 KAS max)!</p>
+          </div>
+
+          {/* Close Button */}
+          <Button
+            onClick={() => setShowQRDialog(false)}
+            className="w-full"
+          >
+            Close
+          </Button>
+        </div>
+      </Dialog>
     </div>
   );
 };
