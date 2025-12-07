@@ -3,7 +3,6 @@ import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode } fro
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Dialog } from '@/components/ui/dialog';
 import { Select, SelectOption } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
@@ -26,7 +25,7 @@ interface UtxoData {
 
 const ProfileView: React.FC = () => {
   const { privateKey, publicKey, address, unlockSession } = useAuth();
-  const { selectedNetwork, getNetworkDisplayName, getNetworkRPCId } = useUserSettings();
+  const { selectedNetwork, getNetworkRPCId } = useUserSettings();
   const { getNetworkAwareAddress } = useKaspaAuth();
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [utxoData, setUtxoData] = useState<UtxoData | null>(null);
