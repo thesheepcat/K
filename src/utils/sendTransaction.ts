@@ -29,7 +29,7 @@ export interface TransactionResult {
   feeKAS: string;
 }
 
-export const sendTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {
+export const sendKProtocolTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {
     const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, blockingAction, blockedUserPubkey, followingAction, followedUserPubkey, networkId: overrideNetworkId } = options;
     
     try {
@@ -267,9 +267,305 @@ export const sendTransaction = async (options: TransactionOptions): Promise<Tran
     }
 }
 
+export interface SendCoinOptions {
+  privateKey: string;
+  destinationAddress: string;
+  amountKAS: number;
+  networkId?: string; // Optional network override, defaults to context network
+}
+
+export interface SendSingleUtxoOptions {
+  privateKey: string;
+  destinationAddress: string;
+  networkId?: string; // Optional network override, defaults to context network
+}
+
+export const sendCoinTransaction = async (options: SendCoinOptions): Promise<TransactionResult | null> => {
+    const { privateKey, destinationAddress, amountKAS, networkId: overrideNetworkId } = options;
+
+    try {
+        // Ensure Kaspa SDK is loaded
+        await kaspaService.ensureLoaded();
+        const kaspa = kaspaService.getKaspa();
+
+        const { Resolver, createTransactions, RpcClient, PrivateKey, Address, sompiToKaspaString } = kaspa;
+
+        // Use override network or default to mainnet
+        const connectionNetworkId = overrideNetworkId || KASPA_NETWORKS.MAINNET;
+
+        // Get connection settings from user settings
+        const storedSettings = localStorage.getItem('kaspa_user_settings');
+        let kaspaConnectionType = 'resolver';
+        let customKaspaNodeUrl = '';
+
+        if (storedSettings) {
+          try {
+            const settings = JSON.parse(storedSettings);
+            kaspaConnectionType = settings.kaspaConnectionType || 'resolver';
+            customKaspaNodeUrl = settings.customKaspaNodeUrl || '';
+          } catch (error) {
+            console.error('Error parsing settings:', error);
+          }
+        }
+
+        let rpcConfig;
+        if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+          // Use custom node URL
+          rpcConfig = {
+            url: customKaspaNodeUrl.trim(),
+            networkId: connectionNetworkId
+          };
+        } else {
+          // Use resolver (default)
+          rpcConfig = {
+            resolver: new Resolver(),
+            networkId: connectionNetworkId
+          };
+        }
+
+        const rpc = new RpcClient(rpcConfig);
+        await rpc.connect();
+        const isConnected = await rpc.isConnected;
+
+        if (!isConnected) {
+            throw new Error('Failed to connect to Kaspa network');
+        }
+
+        const { networkId } = await rpc.getServerInfo();
+
+        // Setup wallet
+        const privateKeyObject = new PrivateKey(privateKey);
+        const userAddressObject = privateKeyObject.toAddress(networkId);
+
+        // Create destination address object
+        let destinationAddressObject;
+        try {
+            const trimmedAddress = destinationAddress.trim();
+
+            // Validate address format first using static validate method if available
+            if (Address.validate && !Address.validate(trimmedAddress)) {
+                throw new Error('Address format validation failed');
+            }
+
+            // Create address using constructor
+            destinationAddressObject = new Address(trimmedAddress);
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Invalid destination address: ${destinationAddress}. ${errorMsg}`);
+        }
+
+        // Get fresh UTXOs
+        const { entries } = await rpc.getUtxosByAddresses([userAddressObject]);
+
+        if (!entries || entries.length === 0) {
+            throw new Error('No UTXOs found. Make sure the address has funds.');
+        }
+
+        // Calculate total balance from UTXOs
+        let totalBalance = 0n;
+        for (const entry of entries) {
+            const amount = entry?.utxoEntry?.amount || entry?.amount || 0n;
+            totalBalance += BigInt(amount);
+        }
+
+        // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
+        const amountToSendSompi = BigInt(Math.round(amountKAS * 100000000));
+
+        if (totalBalance < amountToSendSompi) {
+            throw new Error(`Insufficient funds. Available: ${sompiToKaspaString(totalBalance)} KAS, Required: ${amountKAS} KAS`);
+        }
+
+        // Create transaction
+        const { transactions } = await createTransactions({
+            networkId,
+            entries: entries, // Use all UTXOs for consolidation
+            outputs: [{
+                address: destinationAddressObject,
+                amount: amountToSendSompi
+            }],
+            changeAddress: userAddressObject,
+            priorityFee: 0n
+        });
+
+        if (!transactions || transactions.length === 0) {
+            throw new Error('Failed to create transaction');
+        }
+
+        let transactionResult: TransactionResult | null = null;
+        let totalFees = 0n;
+
+        // Sign and submit transactions
+        for (const transaction of transactions) {
+            transaction.sign([privateKeyObject]);
+            await transaction.submit(rpc);
+            totalFees += transaction.feeAmount;
+
+            console.log("Coin transaction:");
+            console.log(transaction);
+            console.log("Transaction ID:", transaction.id);
+            console.log("Fees:", transaction.feeAmount);
+            console.log(`Sent ${amountKAS} KAS to ${destinationAddressObject.toString()}`);
+
+            // Store transaction result for the last transaction
+            transactionResult = {
+                id: transaction.id,
+                feeAmount: totalFees,
+                feeKAS: sompiToKaspaString(totalFees)
+            };
+        }
+
+        await rpc.disconnect();
+
+        // Return transaction details for success notification
+        return transactionResult;
+
+    } catch (error) {
+        console.error("Error sending coin transaction:", error);
+        throw error; // Re-throw to allow components to handle errors
+    }
+};
+
+export const sendSingleUtxoTransaction = async (options: SendSingleUtxoOptions): Promise<TransactionResult | null> => {
+    const { privateKey, destinationAddress, networkId: overrideNetworkId } = options;
+
+    try {
+        // Ensure Kaspa SDK is loaded
+        await kaspaService.ensureLoaded();
+        const kaspa = kaspaService.getKaspa();
+
+        const { Resolver, createTransactions, RpcClient, PrivateKey, Address, sompiToKaspaString } = kaspa;
+
+        // Use override network or default to mainnet
+        const connectionNetworkId = overrideNetworkId || KASPA_NETWORKS.MAINNET;
+
+        // Get connection settings from user settings
+        const storedSettings = localStorage.getItem('kaspa_user_settings');
+        let kaspaConnectionType = 'resolver';
+        let customKaspaNodeUrl = '';
+
+        if (storedSettings) {
+          try {
+            const settings = JSON.parse(storedSettings);
+            kaspaConnectionType = settings.kaspaConnectionType || 'resolver';
+            customKaspaNodeUrl = settings.customKaspaNodeUrl || '';
+          } catch (error) {
+            console.error('Error parsing settings:', error);
+          }
+        }
+
+        let rpcConfig;
+        if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+          // Use custom node URL
+          rpcConfig = {
+            url: customKaspaNodeUrl.trim(),
+            networkId: connectionNetworkId
+          };
+        } else {
+          // Use resolver (default)
+          rpcConfig = {
+            resolver: new Resolver(),
+            networkId: connectionNetworkId
+          };
+        }
+
+        const rpc = new RpcClient(rpcConfig);
+        await rpc.connect();
+        const isConnected = await rpc.isConnected;
+
+        if (!isConnected) {
+            throw new Error('Failed to connect to Kaspa network');
+        }
+
+        const { networkId } = await rpc.getServerInfo();
+
+        // Setup wallet
+        const privateKeyObject = new PrivateKey(privateKey);
+        const userAddressObject = privateKeyObject.toAddress(networkId);
+
+        // Create destination address object
+        let destinationAddressObject;
+        try {
+            const trimmedAddress = destinationAddress.trim();
+
+            // Validate address format first using static validate method if available
+            if (Address.validate && !Address.validate(trimmedAddress)) {
+                throw new Error('Address format validation failed');
+            }
+
+            // Create address using constructor
+            destinationAddressObject = new Address(trimmedAddress);
+        } catch (error) {
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            throw new Error(`Invalid destination address: ${destinationAddress}. ${errorMsg}`);
+        }
+
+        // Get fresh UTXOs
+        const { entries } = await rpc.getUtxosByAddresses([userAddressObject]);
+
+        if (!entries || entries.length === 0) {
+            throw new Error('No UTXOs found. Make sure the address has funds.');
+        }
+
+        // Sort UTXOs by amount (ascending) and select the first one (lowest amount)
+        const sortedEntries = [...entries].sort((a, b) => {
+            const amountA = a?.utxoEntry?.amount || a?.amount || 0n;
+            const amountB = b?.utxoEntry?.amount || b?.amount || 0n;
+            return amountA < amountB ? -1 : amountA > amountB ? 1 : 0;
+        });
+
+        const selectedUtxo = sortedEntries[0];
+        const utxoAmount = selectedUtxo?.utxoEntry?.amount || selectedUtxo?.amount || 0n;
+
+        // Create transaction with single UTXO, empty outputs, and change to destination
+        // This sends the entire UTXO (minus fees) to the destination address
+        const { transactions } = await createTransactions({
+            networkId,
+            entries: [selectedUtxo], // Use only the first (lowest amount) UTXO
+            outputs: [], // Empty outputs - entire UTXO goes to change address
+            changeAddress: destinationAddressObject, // Destination receives UTXO as "change"
+            priorityFee: 0n // No priority fee, but network fees are still calculated
+        });
+
+        if (!transactions || transactions.length === 0) {
+            throw new Error('Failed to create transaction');
+        }
+
+        let transactionResult: TransactionResult | null = null;
+
+        // Sign and submit transactions
+        for (const transaction of transactions) {
+            transaction.sign([privateKeyObject]);
+            await transaction.submit(rpc);
+
+            console.log("Send single UTXO transaction:");
+            console.log(transaction);
+            console.log("Transaction ID:", transaction.id);
+            console.log("Fees:", transaction.feeAmount);
+            console.log(`UTXO amount: ${sompiToKaspaString(utxoAmount)} KAS`);
+            console.log(`Net amount sent: ${sompiToKaspaString(utxoAmount - transaction.feeAmount)} KAS to ${destinationAddressObject.toString()}`);
+
+            // Store transaction result
+            transactionResult = {
+                id: transaction.id,
+                feeAmount: transaction.feeAmount,
+                feeKAS: sompiToKaspaString(transaction.feeAmount)
+            };
+        }
+
+        await rpc.disconnect();
+
+        // Return transaction details for success notification
+        return transactionResult;
+
+    } catch (error) {
+        console.error("Error sending single UTXO transaction:", error);
+        throw error; // Re-throw to allow components to handle errors
+    }
+};
+
 // Legacy function for backward compatibility
 export const sendPostTransaction = async (privateKey: string, userMessage: string): Promise<TransactionResult | null> => {
-    return sendTransaction({
+    return sendKProtocolTransaction({
         privateKey,
         userMessage,
         type: 'post',

@@ -13,6 +13,7 @@ import { KASPA_NETWORKS } from '@/constants/networks';
 import { toast } from 'sonner';
 import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
 import QRCodeLib from 'qrcode';
+import { sendCoinTransaction, sendSingleUtxoTransaction } from '@/utils/sendTransaction';
 
 interface UtxoData {
   totalBalance: number;
@@ -283,11 +284,6 @@ const ProfileView: React.FC = () => {
     return key;
   };
 
-  // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
-  const kasToSompi = (kas: number): bigint => {
-    return BigInt(Math.round(kas * 100000000));
-  };
-
   // Send coins function
   const handleSendCoins = async () => {
     if (!privateKey || !networkAwareAddress) {
@@ -336,124 +332,23 @@ const ProfileView: React.FC = () => {
     setIsSending(true);
 
     try {
-      await kaspaService.ensureLoaded();
-      const kaspa = kaspaService.getKaspa();
-      const { Resolver, createTransactions, RpcClient, PrivateKey, Address } = kaspa;
-
-      // Get connection settings
-      const storedSettings = localStorage.getItem('kaspa_user_settings');
-      let kaspaConnectionType = 'resolver';
-      let customKaspaNodeUrl = '';
-      
-      if (storedSettings) {
-        try {
-          const settings = JSON.parse(storedSettings);
-          kaspaConnectionType = settings.kaspaConnectionType || 'resolver';
-          customKaspaNodeUrl = settings.customKaspaNodeUrl || '';
-        } catch (error) {
-          console.error('Error parsing settings:', error);
-        }
-      }
-
-      let rpcConfig;
-      if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
-        rpcConfig = {
-          url: customKaspaNodeUrl.trim(),
-          networkId: getNetworkRPCId(selectedNetwork)
-        };
-      } else {
-        rpcConfig = {
-          resolver: new Resolver(),
-          networkId: getNetworkRPCId(selectedNetwork)
-        };
-      }
-
-      const rpc = new RpcClient(rpcConfig);
-      await rpc.connect();
-
-      const isConnected = await rpc.isConnected;
-      if (!isConnected) {
-        throw new Error('Failed to connect to Kaspa network');
-      }
-
-      const { networkId } = await rpc.getServerInfo();
-
-      // Setup wallet
-      const privateKeyObject = new PrivateKey(privateKey);
-      const userAddressObject = privateKeyObject.toAddress(networkId);
-      
-      // Create destination address object
-      let destinationAddressObject;
-      try {
-        const trimmedAddress = destinationAddress.trim();
-        
-        // Validate address format first using static validate method if available
-        if (Address.validate && !Address.validate(trimmedAddress)) {
-          throw new Error(`Address format validation failed`);
-        }
-        
-        // Create address using constructor
-        destinationAddressObject = new Address(trimmedAddress);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Invalid destination address: ${destinationAddress}. ${errorMsg}. Make sure it's a valid ${getNetworkDisplayName(selectedNetwork)} address.`);
-      }
-
-      // Get fresh UTXOs
-      const { entries } = await rpc.getUtxosByAddresses([userAddressObject]);
-      
-      if (!entries || entries.length === 0) {
-        throw new Error('No UTXOs found. Make sure the address has funds.');
-      }
-
-      // Calculate total balance from UTXOs
-      let totalBalance = 0;
-      for (const entry of entries) {
-        const amount = entry?.utxoEntry?.amount || entry?.amount || 0;
-        totalBalance += Number(amount);
-      }
-
-      const amountToSendSompi = kasToSompi(amountKAS);
-      
-      if (totalBalance < Number(amountToSendSompi)) {
-        throw new Error(`Insufficient funds. Available: ${formatKaspaAmount(totalBalance)} KAS, Required: ${amountKAS} KAS`);
-      }
-
-      // Create transaction
-      const { transactions } = await createTransactions({
-        networkId,
-        entries: entries,
-        outputs: [{
-          address: destinationAddressObject,
-          amount: amountToSendSompi
-        }],
-        changeAddress: userAddressObject,
-        priorityFee: 0n
+      const result = await sendCoinTransaction({
+        privateKey,
+        destinationAddress: destinationAddress.trim(),
+        amountKAS,
+        networkId: getNetworkRPCId(selectedNetwork)
       });
 
-      if (!transactions || transactions.length === 0) {
-        throw new Error('Failed to create transaction');
+      if (!result) {
+        throw new Error('Transaction failed to return result');
       }
-
-      // Sign and submit transactions
-      let totalFees = 0n;
-      for (const transaction of transactions) {
-        transaction.sign([privateKeyObject]);
-        await transaction.submit(rpc);
-        totalFees += transaction.feeAmount;
-      }
-
-      await rpc.disconnect();
-
-      console.log(`Successfully sent ${amountKAS} KAS to ${destinationAddressObject.toString()}`);
-      console.log(`Total fees: ${formatKaspaAmount(Number(totalFees))} KAS`);
 
       // Show success toast
       toast.success('Transaction successful!', {
         description: (
           <div className="space-y-1">
             <div>Successfully sent {amountKAS} KAS to {destinationAddress}</div>
-            <div>Transaction fee: {formatKaspaAmount(Number(totalFees))} KAS</div>
+            <div>Transaction fee: {result.feeKAS} KAS</div>
           </div>
         ),
         duration: 5000,
@@ -472,6 +367,77 @@ const ProfileView: React.FC = () => {
     } catch (error) {
       console.error('Error sending coins:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to send coins';
+      toast.error('Transaction failed', {
+        description: errorMessage,
+        duration: 5000,
+      });
+      setIsSending(false);
+    }
+  };
+
+  // Send single UTXO function
+  const handleSendSingleUtxo = async () => {
+    if (!privateKey || !networkAwareAddress) {
+      toast.error('Transaction failed', {
+        description: 'Private key or address not available',
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!destinationAddress.trim()) {
+      toast.error('Transaction failed', {
+        description: 'Please enter a destination address',
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!utxoData || utxoData.totalBalance === 0) {
+      toast.error('Transaction failed', {
+        description: 'No funds available or UTXO data not loaded',
+        duration: 5000,
+      });
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      const result = await sendSingleUtxoTransaction({
+        privateKey,
+        destinationAddress: destinationAddress.trim(),
+        networkId: getNetworkRPCId(selectedNetwork)
+      });
+
+      if (!result) {
+        throw new Error('Transaction failed to return result');
+      }
+
+      // Show success toast
+      toast.success('Transaction successful!', {
+        description: (
+          <div className="space-y-1">
+            <div>Successfully sent single UTXO to {destinationAddress}</div>
+            <div>Transaction fee: {result.feeKAS} KAS</div>
+          </div>
+        ),
+        duration: 5000,
+      });
+
+      // Clear form and reset sending state
+      setIsSending(false);
+      setDestinationAddress('');
+      setSendAmount('');
+
+      // Refresh UTXO data to show updated balance
+      setTimeout(() => {
+        loadUtxoData();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error sending single UTXO:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send single UTXO';
       toast.error('Transaction failed', {
         description: errorMessage,
         duration: 5000,
@@ -795,6 +761,17 @@ const ProfileView: React.FC = () => {
                       variant="outline"
                     >
                       Clear
+                    </Button>
+
+                    <Button
+                      onClick={handleSendSingleUtxo}
+                      disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim()}
+                      variant="secondary"
+                    >
+                      {isSending && (
+                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
+                      )}
+                      {isSending ? 'Sending...' : 'Send UTXO'}
                     </Button>
 
                     <Button
