@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Dialog } from '@/components/ui/dialog';
+import { Select, SelectOption } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { useKaspaAuth } from '@/hooks/useKaspaAuth';
 import kaspaService from '@/services/kaspaService';
 import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
+import QRCodeDialog from '@/components/dialogs/QRCodeDialog';
+import SendCoinConfirmDialog from '@/components/dialogs/SendCoinConfirmDialog';
 import { KASPA_NETWORKS } from '@/constants/networks';
 import { toast } from 'sonner';
 import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
 import QRCodeLib from 'qrcode';
+import { sendCoinTransaction, sendSingleUtxoTransaction } from '@/utils/sendTransaction';
+import { getExplorerTransactionUrl, getExplorerAddressUrl } from '@/utils/explorerUtils';
 
 interface UtxoData {
   totalBalance: number;
@@ -23,7 +27,7 @@ interface UtxoData {
 
 const ProfileView: React.FC = () => {
   const { privateKey, publicKey, address, unlockSession } = useAuth();
-  const { selectedNetwork, getNetworkDisplayName, getNetworkRPCId } = useUserSettings();
+  const { selectedNetwork, getNetworkRPCId } = useUserSettings();
   const { getNetworkAwareAddress } = useKaspaAuth();
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [utxoData, setUtxoData] = useState<UtxoData | null>(null);
@@ -43,6 +47,10 @@ const ProfileView: React.FC = () => {
   const [destinationAddress, setDestinationAddress] = useState('');
   const [sendAmount, setSendAmount] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [sendOperationType, setSendOperationType] = useState<'amount' | 'utxo'>('amount');
+
+  // Send Coin confirmation dialog state
+  const [showSendCoinDialog, setShowSendCoinDialog] = useState(false);
 
   const copyToClipboard = async (text: string, label: string) => {
     // Fallback function using older API
@@ -283,13 +291,8 @@ const ProfileView: React.FC = () => {
     return key;
   };
 
-  // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
-  const kasToSompi = (kas: number): bigint => {
-    return BigInt(Math.round(kas * 100000000));
-  };
-
-  // Send coins function
-  const handleSendCoins = async () => {
+  // Validate and show confirmation dialog for sending coins
+  const handleSendCoins = () => {
     if (!privateKey || !networkAwareAddress) {
       toast.error('Transaction failed', {
         description: 'Private key or address not available',
@@ -333,130 +336,45 @@ const ProfileView: React.FC = () => {
       return;
     }
 
+    // Show confirmation dialog
+    setShowSendCoinDialog(true);
+  };
+
+  // Perform the actual send transaction after confirmation
+  const performSendCoins = async () => {
+    if (!privateKey) return;
+
+    const amountKAS = parseFloat(sendAmount);
+
     setIsSending(true);
 
     try {
-      await kaspaService.ensureLoaded();
-      const kaspa = kaspaService.getKaspa();
-      const { Resolver, createTransactions, RpcClient, PrivateKey, Address } = kaspa;
-
-      // Get connection settings
-      const storedSettings = localStorage.getItem('kaspa_user_settings');
-      let kaspaConnectionType = 'resolver';
-      let customKaspaNodeUrl = '';
-      
-      if (storedSettings) {
-        try {
-          const settings = JSON.parse(storedSettings);
-          kaspaConnectionType = settings.kaspaConnectionType || 'resolver';
-          customKaspaNodeUrl = settings.customKaspaNodeUrl || '';
-        } catch (error) {
-          console.error('Error parsing settings:', error);
-        }
-      }
-
-      let rpcConfig;
-      if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
-        rpcConfig = {
-          url: customKaspaNodeUrl.trim(),
-          networkId: getNetworkRPCId(selectedNetwork)
-        };
-      } else {
-        rpcConfig = {
-          resolver: new Resolver(),
-          networkId: getNetworkRPCId(selectedNetwork)
-        };
-      }
-
-      const rpc = new RpcClient(rpcConfig);
-      await rpc.connect();
-
-      const isConnected = await rpc.isConnected;
-      if (!isConnected) {
-        throw new Error('Failed to connect to Kaspa network');
-      }
-
-      const { networkId } = await rpc.getServerInfo();
-
-      // Setup wallet
-      const privateKeyObject = new PrivateKey(privateKey);
-      const userAddressObject = privateKeyObject.toAddress(networkId);
-      
-      // Create destination address object
-      let destinationAddressObject;
-      try {
-        const trimmedAddress = destinationAddress.trim();
-        
-        // Validate address format first using static validate method if available
-        if (Address.validate && !Address.validate(trimmedAddress)) {
-          throw new Error(`Address format validation failed`);
-        }
-        
-        // Create address using constructor
-        destinationAddressObject = new Address(trimmedAddress);
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Invalid destination address: ${destinationAddress}. ${errorMsg}. Make sure it's a valid ${getNetworkDisplayName(selectedNetwork)} address.`);
-      }
-
-      // Get fresh UTXOs
-      const { entries } = await rpc.getUtxosByAddresses([userAddressObject]);
-      
-      if (!entries || entries.length === 0) {
-        throw new Error('No UTXOs found. Make sure the address has funds.');
-      }
-
-      // Calculate total balance from UTXOs
-      let totalBalance = 0;
-      for (const entry of entries) {
-        const amount = entry?.utxoEntry?.amount || entry?.amount || 0;
-        totalBalance += Number(amount);
-      }
-
-      const amountToSendSompi = kasToSompi(amountKAS);
-      
-      if (totalBalance < Number(amountToSendSompi)) {
-        throw new Error(`Insufficient funds. Available: ${formatKaspaAmount(totalBalance)} KAS, Required: ${amountKAS} KAS`);
-      }
-
-      // Create transaction
-      const { transactions } = await createTransactions({
-        networkId,
-        entries: entries,
-        outputs: [{
-          address: destinationAddressObject,
-          amount: amountToSendSompi
-        }],
-        changeAddress: userAddressObject,
-        priorityFee: 0n
+      const result = await sendCoinTransaction({
+        privateKey,
+        destinationAddress: destinationAddress.trim(),
+        amountKAS,
+        networkId: getNetworkRPCId(selectedNetwork)
       });
 
-      if (!transactions || transactions.length === 0) {
-        throw new Error('Failed to create transaction');
+      if (!result) {
+        throw new Error('Transaction failed to return result');
       }
-
-      // Sign and submit transactions
-      let totalFees = 0n;
-      for (const transaction of transactions) {
-        transaction.sign([privateKeyObject]);
-        await transaction.submit(rpc);
-        totalFees += transaction.feeAmount;
-      }
-
-      await rpc.disconnect();
-
-      console.log(`Successfully sent ${amountKAS} KAS to ${destinationAddressObject.toString()}`);
-      console.log(`Total fees: ${formatKaspaAmount(Number(totalFees))} KAS`);
 
       // Show success toast
       toast.success('Transaction successful!', {
         description: (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div>Successfully sent {amountKAS} KAS to {destinationAddress}</div>
-            <div>Transaction fee: {formatKaspaAmount(Number(totalFees))} KAS</div>
+            <div>Transaction fee: {result.feeKAS} KAS</div>
+            <button
+              onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+              className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+            >
+              Open explorer
+            </button>
           </div>
         ),
-        duration: 5000,
+        duration: 5000
       });
 
       // Clear form and reset sending state
@@ -480,10 +398,118 @@ const ProfileView: React.FC = () => {
     }
   };
 
+  // Validate and show confirmation dialog for sending single UTXO
+  const handleSendSingleUtxo = () => {
+    if (!privateKey || !networkAwareAddress) {
+      toast.error('Transaction failed', {
+        description: 'Private key or address not available',
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!destinationAddress.trim()) {
+      toast.error('Transaction failed', {
+        description: 'Please enter a destination address',
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!utxoData || utxoData.totalBalance === 0) {
+      toast.error('Transaction failed', {
+        description: 'No funds available or UTXO data not loaded',
+        duration: 5000,
+      });
+      return;
+    }
+
+    // Show confirmation dialog
+    setShowSendCoinDialog(true);
+  };
+
+  // Perform the actual send single UTXO transaction after confirmation
+  const performSendSingleUtxo = async () => {
+    if (!privateKey) return;
+
+    setIsSending(true);
+
+    try {
+      const result = await sendSingleUtxoTransaction({
+        privateKey,
+        destinationAddress: destinationAddress.trim(),
+        networkId: getNetworkRPCId(selectedNetwork)
+      });
+
+      if (!result) {
+        throw new Error('Transaction failed to return result');
+      }
+
+      // Show success toast
+      toast.success('Transaction successful!', {
+        description: (
+          <div className="space-y-2">
+            <div>Successfully sent single UTXO to {destinationAddress}</div>
+            <div>Transaction fee: {result.feeKAS} KAS</div>
+            <button
+              onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+              className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+            >
+              Open explorer
+            </button>
+          </div>
+        ),
+        duration: 5000
+      });
+
+      // Clear form and reset sending state
+      setIsSending(false);
+      setDestinationAddress('');
+      setSendAmount('');
+
+      // Refresh UTXO data to show updated balance
+      setTimeout(() => {
+        loadUtxoData();
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error sending single UTXO:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send single UTXO';
+      toast.error('Transaction failed', {
+        description: errorMessage,
+        duration: 5000,
+      });
+      setIsSending(false);
+    }
+  };
+
+  // Handler for confirmation dialog - calls appropriate send function
+  const handleConfirmSend = () => {
+    if (sendOperationType === 'amount') {
+      performSendCoins();
+    } else {
+      performSendSingleUtxo();
+    }
+  };
+
   // Clear send form
   const clearSendForm = () => {
     setDestinationAddress('');
     setSendAmount('');
+    setSendOperationType('amount'); // Reset to default
+  };
+
+  // Paste from clipboard
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setDestinationAddress(text.trim());
+    } catch (error) {
+      toast.error('Failed to paste from clipboard', {
+        description: 'Please check clipboard permissions',
+        duration: 3000,
+      });
+    }
   };
 
   // Generate and show QR code for address
@@ -517,6 +543,7 @@ const ProfileView: React.FC = () => {
     }
   };
 
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
@@ -546,21 +573,22 @@ const ProfileView: React.FC = () => {
                   <label className="block text-sm font-medium text-muted-foreground">
                     Your public key
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="relative">
                     <Input
                       value={publicKey || 'Not available'}
                       readOnly
-                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="pr-10 text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
-                    <Button
-                      type="button"
-                      onClick={() => copyToClipboard(publicKey || '', 'Public key')}
-                      disabled={!publicKey}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
+                    <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(publicKey || '', 'Public key')}
+                        disabled={!publicKey}
+                        className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -569,30 +597,39 @@ const ProfileView: React.FC = () => {
                   <label className="block text-sm font-medium text-muted-foreground">
                     Your address
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="relative">
                     <Input
                       value={networkAwareAddress || 'Not available'}
                       readOnly
-                      className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="pr-28 text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
-                    <Button
-                      type="button"
-                      onClick={handleShowQRCode}
-                      disabled={!networkAwareAddress}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <QrCode className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
-                      disabled={!networkAwareAddress}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
+                    <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => window.open(getExplorerAddressUrl(networkAwareAddress || '', selectedNetwork), '_blank')}
+                        disabled={!networkAwareAddress}
+                        className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                        title="View in explorer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleShowQRCode}
+                        disabled={!networkAwareAddress}
+                        className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
+                        disabled={!networkAwareAddress}
+                        className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-destructive font-medium">⚠️ Warning: Send only small amounts of KAS (1-5 KAS max)!</p>
                 </div>
@@ -606,7 +643,7 @@ const ProfileView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Key className="h-5 w-5 text-destructive" />
-                  <h2 className="text-lg font-semibold text-destructive">Private Key</h2>
+                  <h2 className="text-lg font-semibold text-destructive">Private key</h2>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-destructive">
@@ -651,7 +688,7 @@ const ProfileView: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <h2 className="text-lg font-semibold">Wallet Balance</h2>
+                    <h2 className="text-lg font-semibold">Wallet balance</h2>
                   </div>
                   <Button
                     type="button"
@@ -752,40 +789,74 @@ const ProfileView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Send className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Send Coins</h2>
+                  <h2 className="text-lg font-semibold">Send coins</h2>
                 </div>
 
                 {/* Send Form */}
                 <div className="space-y-4">
+                  {/* Destination Address Field */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-muted-foreground">
                       Destination Address
                     </label>
-                    <Input
-                      type="text"
-                      value={destinationAddress}
-                      onChange={(e) => setDestinationAddress(e.target.value)}
-                      placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
-                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                      disabled={isSending}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        value={destinationAddress}
+                        onChange={(e) => setDestinationAddress(e.target.value)}
+                        placeholder={`kaspa${selectedNetwork !== KASPA_NETWORKS.MAINNET ? 'test' : ''}:qq...`}
+                        className="pr-10 text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        disabled={isSending}
+                      />
+                      <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
+                        <button
+                          type="button"
+                          onClick={pasteFromClipboard}
+                          disabled={isSending}
+                          className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                          title="Paste from clipboard"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <p className="text-sm text-destructive font-medium">⚠️ Warning: Double-check the destination address!</p>
+
+                  {/* Operation Type Selection */}
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-muted-foreground">
-                      Amount (KAS)
+                      Operation Type
                     </label>
-                    <Input
-                      type="number"
-                      value={sendAmount}
-                      onChange={(e) => setSendAmount(e.target.value)}
-                      placeholder="0.0"
-                      step="0.1"
-                      min="0"
-                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    <Select
+                      value={sendOperationType}
+                      onChange={(e) => setSendOperationType(e.target.value as 'amount' | 'utxo')}
+                      className="w-full"
                       disabled={isSending}
-                    />
+                    >
+                      <SelectOption value="amount">Send specific amount</SelectOption>
+                      <SelectOption value="utxo">Send single UTXO</SelectOption>
+                    </Select>
                   </div>
+
+                  {/* Amount Field - Shows only when 'amount' operation is selected */}
+                  {sendOperationType === 'amount' && (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-muted-foreground">
+                        Amount (KAS)
+                      </label>
+                      <Input
+                        type="number"
+                        value={sendAmount}
+                        onChange={(e) => setSendAmount(e.target.value)}
+                        placeholder="0.0"
+                        step="0.1"
+                        min="0"
+                        className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                        disabled={isSending}
+                      />
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="flex justify-end gap-3 pt-2">
@@ -798,8 +869,14 @@ const ProfileView: React.FC = () => {
                     </Button>
 
                     <Button
-                      onClick={handleSendCoins}
-                      disabled={isSending || !utxoData || utxoData.totalBalance === 0 || !destinationAddress.trim() || !sendAmount.trim()}
+                      onClick={sendOperationType === 'utxo' ? handleSendSingleUtxo : handleSendCoins}
+                      disabled={
+                        isSending ||
+                        !utxoData ||
+                        utxoData.totalBalance === 0 ||
+                        !destinationAddress.trim() ||
+                        (sendOperationType === 'amount' && !sendAmount.trim())
+                      }
                     >
                       {isSending && (
                         <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle-white mr-2"></div>
@@ -823,56 +900,23 @@ const ProfileView: React.FC = () => {
       />
 
       {/* QR Code Dialog */}
-      <Dialog
+      <QRCodeDialog
         isOpen={showQRDialog}
         onClose={() => setShowQRDialog(false)}
-        title="Your Kaspa Address"
-      >
-        <div className="flex flex-col items-center space-y-4">
-          {/* QR Code Image */}
-          {qrCodeDataURL && (
-            <div className="bg-white p-4 rounded-lg">
-              <img
-                src={qrCodeDataURL}
-                alt="QR Code"
-                className="w-full h-full"
-              />
-            </div>
-          )}
+        address={networkAwareAddress || ''}
+        qrCodeDataURL={qrCodeDataURL}
+        onCopyAddress={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
+      />
 
-          {/* Address Text */}
-          <div className="w-full space-y-2">
-            <label className="block text-sm font-medium text-muted-foreground">
-              Your address
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                value={networkAwareAddress || 'Not available'}
-                readOnly
-                className="text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-              />
-              <Button
-                type="button"
-                onClick={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
-                disabled={!networkAwareAddress}
-                size="sm"
-                variant="ghost"
-              >
-                <Copy className="h-3 w-3" />
-              </Button>
-            </div>
-            <p className="text-sm text-destructive font-medium">⚠️ Warning: Send only small amounts of KAS (1-5 KAS max)!</p>
-          </div>
-
-          {/* Close Button */}
-          <Button
-            onClick={() => setShowQRDialog(false)}
-            className="w-full"
-          >
-            Close
-          </Button>
-        </div>
-      </Dialog>
+      {/* Send Coin Confirmation Dialog */}
+      <SendCoinConfirmDialog
+        isOpen={showSendCoinDialog}
+        onClose={() => setShowSendCoinDialog(false)}
+        onConfirm={handleConfirmSend}
+        destinationAddress={destinationAddress}
+        amount={sendAmount}
+        operationType={sendOperationType}
+      />
     </div>
   );
 };

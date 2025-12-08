@@ -330,7 +330,7 @@ const ProfileIntroduceBox: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Your Profile</h2>
+              <h2 className="text-lg font-semibold">Your profile</h2>
             </div>
             {!isEditing && !isLoading && (
               <Button
