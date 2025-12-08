@@ -13,6 +13,8 @@ import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import { generateAuthorInfo } from '@/utils/postUtils';
 import { Base64 } from 'js-base64';
 import { toast } from 'sonner';
+import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 
 interface UserPostsViewProps {
   onUpVote: (id: string) => void;
@@ -33,8 +35,9 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
   // Check if this navigation came from a mention click
   const isFromMention = location.state?.fromMention === true;
   const { publicKey, privateKey } = useAuth();
-  const { fetchAndConvertMyPosts, fetchUserDetails, selectedNetwork, networkId, apiBaseUrl } = useKaspaPostsApi();
+  const { fetchAndConvertMyPosts, fetchUserDetails, networkId, apiBaseUrl } = useKaspaPostsApi();
   const { sendTransaction } = useKaspaTransactions();
+  const { selectedNetwork } = useUserSettings();
   
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -345,13 +348,19 @@ const loadMorePosts = useCallback(async () => {
       if (result) {
         toast.success(`${action === 'block' ? 'Block' : 'Unblock'} transaction successful!`, {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
 
         // Optimistically update the UI
@@ -389,13 +398,19 @@ const loadMorePosts = useCallback(async () => {
       if (result) {
         toast.success(`${action === 'follow' ? 'Follow' : 'Unfollow'} transaction successful!`, {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
 
         // Optimistically update the UI

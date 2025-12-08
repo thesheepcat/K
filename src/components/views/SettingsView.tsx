@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Server, Network, Globe, Palette, Info, RefreshCw } from 'lucide-react';
+import { Server, Network, Globe, Palette, Info, RefreshCw, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { KASPA_NETWORKS } from '@/constants/networks';
 import { fetchHealthCheck, type HealthCheckResponse } from '@/services/postsApi';
 import { toast } from 'sonner';
 import { normalizeApiUrl } from '@/utils/urlUtils';
+import packageJson from '../../../package.json';
 
 const SettingsView: React.FC = () => {
   const {
@@ -154,7 +155,7 @@ const SettingsView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Network className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Kaspa Network</h2>
+                  <h2 className="text-lg font-semibold">Kaspa network</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -181,7 +182,7 @@ const SettingsView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Server className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Indexer Configuration</h2>
+                  <h2 className="text-lg font-semibold">Indexer configuration</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -200,29 +201,6 @@ const SettingsView: React.FC = () => {
                     Supports: /api, example.com, example.com:5000, https://example.com, http://192.168.1.1:5200
                   </p>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-foreground">
-                    Indexer Version
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      value={healthData ? healthData.version : 'Click to refresh data'}
-                      readOnly
-                      className="text-sm border-input-thin bg-muted"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleCheckHealth}
-                      disabled={isCheckingHealth}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isCheckingHealth ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -233,7 +211,7 @@ const SettingsView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Globe className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Kaspa Connection</h2>
+                  <h2 className="text-lg font-semibold">Kaspa node connection</h2>
                 </div>
 
                 <div className="space-y-2">
@@ -281,7 +259,7 @@ const SettingsView: React.FC = () => {
                   <Palette className="h-5 w-5 text-muted-foreground" />
                   <h2 className="text-lg font-semibold">Appearance</h2>
                 </div>
-                
+
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
                     Theme
@@ -294,6 +272,53 @@ const SettingsView: React.FC = () => {
                     <SelectOption value="light">Light</SelectOption>
                     <SelectOption value="dark">Dark</SelectOption>
                   </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Software Versions */}
+          <Card className="border border-border">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Code className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">Software versions</h2>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    K Version
+                  </label>
+                  <Input
+                    type="text"
+                    value={packageJson.version}
+                    readOnly
+                    className="text-sm border-input-thin bg-muted"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    Indexer Version
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={healthData ? healthData.version : 'Click to refresh data'}
+                      readOnly
+                      className="text-sm border-input-thin bg-muted"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleCheckHealth}
+                      disabled={isCheckingHealth}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isCheckingHealth ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
