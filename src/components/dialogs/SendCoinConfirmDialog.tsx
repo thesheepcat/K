@@ -24,12 +24,6 @@ const SendCoinConfirmDialog: React.FC<SendCoinConfirmDialogProps> = ({
     onClose();
   };
 
-  // Format address for display (show first 12 and last 12 characters)
-  const formatAddress = (addr: string): string => {
-    if (addr.length <= 30) return addr;
-    return `${addr.slice(0, 12)}...${addr.slice(-12)}`;
-  };
-
   return (
     <Dialog isOpen={isOpen} onClose={onClose} title="⚠️ Confirm Transaction">
       <div className="space-y-4">
