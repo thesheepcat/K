@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { useKaspaAuth } from '@/hooks/useKaspaAuth';
 import kaspaService from '@/services/kaspaService';
 import PasswordConfirmDialog from '@/components/dialogs/PasswordConfirmDialog';
 import QRCodeDialog from '@/components/dialogs/QRCodeDialog';
+import SendCoinConfirmDialog from '@/components/dialogs/SendCoinConfirmDialog';
 import { KASPA_NETWORKS } from '@/constants/networks';
 import { toast } from 'sonner';
 import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
@@ -46,6 +47,9 @@ const ProfileView: React.FC = () => {
   const [sendAmount, setSendAmount] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendOperationType, setSendOperationType] = useState<'amount' | 'utxo'>('amount');
+
+  // Send Coin confirmation dialog state
+  const [showSendCoinDialog, setShowSendCoinDialog] = useState(false);
 
   const copyToClipboard = async (text: string, label: string) => {
     // Fallback function using older API
@@ -286,8 +290,8 @@ const ProfileView: React.FC = () => {
     return key;
   };
 
-  // Send coins function
-  const handleSendCoins = async () => {
+  // Validate and show confirmation dialog for sending coins
+  const handleSendCoins = () => {
     if (!privateKey || !networkAwareAddress) {
       toast.error('Transaction failed', {
         description: 'Private key or address not available',
@@ -330,6 +334,16 @@ const ProfileView: React.FC = () => {
       });
       return;
     }
+
+    // Show confirmation dialog
+    setShowSendCoinDialog(true);
+  };
+
+  // Perform the actual send transaction after confirmation
+  const performSendCoins = async () => {
+    if (!privateKey) return;
+
+    const amountKAS = parseFloat(sendAmount);
 
     setIsSending(true);
 
@@ -377,8 +391,8 @@ const ProfileView: React.FC = () => {
     }
   };
 
-  // Send single UTXO function
-  const handleSendSingleUtxo = async () => {
+  // Validate and show confirmation dialog for sending single UTXO
+  const handleSendSingleUtxo = () => {
     if (!privateKey || !networkAwareAddress) {
       toast.error('Transaction failed', {
         description: 'Private key or address not available',
@@ -402,6 +416,14 @@ const ProfileView: React.FC = () => {
       });
       return;
     }
+
+    // Show confirmation dialog
+    setShowSendCoinDialog(true);
+  };
+
+  // Perform the actual send single UTXO transaction after confirmation
+  const performSendSingleUtxo = async () => {
+    if (!privateKey) return;
 
     setIsSending(true);
 
@@ -445,6 +467,15 @@ const ProfileView: React.FC = () => {
         duration: 5000,
       });
       setIsSending(false);
+    }
+  };
+
+  // Handler for confirmation dialog - calls appropriate send function
+  const handleConfirmSend = () => {
+    if (sendOperationType === 'amount') {
+      performSendCoins();
+    } else {
+      performSendSingleUtxo();
     }
   };
 
@@ -496,6 +527,15 @@ const ProfileView: React.FC = () => {
         description: 'Failed to generate QR code',
         duration: 2000,
       });
+    }
+  };
+
+  // Get explorer URL based on selected network
+  const getExplorerUrl = (address: string): string => {
+    if (selectedNetwork === KASPA_NETWORKS.MAINNET) {
+      return `https://kaspa.stream/addresses/${address}`;
+    } else {
+      return `https://tn10.kaspa.stream/addresses/${address}`;
     }
   };
 
@@ -556,9 +596,18 @@ const ProfileView: React.FC = () => {
                     <Input
                       value={networkAwareAddress || 'Not available'}
                       readOnly
-                      className="pr-20 text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                      className="pr-28 text-sm bg-muted border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     />
                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => window.open(getExplorerUrl(networkAwareAddress || ''), '_blank')}
+                        disabled={!networkAwareAddress}
+                        className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                        title="View in explorer"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
                       <button
                         type="button"
                         onClick={handleShowQRCode}
@@ -589,7 +638,7 @@ const ProfileView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Key className="h-5 w-5 text-destructive" />
-                  <h2 className="text-lg font-semibold text-destructive">Private Key</h2>
+                  <h2 className="text-lg font-semibold text-destructive">Private key</h2>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-destructive">
@@ -634,7 +683,7 @@ const ProfileView: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
                     <CreditCard className="h-5 w-5 text-muted-foreground" />
-                    <h2 className="text-lg font-semibold">Wallet Balance</h2>
+                    <h2 className="text-lg font-semibold">Wallet balance</h2>
                   </div>
                   <Button
                     type="button"
@@ -735,7 +784,7 @@ const ProfileView: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center space-x-2 mb-4">
                   <Send className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold">Send Coins</h2>
+                  <h2 className="text-lg font-semibold">Send coins</h2>
                 </div>
 
                 {/* Send Form */}
@@ -852,6 +901,16 @@ const ProfileView: React.FC = () => {
         address={networkAwareAddress || ''}
         qrCodeDataURL={qrCodeDataURL}
         onCopyAddress={() => copyToClipboard(networkAwareAddress || '', 'Kaspa address')}
+      />
+
+      {/* Send Coin Confirmation Dialog */}
+      <SendCoinConfirmDialog
+        isOpen={showSendCoinDialog}
+        onClose={() => setShowSendCoinDialog(false)}
+        onConfirm={handleConfirmSend}
+        destinationAddress={destinationAddress}
+        amount={sendAmount}
+        operationType={sendOperationType}
       />
     </div>
   );
