@@ -9,6 +9,8 @@ import { LinkifiedText } from '@/utils/linkUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import { toast } from 'sonner';
+import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 
 interface UserPostCardProps {
   post: Post;
@@ -37,6 +39,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   const [isSubmittingUnfollow, setIsSubmittingUnfollow] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
+  const { selectedNetwork } = useUserSettings();
   
   // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
@@ -64,13 +67,19 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       if (result) {
         toast.success('Unblock transaction successful!', {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
 
         // Call the callback to notify parent component
@@ -108,13 +117,19 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       if (result) {
         toast.success('Unfollow transaction successful!', {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
 
         // Call the callback to notify parent component

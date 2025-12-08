@@ -12,6 +12,8 @@ import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import { LinkifiedText } from '@/utils/linkUtils';
 import QuoteDialog from "../dialogs/QuoteDialog";
 import SimplifiedPostCard from "./SimplifiedPostCard";
+import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 
 interface PostCardProps {
   post: Post;
@@ -48,6 +50,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const [isSubmittingVote, setIsSubmittingVote] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
+  const { selectedNetwork } = useUserSettings();
   
   // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : 40;
@@ -75,13 +78,19 @@ const PostCard: React.FC<PostCardProps> = ({
       if (result) {
         toast.success("Upvote transaction successful!", {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
         
         // Call the parent handler if provided
@@ -119,13 +128,19 @@ const PostCard: React.FC<PostCardProps> = ({
       if (result) {
         toast.success("Downvote transaction successful!", {
           description: (
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div>Transaction ID: {result.id}</div>
               <div>Fees: {result.feeAmount.toString()} sompi</div>
               <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
             </div>
           ),
-          duration: 5000,
+          duration: 5000
         });
         
         // Call the parent handler if provided

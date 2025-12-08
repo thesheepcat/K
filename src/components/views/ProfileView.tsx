@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import ProfileIntroduceBox from '@/components/general/ProfileIntroduceBox';
 import QRCodeLib from 'qrcode';
 import { sendCoinTransaction, sendSingleUtxoTransaction } from '@/utils/sendTransaction';
+import { getExplorerTransactionUrl, getExplorerAddressUrl } from '@/utils/explorerUtils';
 
 interface UtxoData {
   totalBalance: number;
@@ -362,12 +363,18 @@ const ProfileView: React.FC = () => {
       // Show success toast
       toast.success('Transaction successful!', {
         description: (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div>Successfully sent {amountKAS} KAS to {destinationAddress}</div>
             <div>Transaction fee: {result.feeKAS} KAS</div>
+            <button
+              onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+              className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+            >
+              Open explorer
+            </button>
           </div>
         ),
-        duration: 5000,
+        duration: 5000
       });
 
       // Clear form and reset sending state
@@ -441,12 +448,18 @@ const ProfileView: React.FC = () => {
       // Show success toast
       toast.success('Transaction successful!', {
         description: (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div>Successfully sent single UTXO to {destinationAddress}</div>
             <div>Transaction fee: {result.feeKAS} KAS</div>
+            <button
+              onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+              className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+            >
+              Open explorer
+            </button>
           </div>
         ),
-        duration: 5000,
+        duration: 5000
       });
 
       // Clear form and reset sending state
@@ -530,14 +543,6 @@ const ProfileView: React.FC = () => {
     }
   };
 
-  // Get explorer URL based on selected network
-  const getExplorerUrl = (address: string): string => {
-    if (selectedNetwork === KASPA_NETWORKS.MAINNET) {
-      return `https://kaspa.stream/addresses/${address}`;
-    } else {
-      return `https://tn10.kaspa.stream/addresses/${address}`;
-    }
-  };
 
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
@@ -601,7 +606,7 @@ const ProfileView: React.FC = () => {
                     <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
                       <button
                         type="button"
-                        onClick={() => window.open(getExplorerUrl(networkAwareAddress || ''), '_blank')}
+                        onClick={() => window.open(getExplorerAddressUrl(networkAwareAddress || '', selectedNetwork), '_blank')}
                         disabled={!networkAwareAddress}
                         className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
                         title="View in explorer"
