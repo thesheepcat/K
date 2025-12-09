@@ -10,6 +10,7 @@ import {
 
 export type { KaspaNetwork } from '@/constants/networks';
 export type KaspaConnectionType = 'resolver' | 'custom-node';
+export type IndexerType = 'public' | 'local' | 'custom';
 export type Theme = 'light' | 'dark';
 
 interface UserSettingsContextType {
@@ -19,6 +20,10 @@ interface UserSettingsContextType {
   getNetworkRPCId: (network: KaspaNetwork) => string;
   apiBaseUrl: string;
   setApiBaseUrl: (url: string) => void;
+  indexerType: IndexerType;
+  setIndexerType: (type: IndexerType) => void;
+  customIndexerUrl: string;
+  setCustomIndexerUrl: (url: string) => void;
   kaspaConnectionType: KaspaConnectionType;
   setKaspaConnectionType: (type: KaspaConnectionType) => void;
   customKaspaNodeUrl: string;
@@ -45,10 +50,18 @@ const SETTINGS_STORAGE_KEY = 'kaspa_user_settings';
 
 export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ children }) => {
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
-  const [apiBaseUrl, setApiBaseUrlState] = useState<string>('https://indexer.kaspatalk.net');
+  const [indexerType, setIndexerTypeState] = useState<IndexerType>('public');
+  const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('');
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
+
+  // Derive apiBaseUrl from indexerType and customIndexerUrl
+  const apiBaseUrl = indexerType === 'public'
+    ? 'https://indexer.kaspatalk.net'
+    : indexerType === 'local'
+    ? '/api'
+    : customIndexerUrl;
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -60,20 +73,37 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         if (settings.selectedNetwork && isValidNetwork(settings.selectedNetwork)) {
           setSelectedNetworkState(settings.selectedNetwork);
         }
-        
-        if (settings.apiBaseUrl && typeof settings.apiBaseUrl === 'string') {
-          setApiBaseUrlState(settings.apiBaseUrl);
+
+        // Migration logic: convert old apiBaseUrl to new indexerType system
+        if (settings.indexerType && ['public', 'local', 'custom'].includes(settings.indexerType)) {
+          // Migrate 'kaspatalk' to 'public' if found
+          const migratedType = settings.indexerType === 'kaspatalk' ? 'public' : settings.indexerType;
+          setIndexerTypeState(migratedType);
+          if (settings.customIndexerUrl && typeof settings.customIndexerUrl === 'string') {
+            setCustomIndexerUrlState(settings.customIndexerUrl);
+          }
+        } else if (settings.apiBaseUrl && typeof settings.apiBaseUrl === 'string') {
+          // Migrate old apiBaseUrl to new system
+          const url = settings.apiBaseUrl;
+          if (url === 'https://indexer.kaspatalk.net') {
+            setIndexerTypeState('public');
+          } else if (url === '/api') {
+            setIndexerTypeState('local');
+          } else {
+            setIndexerTypeState('custom');
+            setCustomIndexerUrlState(url);
+          }
         }
-        
-        if (settings.kaspaConnectionType && 
+
+        if (settings.kaspaConnectionType &&
             ['resolver', 'custom-node'].includes(settings.kaspaConnectionType)) {
           setKaspaConnectionTypeState(settings.kaspaConnectionType);
         }
-        
+
         if (settings.customKaspaNodeUrl && typeof settings.customKaspaNodeUrl === 'string') {
           setCustomKaspaNodeUrlState(settings.customKaspaNodeUrl);
         }
-        
+
         if (settings.theme && ['light', 'dark'].includes(settings.theme)) {
           setThemeState(settings.theme);
           // Apply theme to document root immediately
@@ -86,7 +116,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       console.error('Error loading user settings:', error);
       // Continue with default settings if loading fails
     }
-    
+
     // Apply default theme if no settings exist
     if (typeof document !== 'undefined' && !localStorage.getItem(SETTINGS_STORAGE_KEY)) {
       document.documentElement.setAttribute('data-theme', 'light');
@@ -97,7 +127,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   useEffect(() => {
     const settings = {
       selectedNetwork,
-      apiBaseUrl,
+      indexerType,
+      customIndexerUrl,
       kaspaConnectionType,
       customKaspaNodeUrl,
       theme
@@ -105,7 +136,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
     // Don't save on initial load (when all values are defaults)
     const isInitialLoad = selectedNetwork === DEFAULT_NETWORK &&
-                         apiBaseUrl === 'https://indexer.kaspatalk.net' &&
+                         indexerType === 'public' &&
+                         customIndexerUrl === '' &&
                          kaspaConnectionType === 'resolver' &&
                          customKaspaNodeUrl === '' &&
                          theme === 'light';
@@ -117,20 +149,22 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         console.error('Error auto-saving settings:', error);
       }
     }
-  }, [selectedNetwork, apiBaseUrl, kaspaConnectionType, customKaspaNodeUrl, theme]);
+  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme]);
 
   const saveSettings = (overrides: Partial<{
     selectedNetwork: KaspaNetwork;
-    apiBaseUrl: string;
+    indexerType: IndexerType;
+    customIndexerUrl: string;
     kaspaConnectionType: KaspaConnectionType;
     customKaspaNodeUrl: string;
     theme: Theme;
   }> = {}) => {
     try {
-      const settings = { 
-        selectedNetwork: overrides.selectedNetwork ?? selectedNetwork, 
-        apiBaseUrl: overrides.apiBaseUrl ?? apiBaseUrl, 
-        kaspaConnectionType: overrides.kaspaConnectionType ?? kaspaConnectionType, 
+      const settings = {
+        selectedNetwork: overrides.selectedNetwork ?? selectedNetwork,
+        indexerType: overrides.indexerType ?? indexerType,
+        customIndexerUrl: overrides.customIndexerUrl ?? customIndexerUrl,
+        kaspaConnectionType: overrides.kaspaConnectionType ?? kaspaConnectionType,
         customKaspaNodeUrl: overrides.customKaspaNodeUrl ?? customKaspaNodeUrl,
         theme: overrides.theme ?? theme
       };
@@ -145,9 +179,20 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     saveSettings({ selectedNetwork: network });
   };
 
-  const setApiBaseUrl = (url: string) => {
-    setApiBaseUrlState(url);
-    saveSettings({ apiBaseUrl: url });
+  // Deprecated: kept for backward compatibility, but now a no-op
+  // Use setIndexerType and setCustomIndexerUrl instead
+  const setApiBaseUrl = (_url: string) => {
+    console.warn('setApiBaseUrl is deprecated. Use setIndexerType and setCustomIndexerUrl instead.');
+  };
+
+  const setIndexerType = (type: IndexerType) => {
+    setIndexerTypeState(type);
+    saveSettings({ indexerType: type });
+  };
+
+  const setCustomIndexerUrl = (url: string) => {
+    setCustomIndexerUrlState(url);
+    saveSettings({ customIndexerUrl: url });
   };
 
   const setKaspaConnectionType = (type: KaspaConnectionType) => {
@@ -163,7 +208,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     saveSettings({ theme: newTheme });
-    
+
     // Apply theme to document root
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', newTheme);
@@ -185,6 +230,10 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     getNetworkRPCId,
     apiBaseUrl,
     setApiBaseUrl,
+    indexerType,
+    setIndexerType,
+    customIndexerUrl,
+    setCustomIndexerUrl,
     kaspaConnectionType,
     setKaspaConnectionType,
     customKaspaNodeUrl,
