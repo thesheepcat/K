@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectOption } from '@/components/ui/select';
-import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type Theme } from '@/contexts/UserSettingsContext';
+import { useUserSettings, type KaspaNetwork, type KaspaConnectionType, type IndexerType, type Theme } from '@/contexts/UserSettingsContext';
 import { KASPA_NETWORKS } from '@/constants/networks';
 import { fetchHealthCheck, type HealthCheckResponse } from '@/services/postsApi';
 import { toast } from 'sonner';
@@ -17,7 +17,10 @@ const SettingsView: React.FC = () => {
     setSelectedNetwork,
     getNetworkDisplayName,
     apiBaseUrl,
-    setApiBaseUrl,
+    indexerType,
+    setIndexerType,
+    customIndexerUrl,
+    setCustomIndexerUrl,
     kaspaConnectionType,
     setKaspaConnectionType,
     customKaspaNodeUrl,
@@ -26,7 +29,7 @@ const SettingsView: React.FC = () => {
     setTheme
   } = useUserSettings();
 
-  const [localApiBaseUrl, setLocalApiBaseUrl] = useState<string>(apiBaseUrl);
+  const [localCustomIndexerUrl, setLocalCustomIndexerUrl] = useState<string>(customIndexerUrl);
   const [healthData, setHealthData] = useState<HealthCheckResponse | null>(null);
   const [isCheckingHealth, setIsCheckingHealth] = useState<boolean>(false);
 
@@ -49,20 +52,29 @@ const SettingsView: React.FC = () => {
     }
   };
 
-  const handleApiUrlChange = (value: string) => {
-    setLocalApiBaseUrl(value);
+  const handleIndexerTypeChange = (type: IndexerType) => {
+    setIndexerType(type);
+    if (type !== 'custom') {
+      // Clear custom indexer URL when switching away from custom
+      setLocalCustomIndexerUrl('');
+      setCustomIndexerUrl('');
+    }
   };
 
-  const handleApiUrlBlur = () => {
+  const handleCustomIndexerUrlChange = (value: string) => {
+    setLocalCustomIndexerUrl(value);
+  };
+
+  const handleCustomIndexerUrlBlur = () => {
     // Normalize the URL (removes trailing slashes, adds protocol if needed)
-    const normalized = normalizeApiUrl(localApiBaseUrl);
+    const normalized = normalizeApiUrl(localCustomIndexerUrl);
 
     // Update local state with normalized value
-    setLocalApiBaseUrl(normalized);
+    setLocalCustomIndexerUrl(normalized);
 
     // Save if different from current value
-    if (normalized !== apiBaseUrl) {
-      setApiBaseUrl(normalized);
+    if (normalized !== customIndexerUrl) {
+      setCustomIndexerUrl(normalized);
     }
   };
 
@@ -118,7 +130,7 @@ const SettingsView: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Indexer</label>
                     <div className="bg-muted border border-border p-2 text-sm rounded-md">
-                      {apiBaseUrl}
+                      {indexerType === 'public' ? 'Public indexer (indexer.kaspatalk.net)' : indexerType === 'local' ? 'Local Indexer (/api)' : 'Custom Indexer'}
                     </div>
                   </div>
 
@@ -187,20 +199,38 @@ const SettingsView: React.FC = () => {
 
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-foreground">
-                    Indexer URL
+                    Indexer
                   </label>
-                  <Input
-                    type="text"
-                    value={localApiBaseUrl}
-                    onChange={(e) => handleApiUrlChange(e.target.value)}
-                    onBlur={handleApiUrlBlur}
-                    placeholder={window.location.protocol === 'https:' ? '/api or https://indexer.example.com' : '/api or http://localhost:3000'}
-                    className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Supports: /api, example.com, example.com:5000, https://example.com, http://192.168.1.1:5200
-                  </p>
+                  <Select
+                    value={indexerType}
+                    onChange={(e) => handleIndexerTypeChange(e.target.value as IndexerType)}
+                    className="w-full"
+                  >
+                    <SelectOption value="public">Public indexer (indexer.kaspatalk.net)</SelectOption>
+                    <SelectOption value="local">Local Indexer (/api)</SelectOption>
+                    <SelectOption value="custom">Custom indexer</SelectOption>
+                  </Select>
                 </div>
+
+                {/* Custom Indexer URL Input */}
+                {indexerType === 'custom' && (
+                  <div className="space-y-2 mt-4">
+                    <label className="block text-sm font-medium text-foreground">
+                      Indexer URL
+                    </label>
+                    <Input
+                      type="text"
+                      value={localCustomIndexerUrl}
+                      onChange={(e) => handleCustomIndexerUrlChange(e.target.value)}
+                      onBlur={handleCustomIndexerUrlBlur}
+                      placeholder={window.location.protocol === 'https:' ? 'https://indexer.example.com' : 'http://localhost:3000'}
+                      className="text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Supports: /api, example.com, example.com:5000, https://example.com, http://192.168.1.1:5200
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
