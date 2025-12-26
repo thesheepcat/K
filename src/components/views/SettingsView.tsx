@@ -130,7 +130,7 @@ const SettingsView: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Indexer</label>
                     <div className="bg-muted border border-border p-2 text-sm rounded-md">
-                      {indexerType === 'public' ? 'Public indexer (indexer.kaspatalk.net)' : indexerType === 'local' ? 'Local Indexer (/api)' : 'Custom Indexer'}
+                      {indexerType === 'public' ? 'Public indexer #01' : indexerType === 'local' ? 'Local Indexer (/api)' : 'Custom Indexer'}
                     </div>
                   </div>
 
@@ -179,7 +179,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleNetworkChange(e.target.value as KaspaNetwork)}
                     className="w-full"
                   >
-                    <SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet (NOT YET AVAILABLE - DON'T USE IT!)</SelectOption>
+                    <SelectOption value={KASPA_NETWORKS.MAINNET}>Mainnet</SelectOption>
                     <SelectOption value={KASPA_NETWORKS.TESTNET_10}>Testnet 10</SelectOption>
                   </Select>
                     {selectedNetwork === KASPA_NETWORKS.MAINNET && <p className="text-sm text-destructive font-medium">⚠️ Warning: Real KAS will be used!</p>}
@@ -206,7 +206,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleIndexerTypeChange(e.target.value as IndexerType)}
                     className="w-full"
                   >
-                    <SelectOption value="public">Public indexer (indexer.kaspatalk.net)</SelectOption>
+                    <SelectOption value="public">Public indexer #01</SelectOption>
                     <SelectOption value="local">Local Indexer (/api)</SelectOption>
                     <SelectOption value="custom">Custom indexer</SelectOption>
                   </Select>
