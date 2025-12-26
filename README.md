@@ -148,7 +148,9 @@ K can be used in two ways: **Hosted** (using the community-hosted version) or **
 3. **"Watching" section**: Discover and engage with other users' content
 4. Explore and connect with the K community!
 
-**📹 [Watch the tutorial video](videos/How-to-start-using-K.mp4)**
+**📹 Watch the video tutorial to start using K!**
+
+https://github.com/user-attachments/assets/4d12e986-fc37-4aa6-86a4-da476fe5760c
 
 ---
 
