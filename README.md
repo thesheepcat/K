@@ -203,10 +203,6 @@ Follow the complete setup guide here: https://github.com/thesheepcat/K-indexer/b
 git clone https://github.com/thesheepcat/K.git
 cd K
 
-# Download Kaspa WASM SDK from official repository
-# Extract only the "web" folder and place it in:
-# /src/kaspa-wasm32-sdk/
-
 # Install dependencies
 npm install
 
