@@ -16,7 +16,7 @@ export type KaspaNetwork = typeof KASPA_NETWORKS[keyof typeof KASPA_NETWORKS];
  * Default network for the application
  * Change this value to switch the default network
  */
-export const DEFAULT_NETWORK: KaspaNetwork = KASPA_NETWORKS.TESTNET_10;
+export const DEFAULT_NETWORK: KaspaNetwork = KASPA_NETWORKS.MAINNET;
 
 /**
  * Get human-readable display name for a network

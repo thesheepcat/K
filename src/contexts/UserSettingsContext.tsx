@@ -58,7 +58,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
   const apiBaseUrl = indexerType === 'public'
-    ? 'https://indexer.kaspatalk.net'
+    ? 'https://mainnet.kaspatalk.net'
     : indexerType === 'local'
     ? '/api'
     : customIndexerUrl;
@@ -85,7 +85,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         } else if (settings.apiBaseUrl && typeof settings.apiBaseUrl === 'string') {
           // Migrate old apiBaseUrl to new system
           const url = settings.apiBaseUrl;
-          if (url === 'https://indexer.kaspatalk.net') {
+          if (url === 'https://mainnet.kaspatalk.net') {
             setIndexerTypeState('public');
           } else if (url === '/api') {
             setIndexerTypeState('local');
