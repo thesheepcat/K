@@ -36,3 +36,5 @@ android/app/build/
 android/local.properties
 android/*.keystore
 android/capacitor-cordova-android-plugins/build/
+
+nginx_example.conf
