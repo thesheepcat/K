@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ interface UtxoData {
 }
 
 const ProfileView: React.FC = () => {
+  const navigate = useNavigate();
   const { privateKey, publicKey, address, unlockSession } = useAuth();
   const { selectedNetwork, getNetworkRPCId } = useUserSettings();
   const { getNetworkAwareAddress } = useKaspaAuth();
@@ -548,7 +550,17 @@ const ProfileView: React.FC = () => {
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
-        <h1 className="text-lg sm:text-xl font-bold">Profile</h1>
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-accent rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg sm:text-xl font-bold">Profile</h1>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-scroll p-3 sm:p-4" style={{

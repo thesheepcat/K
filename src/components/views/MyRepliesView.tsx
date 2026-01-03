@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import PostCard from '../general/PostCard';
 import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +18,7 @@ interface MyRepliesProps {
 const POLLING_INTERVAL = 5000; // 5 seconds
 
 const MyReplies: React.FC<MyRepliesProps> = ({ posts, onUpVote, onDownVote, onRepost, onServerPostsUpdate }) => {
+  const navigate = useNavigate();
   const { publicKey } = useAuth();
   const { fetchAndConvertUserReplies, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
   const [isLoading, setIsLoading] = useState(false);
@@ -238,7 +242,15 @@ const loadMorePosts = useCallback(async () => {
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-accent rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <h1 className="text-xl font-bold">My replies</h1>
           </div>
           {error && (
