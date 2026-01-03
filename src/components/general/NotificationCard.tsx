@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThumbsUp, ThumbsDown, MessageCircle, MessageSquareQuote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,8 @@ import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { LinkifiedText } from '@/utils/linkUtils';
 import { Base64 } from 'js-base64';
-import { formatAuthorDisplayName } from '@/utils/postUtils';
+import { formatAuthorDisplayName, pubkeyToKaspaAddress } from '@/utils/postUtils';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 
 interface NotificationData {
   id: string;
@@ -31,6 +32,23 @@ interface NotificationCardProps {
 const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => {
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
+  const { getNetworkRPCId, selectedNetwork } = useUserSettings();
+  const [userKaspaAddress, setUserKaspaAddress] = useState<string>('');
+
+  // Get Kaspa address from public key
+  useEffect(() => {
+    const getAddress = async () => {
+      try {
+        const networkId = getNetworkRPCId(selectedNetwork);
+        const address = await pubkeyToKaspaAddress(notification.userPublicKey, networkId);
+        setUserKaspaAddress(address);
+      } catch (error) {
+        console.error('Error getting Kaspa address:', error);
+        setUserKaspaAddress(notification.userPublicKey); // Fallback to public key
+      }
+    };
+    getAddress();
+  }, [notification.userPublicKey, selectedNetwork, getNetworkRPCId]);
 
   // Decode content
   let decodedContent: string = '';
@@ -215,7 +233,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
       {showUserDetailsDialog && (
         <UserDetailsDialog
           userPubkey={notification.userPublicKey}
-          userAddress={notification.userPublicKey} // Using pubkey as address placeholder
+          userAddress={userKaspaAddress}
           userNickname={decodedNickname}
           isOpen={showUserDetailsDialog}
           onClose={() => setShowUserDetailsDialog(false)}
