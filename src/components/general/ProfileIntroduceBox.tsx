@@ -23,6 +23,8 @@ const ProfileIntroduceBox: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasExistingData, setHasExistingData] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [originalData, setOriginalData] = useState<{
     nickname: string;
     content: string;
@@ -67,6 +69,12 @@ const ProfileIntroduceBox: React.FC = () => {
       } else {
         // No data exists - keep fields empty
         setHasExistingData(false);
+      }
+
+      // Update followers/following counts
+      if (userDetails) {
+        setFollowersCount(userDetails.followersCount || 0);
+        setFollowingCount(userDetails.followingCount || 0);
       }
 
       // Set current state (either with loaded data or empty)
@@ -420,6 +428,26 @@ const ProfileIntroduceBox: React.FC = () => {
                     rows={3}
                   />
                 )}
+              </div>
+
+              {/* Followers and Following Counters */}
+              <div className="flex gap-4 text-sm pt-2">
+                <div className="flex gap-1 items-center">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{followingCount}</span>
+                  )}
+                  <span className="text-muted-foreground">Following</span>
+                </div>
+                <div className="flex gap-1 items-center">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{followersCount}</span>
+                  )}
+                  <span className="text-muted-foreground">Followers</span>
+                </div>
               </div>
             </div>
           ) : (
