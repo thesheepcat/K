@@ -18,6 +18,7 @@ export interface Post {
   upVoted: boolean;
   downVoted: boolean;
   reposted: boolean;
+  followedUser?: boolean; // Whether the requesting user follows this user (only in Users view)
   nestedReplies?: Post[];
   parentPostId?: string; // ID of the post/reply being replied to (only for replies)
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
@@ -91,6 +92,7 @@ export interface ServerUserPost {
   timestamp: number; // Unix timestamp
   userNickname?: string; // Base64 encoded nickname (optional)
   userProfileImage?: string; // Base64 encoded profile image (optional)
+  followedUser: boolean; // Whether the requesting user follows this user
   // Note: Users API doesn't include repliesCount, upVotesCount, downVotesCount, repostsCount, parentPostId, mentionedPubkeys
 }
 

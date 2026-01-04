@@ -21,6 +21,8 @@ interface UserPostCardProps {
   onUnblock?: (userPubkey: string) => void;
   showUnfollowButton?: boolean;
   onUnfollow?: (userPubkey: string) => void;
+  showFollowButton?: boolean;
+  onFollow?: (userPubkey: string) => void;
 }
 
 const UserPostCard: React.FC<UserPostCardProps> = ({
@@ -31,12 +33,15 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   showUnblockButton = false,
   onUnblock,
   showUnfollowButton = false,
-  onUnfollow
+  onUnfollow,
+  showFollowButton = false,
+  onFollow
 }) => {
   const navigate = useNavigate();
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
   const [isSubmittingUnblock, setIsSubmittingUnblock] = useState(false);
   const [isSubmittingUnfollow, setIsSubmittingUnfollow] = useState(false);
+  const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
   const { selectedNetwork } = useUserSettings();
@@ -148,6 +153,56 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
     }
   };
 
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!privateKey || !post.author.pubkey || isSubmittingFollow) return;
+
+    try {
+      setIsSubmittingFollow(true);
+
+      // Send follow transaction
+      const result = await sendTransaction({
+        privateKey,
+        userMessage: '', // Empty message for following actions
+        type: 'follow' as any, // Cast as any since it's a new type
+        followingAction: 'follow',
+        followedUserPubkey: post.author.pubkey
+      } as any); // Cast as any to bypass TypeScript for now
+
+      if (result) {
+        toast.success('Follow transaction successful!', {
+          description: (
+            <div className="space-y-2">
+              <div>Transaction ID: {result.id}</div>
+              <div>Fees: {result.feeAmount.toString()} sompi</div>
+              <div>Fees: {result.feeKAS} KAS</div>
+              <button
+                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+              >
+                Open explorer
+              </button>
+            </div>
+          ),
+          duration: 5000
+        });
+
+        // Call the callback to notify parent component
+        if (onFollow) {
+          onFollow(post.author.pubkey);
+        }
+      }
+    } catch (error) {
+      console.error('Error submitting follow:', error);
+      toast.error('Error submitting follow', {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmittingFollow(false);
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
     if (e.target instanceof HTMLElement) {
@@ -198,7 +253,6 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
               </span>
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-              <span className="text-muted-foreground text-xs sm:text-sm">{post.timestamp}</span>
               {showUnblockButton && (
                 <Button
                   variant="outline"
@@ -226,6 +280,34 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
                   )}
                   Unfollow
                 </Button>
+              )}
+              {showFollowButton && (
+                <>
+                  {post.followedUser === false && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isSubmittingFollow || !privateKey}
+                      onClick={handleFollow}
+                      className="text-foreground border-border hover:bg-muted hover:text-foreground"
+                    >
+                      {isSubmittingFollow && (
+                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle mr-1"></div>
+                      )}
+                      Follow
+                    </Button>
+                  )}
+                  {post.followedUser === true && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={true}
+                      className="text-muted-foreground border-border bg-muted cursor-not-allowed"
+                    >
+                      Following
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>

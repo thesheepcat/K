@@ -509,7 +509,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 **Note:** This endpoint returns posts, quotes, and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
 ### 4. Get Users
-Fetch user introduction posts with pagination support and blocked users awareness:
+Fetch user introduction posts with pagination support, blocked users awareness, and followed users status:
 
 ```bash
 curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
@@ -533,7 +533,8 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
       "timestamp": 1703190000,
       "userNickname": "QWxpY2U=",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": false
+      "blockedUser": false,
+      "followedUser": true
     },
     {
       "id": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
@@ -543,7 +544,8 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
       "timestamp": 1703185000,
       "userNickname": "Qm9i",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": true
+      "blockedUser": true,
+      "followedUser": false
     }
   ],
   "pagination": {
@@ -565,11 +567,18 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
 - The requester's own posts will never be marked as blocked (`blockedUser: false`)
 - This allows client applications to filter or style blocked users' content appropriately
 
+**Followed Users Awareness:**
+- `followedUser`: Boolean field indicating if the user is followed by the requester
+- `true`: The requester is following this user (requesterPubkey is in `sender_pubkey` and user is in `followed_user_pubkey` in k_follows table)
+- `false`: The requester is not following this user
+- This allows client applications to display follow status and enable/disable follow/unfollow buttons appropriately
+
 **Database Query Logic:**
-This endpoint performs a LEFT JOIN between `k_broadcasts` and `k_blocks` tables:
+This endpoint performs LEFT JOINs between `k_broadcasts`, `k_blocks`, and `k_follows` tables:
 1. Fetches all user introduction posts from `k_broadcasts`
 2. Checks if each user is blocked by the requester via LEFT JOIN with `k_blocks`
-3. Returns all posts with blocking status information
+3. Checks if each user is followed by the requester via LEFT JOIN with `k_follows`
+4. Returns all posts with blocking and following status information
 
 This endpoint is specifically designed for displaying user introduction posts with a character limit of 100 characters.
 

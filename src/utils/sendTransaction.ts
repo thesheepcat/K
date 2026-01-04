@@ -31,22 +31,24 @@ export interface TransactionResult {
 
 export const sendKProtocolTransaction = async (options: TransactionOptions): Promise<TransactionResult | null> => {
     const { privateKey, userMessage, type, postId, mentionedPubkeys = [], vote, mentionedPubkey, blockingAction, blockedUserPubkey, followingAction, followedUserPubkey, networkId: overrideNetworkId } = options;
-    
+
+    let rpc: any = null;
+
     try {
         // Ensure Kaspa SDK is loaded
         await kaspaService.ensureLoaded();
         const kaspa = kaspaService.getKaspa();
-        
+
         const { Resolver, createTransactions, RpcClient, PrivateKey, PublicKey, signMessage, sompiToKaspaString } = kaspa;
 
         // Use override network or default to mainnet
         const connectionNetworkId = overrideNetworkId || KASPA_NETWORKS.MAINNET;
-        
+
         // Get connection settings from user settings
         const storedSettings = localStorage.getItem('kaspa_user_settings');
         let kaspaConnectionType = 'resolver';
         let customKaspaNodeUrl = '';
-        
+
         if (storedSettings) {
           try {
             const settings = JSON.parse(storedSettings);
@@ -56,7 +58,7 @@ export const sendKProtocolTransaction = async (options: TransactionOptions): Pro
             console.error('Error parsing settings:', error);
           }
         }
-        
+
         let rpcConfig;
         if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
           // Use custom node URL
@@ -71,8 +73,8 @@ export const sendKProtocolTransaction = async (options: TransactionOptions): Pro
             networkId: connectionNetworkId
           };
         }
-        
-        const rpc = new RpcClient(rpcConfig);
+
+        rpc = new RpcClient(rpcConfig);
         await rpc.connect();
         const is_connected = await rpc.isConnected;
         console.log("Connected to Kaspad: ", is_connected);
@@ -258,12 +260,23 @@ export const sendKProtocolTransaction = async (options: TransactionOptions): Pro
         }))
         */
 
+        await rpc.disconnect();
+
         // Return transaction details for success notification
         return transactionResult;
 
     } catch (error) {
         console.error("Error sending transaction:", error);
         throw error; // Re-throw to allow components to handle errors
+    } finally {
+        // Ensure RPC is disconnected even if an error occurred
+        if (rpc) {
+            try {
+                await rpc.disconnect();
+            } catch (disconnectError) {
+                console.error("Error disconnecting RPC:", disconnectError);
+            }
+        }
     }
 }
 

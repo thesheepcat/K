@@ -248,6 +248,16 @@ const loadMoreUsers = useCallback(async () => {
     return () => clearTimeout(timeoutId);
   }, [posts, isLoading, loadMoreUsers]);
 
+  const handleFollow = (userPubkey: string) => {
+    // Optimistically update the UI
+    const updatedPosts = posts.map(post =>
+      post.author.pubkey === userPubkey
+        ? { ...post, followedUser: true }
+        : post
+    );
+    onServerPostsUpdate(updatedPosts);
+  };
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
@@ -294,9 +304,11 @@ const loadMoreUsers = useCallback(async () => {
               <UserPostCard
                 key={post.id}
                 post={post}
+                showFollowButton={true}
+                onFollow={handleFollow}
               />
             ))}
-            
+
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">

@@ -558,6 +558,7 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
     upVoted: false, // Default to not upvoted
     downVoted: false, // Default to not downvoted
     reposted: false, // Default to not reposted
+    followedUser: serverUserPost.followedUser, // Whether the requesting user follows this user
     nestedReplies: [], // Replies will be empty for user posts
     // Note: Users API doesn't include parentPostId and mentionedPubkeys
   };
