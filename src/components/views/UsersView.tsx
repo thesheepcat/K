@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
@@ -23,6 +23,8 @@ const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => 
     const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [usersCount, setUsersCount] = useState<number | null>(null);
+    const [isLoadingCount, setIsLoadingCount] = useState(true);
 
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -44,6 +46,22 @@ const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => 
   nextCursorRef.current = nextCursor;
   hasMoreRef.current = hasMore;
   isLoadingMoreRef.current = isLoadingMore;
+
+  // Function to fetch users count
+  const fetchUsersCount = useCallback(async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/get-users-count`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users count');
+      }
+      const data = await response.json();
+      setUsersCount(data.count);
+      setIsLoadingCount(false);
+    } catch (error) {
+      console.error('Error fetching users count:', error);
+      setIsLoadingCount(false);
+    }
+  }, [apiBaseUrl]);
 
 const loadUsers = useCallback(async (reset: boolean = true) => {
     try {
@@ -105,6 +123,19 @@ const loadMoreUsers = useCallback(async () => {
       setTimeout(() => loadUsers(true), 0);
     }
   }, [publicKey, selectedNetwork, apiBaseUrl]);
+
+  // Fetch users count on mount and poll every 30 seconds
+  useEffect(() => {
+    // Initial fetch
+    fetchUsersCount();
+
+    // Set up polling every 30 seconds
+    const interval = setInterval(() => {
+      fetchUsersCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchUsersCount]);
 
   // Auto-refresh every 30 seconds (less aggressive to avoid interfering with infinite scroll)
   useEffect(() => {
@@ -272,7 +303,14 @@ const loadMoreUsers = useCallback(async () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Users</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">Users</h1>
+              {isLoadingCount ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : usersCount !== null ? (
+                <span className="text-xl font-bold">({usersCount.toLocaleString()})</span>
+              ) : null}
+            </div>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">

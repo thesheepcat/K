@@ -296,6 +296,8 @@ export interface SendSingleUtxoOptions {
 export const sendCoinTransaction = async (options: SendCoinOptions): Promise<TransactionResult | null> => {
     const { privateKey, destinationAddress, amountKAS, networkId: overrideNetworkId } = options;
 
+    let rpc: any = null;
+
     try {
         // Ensure Kaspa SDK is loaded
         await kaspaService.ensureLoaded();
@@ -336,7 +338,7 @@ export const sendCoinTransaction = async (options: SendCoinOptions): Promise<Tra
           };
         }
 
-        const rpc = new RpcClient(rpcConfig);
+        rpc = new RpcClient(rpcConfig);
         await rpc.connect();
         const isConnected = await rpc.isConnected;
 
@@ -435,11 +437,22 @@ export const sendCoinTransaction = async (options: SendCoinOptions): Promise<Tra
     } catch (error) {
         console.error("Error sending coin transaction:", error);
         throw error; // Re-throw to allow components to handle errors
+    } finally {
+        // Ensure RPC is disconnected even if an error occurred
+        if (rpc) {
+            try {
+                await rpc.disconnect();
+            } catch (disconnectError) {
+                console.error("Error disconnecting RPC:", disconnectError);
+            }
+        }
     }
 };
 
 export const sendSingleUtxoTransaction = async (options: SendSingleUtxoOptions): Promise<TransactionResult | null> => {
     const { privateKey, destinationAddress, networkId: overrideNetworkId } = options;
+
+    let rpc: any = null;
 
     try {
         // Ensure Kaspa SDK is loaded
@@ -481,7 +494,7 @@ export const sendSingleUtxoTransaction = async (options: SendSingleUtxoOptions):
           };
         }
 
-        const rpc = new RpcClient(rpcConfig);
+        rpc = new RpcClient(rpcConfig);
         await rpc.connect();
         const isConnected = await rpc.isConnected;
 
@@ -573,6 +586,15 @@ export const sendSingleUtxoTransaction = async (options: SendSingleUtxoOptions):
     } catch (error) {
         console.error("Error sending single UTXO transaction:", error);
         throw error; // Re-throw to allow components to handle errors
+    } finally {
+        // Ensure RPC is disconnected even if an error occurred
+        if (rpc) {
+            try {
+                await rpc.disconnect();
+            } catch (disconnectError) {
+                console.error("Error disconnecting RPC:", disconnectError);
+            }
+        }
     }
 };
 

@@ -8,7 +8,8 @@
 - Added back button on all pages
 - Added "Follow" button on users list
 - Cleaned all users lists by removing timestamp
+- Added total number of users in "Users" page
 
 ### Fixed bugs
 - Address visualization on "User's details" dialog, when opened from "Notifications" page
-- Closing RPC connection to Kaspa node after sending each single transaction
+- Closing RPC connection to Kaspa node after every single interaction

@@ -8,31 +8,43 @@ The K webapp API provides the following endpoints for social media functionality
 
 ### Available API Endpoints
 
-1. **`get-posts`** - Retrieve posts from a specific user
-   - Scope: Fetch all posts created by a particular user with pagination support
-
-2. **`get-posts-following`** - Retrieve posts from followed users
+1. **`get-posts-following`** - Retrieve posts from followed users
    - Scope: Fetch posts from users that the requester is following
 
-3. **`get-posts-watching`** - Retrieve posts from watched users
+2. **`get-posts-watching`** - Retrieve posts from watched users
    - Scope: Fetch posts from users that the requester is watching
 
-4. **`get-mentions`** - Retrieve posts where a user is mentioned
+3. **`get-mentions`** - Retrieve posts where a user is mentioned
    - Scope: Fetch posts and replies that mention a specific user
 
-5. **`get-users`** - Retrieve user introduction posts
+4. **`get-users`** - Retrieve user introduction posts
    - Scope: Fetch user introduction posts (max 100 characters) for community discovery
 
-6. **`get-replies`** - Retrieve replies to a specific post or by a specific user
+5. **`get-users-count`** - Get total count of users
+   - Scope: Get the total count of users (broadcasts) in the system
+
+6. **`get-user-details`** - Retrieve details for a specific user
+   - Scope: Fetch detailed user information including introduction post, block status, and follow counts
+
+7. **`get-blocked-users`** - Retrieve blocked users list
+   - Scope: Fetch paginated list of users blocked by the requester
+
+8. **`get-followed-users`** - Retrieve followed users list
+   - Scope: Fetch paginated list of users followed by the requester
+
+9. **`get-posts`** - Retrieve posts from a specific user
+   - Scope: Fetch all posts created by a particular user with pagination support
+
+10. **`get-replies`** - Retrieve replies to a specific post or by a specific user
    - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
 
-7. **`get-post-details`** - Retrieve details for a specific post
+11. **`get-post-details`** - Retrieve details for a specific post
    - Scope: Fetch complete details for a single post or reply with voting status
 
-8. **`get-notifications-count`** - Count notifications for a user
+12. **`get-notifications-count`** - Count notifications for a user
    - Scope: Get the total count of unread notifications (posts, replies, votes that mention the user, and quotes of user's content)
 
-9. **`get-notifications`** - Retrieve notifications for a user
+13. **`get-notifications`** - Retrieve notifications for a user
    - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
 
 ## General Pagination Rules
@@ -582,7 +594,59 @@ This endpoint performs LEFT JOINs between `k_broadcasts`, `k_blocks`, and `k_fol
 
 This endpoint is specifically designed for displaying user introduction posts with a character limit of 100 characters.
 
-### 5. Get User Details
+---
+
+### 5. Get Users Count
+
+Returns the total count of users (broadcasts) in the system.
+
+#### Request
+
+No parameters required.
+
+#### Response
+
+**Status Code**: `200 OK`
+
+```json
+{
+  "count": 575
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `count` | integer | Total number of users in `k_broadcasts` table |
+
+#### Error Responses
+
+**Status Code**: `500 INTERNAL_SERVER_ERROR`
+
+```json
+{
+  "error": "Internal server error during database query",
+  "code": "DATABASE_ERROR"
+}
+```
+
+#### Notes
+
+- This endpoint enforces rate limiting (same as other API endpoints)
+- Count is retrieved from the `k_broadcasts` table (same as `broadcasts` field in `/stats`)
+- Useful for displaying total user count in the UI
+- No authentication required (public endpoint)
+
+#### Example Usage
+
+```bash
+curl "http://localhost:3001/get-users-count"
+```
+
+---
+
+### 6. Get User Details
 Fetch detailed information for a specific user including their introduction post and block status:
 
 ```bash
@@ -638,7 +702,7 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 
 **Note:** This endpoint returns the same data structure as the `get-users` endpoint but for a single specific user, with the addition of the `blockedUser` field. Unlike the paginated `get-users` endpoint, this returns a single user object directly (not wrapped in a `posts` array with pagination metadata).
 
-### 6. Get Blocked Users
+### 7. Get Blocked Users
 Fetch a paginated list of users blocked by the requester:
 
 ```bash
@@ -691,7 +755,7 @@ This endpoint performs an INNER JOIN between `k_blocks` and `k_broadcasts` table
 
 **Note:** This endpoint returns users in the order they were blocked (most recent blocks first). The response format matches `get-users` with pagination support, but includes only users that have been blocked by the requesting user.
 
-### 7. Get Followed Users
+### 8. Get Followed Users
 Fetch a paginated list of users followed by the requester:
 
 ```bash
@@ -774,7 +838,7 @@ This endpoint performs an INNER JOIN between `k_follows` and `k_broadcasts` tabl
 
 **Note:** This endpoint returns users in the order they were followed (most recent follows first). The response format matches `get-users` with pagination support, but includes only users that are currently followed by the requesting user.
 
-### 8. Get User Posts
+### 9. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
@@ -883,7 +947,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
   // Result: "Hello 世界 🌍"
   ```
 
-### 8. Get Post Replies
+### 10. Get Replies
 Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
@@ -897,7 +961,8 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
 
-### 6b. Get User Replies
+**Alternative Mode - User Replies:**
+
 Fetch all replies made by a specific user with pagination support and voting status:
 
 ```bash
@@ -911,7 +976,7 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
 
-**Note:** The `get-replies` endpoint now supports two modes:
+**Note:** The `get-replies` endpoint supports two modes:
 1. **Post Replies Mode**: Use `post` parameter to get replies to a specific post
 2. **User Replies Mode**: Use `user` parameter to get all replies made by a specific user
 
@@ -951,7 +1016,7 @@ Exactly one of `post` or `user` must be provided, but not both.
 
 **Note:** The `quotesCount` field indicates how many quotes reference this reply. Replies can be quoted just like posts.
 
-### 9. Get Post Details
+### 11. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
@@ -1365,7 +1430,7 @@ The webapp polls different endpoints at different intervals:
 
 All polling is automatic and includes loading indicators and error handling.
 
-### 10. Get Notifications Count
+### 12. Get Notifications Count
 Get the total count of notifications for a user, optionally filtered by cursor timestamp:
 
 ```bash
@@ -1401,7 +1466,7 @@ curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df
 - Quotes are counted separately from mentions to avoid double-counting
 - Returns simple integer count for efficient UI updates
 
-### 11. Get Notifications
+### 13. Get Notifications
 Fetch paginated notifications for a user including posts, replies, votes mentioning them, and quotes of their content:
 
 ```bash
