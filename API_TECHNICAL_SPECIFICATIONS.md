@@ -32,10 +32,16 @@ The K webapp API provides the following endpoints for social media functionality
 8. **`get-followed-users`** - Retrieve followed users list
    - Scope: Fetch paginated list of users followed by the requester
 
-9. **`get-posts`** - Retrieve posts from a specific user
+9. **`get-users-following`** - Retrieve users that a specific user is following
+   - Scope: Fetch paginated list of users followed by a specific user, with indication of requester's follow status
+
+10. **`get-users-followers`** - Retrieve users that follow a specific user
+   - Scope: Fetch paginated list of followers for a specific user, with indication of requester's follow status
+
+11. **`get-posts`** - Retrieve posts from a specific user
    - Scope: Fetch all posts created by a particular user with pagination support
 
-10. **`get-replies`** - Retrieve replies to a specific post or by a specific user
+12. **`get-replies`** - Retrieve replies to a specific post or by a specific user
    - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
 
 11. **`get-post-details`** - Retrieve details for a specific post
@@ -838,7 +844,204 @@ This endpoint performs an INNER JOIN between `k_follows` and `k_broadcasts` tabl
 
 **Note:** This endpoint returns users in the order they were followed (most recent follows first). The response format matches `get-users` with pagination support, but includes only users that are currently followed by the requesting user.
 
-### 9. Get User Posts
+---
+
+### 9. Get Users Following (`get-users-following`)
+
+Retrieve the list of users that a specific user is following, with indication of whether the requester also follows each user.
+
+**Endpoint:** `GET /get-users-following`
+
+**Example Request:**
+
+```bash
+curl "http://localhost:3000/get-users-following?requesterPubkey=030542e68293fa37c646c08bb9ed9fe95af99cc22ad4e68458f8d591e2605c6a45&userPubkey=0219e53da53a6569ebddabaceb7a460a895c0d8fb25c4730277a9082cbb0c2b46a&limit=100"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user making the request (66-character hex string with 02/03 prefix)
+- `userPubkey` (required): Public key of the user whose following list to retrieve (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of users to return (max: 100, min: 1)
+- `before` (optional): Return users followed before this timestamp (for pagination to older follows)
+- `after` (optional): Return users followed after this timestamp (for fetching newer follows)
+
+**Key Features:**
+- **Following List**: Returns users that `userPubkey` is following
+- **Follow Status Indication**: Each user includes `followedUser` field indicating if `requesterPubkey` also follows that user
+- **User Profile Information**: Includes complete profile data (nickname, profile image)
+- **Chronological Ordering**: Ordered by follow timestamp (most recent first by default)
+- **Pagination Support**: Compound cursor pagination for efficient navigation through large lists
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "24f865e469a99c6ef16b2112891b461b5434fd5cb5c0905479105c176c00ed57",
+      "userPublicKey": "03f8c3330d892e5b58eb2b31e7c9324239dc1498f8b3f103cee696e80f023ae008",
+      "postContent": "",
+      "signature": "f3cbd1edfa4171dc7683599fac88ab784a15c0b149a5c3e938d66ed68b159978ec135f49792405363055ba5e31e76d68913df6535de7a3869ac9b464c6218c0d",
+      "timestamp": 1767169726964,
+      "userNickname": "RmxleA==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    },
+    {
+      "id": "01b681f8831a08c51492f94abd7bbea96b31c1aedac5ac8fd7429d694de79bba",
+      "userPublicKey": "03bfd5d323fb68f2f2f8f7416a1753e1c38fb5ce429eb239f22d3d1b5b57a1dd8b",
+      "postContent": "",
+      "signature": "fc1afdc671356d33b4fdeba0c110c506789f34b0f5f796f84b831c7b697ab4ed6bafe38df08f5984f7e8e40cb573f4f1ab7a3becdea9cc026853db00cfab287c",
+      "timestamp": 1767167865621,
+      "userNickname": "Y29kZXJvZnN0dWZm",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": false
+    }
+  ],
+  "pagination": {
+    "hasMore": false,
+    "nextCursor": null,
+    "prevCursor": "1767169726964_2538"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of user objects that `userPubkey` is following
+- `pagination`: Standard pagination metadata with compound cursors (timestamp:id format)
+- `followedUser`: Indicates whether `requesterPubkey` also follows this user (`true`/`false`)
+- `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
+
+**Database Query Logic:**
+This endpoint performs a complex JOIN query on the `k_follows` table:
+1. Finds all records in `k_follows` where `sender_pubkey` = `userPubkey` (users that userPubkey follows)
+2. Joins with `k_broadcasts` to get user profile data for each `followed_user_pubkey`
+3. Left joins with `k_follows` again to check if `requesterPubkey` also follows each user
+4. Returns `followedUser: true` if requester follows the user, `false` otherwise
+5. Orders by `block_time` DESC (most recent follows first)
+
+**Use Cases:**
+- Display a user's "Following" list in their profile
+- Show common follows between two users
+- Implement "follow suggestions" based on mutual connections
+- Navigate through large lists of followed users with pagination
+
+**Implementation Details:**
+- Uses compound cursor pagination (timestamp:id) for consistent results
+- Automatically enriches user data with profile information from k_broadcasts
+- Dynamically calculates `followedUser` status based on requester's follows
+- Supports bidirectional pagination with `before` and `after` parameters
+
+**Expected Behavior:**
+- When `requesterPubkey` == `userPubkey`: All users will have `followedUser: true` (you follow everyone you follow)
+- When `requesterPubkey` != `userPubkey`: Mixed `true`/`false` values based on requester's follow relationships
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+---
+
+### 10. Get Users Followers (`get-users-followers`)
+
+Retrieve the list of users that follow a specific user, with indication of whether the requester follows each follower.
+
+**Endpoint:** `GET /get-users-followers`
+
+**Example Request:**
+
+```bash
+curl "http://localhost:3000/get-users-followers?requesterPubkey=030542e68293fa37c646c08bb9ed9fe95af99cc22ad4e68458f8d591e2605c6a45&userPubkey=02f1d88357dfaa48357b3411c59f696fee275de8c4a79550c474c4012d8c0c761a&limit=100"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user making the request (66-character hex string with 02/03 prefix)
+- `userPubkey` (required): Public key of the user whose followers list to retrieve (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of followers to return (max: 100, min: 1)
+- `before` (optional): Return followers from before this timestamp (for pagination to older followers)
+- `after` (optional): Return followers from after this timestamp (for fetching newer followers)
+
+**Key Features:**
+- **Followers List**: Returns users that follow `userPubkey`
+- **Follow Status Indication**: Each follower includes `followedUser` field indicating if `requesterPubkey` follows that follower
+- **User Profile Information**: Includes complete profile data (nickname, profile image)
+- **Chronological Ordering**: Ordered by follow timestamp (most recent followers first by default)
+- **Pagination Support**: Compound cursor pagination for efficient navigation through large follower lists
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "9608be82f890cd86b8847183a88237b6519f740250187dc91e62d9c15be3a81f",
+      "userPublicKey": "036af3c19f150f461192a3c9dfcb67334c3b637bcb4ec37ccf725f8fd1c15c5822",
+      "postContent": "",
+      "signature": "6b3c9aac3e7ca8bf5d9d1510b01e7ac5a67341ad82270373d3850c56c39981ca9772ea9c71385678f64333c0dc4d97daaa78bc6f47e87a979b3626752341d17b",
+      "timestamp": 1767044902266,
+      "userNickname": "ZWxwZXJvcnI=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    },
+    {
+      "id": "03a1af57e085eab23112d4171301176001a90971b9427646d9d66bf18537592222",
+      "userPublicKey": "03a1af57e085eab23112d4171301176001a90971b9427646d9d66bf18537592222",
+      "postContent": "",
+      "signature": "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890",
+      "timestamp": 1767044000000,
+      "userNickname": "dXNlcjEyMw==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": false
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1767044000000_1234",
+    "prevCursor": "1767044902266_5678"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of user objects that follow `userPubkey`
+- `pagination`: Standard pagination metadata with compound cursors (timestamp:id format)
+- `followedUser`: Indicates whether `requesterPubkey` follows this follower (`true`/`false`)
+- `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
+
+**Database Query Logic:**
+This endpoint performs a complex JOIN query on the `k_follows` table:
+1. Finds all records in `k_follows` where `followed_user_pubkey` = `userPubkey` (followers of userPubkey)
+2. Joins with `k_broadcasts` to get user profile data for each `sender_pubkey` (the follower)
+3. Left joins with `k_follows` again to check if `requesterPubkey` follows each follower
+4. Returns `followedUser: true` if requester follows the follower, `false` otherwise
+5. Orders by `block_time` DESC (most recent followers first)
+
+**Use Cases:**
+- Display a user's "Followers" list in their profile
+- Show which followers the requester also follows
+- Identify mutual follows (when used with `get-users-following`)
+- Implement "follow back" suggestions
+- Navigate through large follower lists with pagination
+
+**Implementation Details:**
+- Uses compound cursor pagination (timestamp:id) for consistent results
+- Automatically enriches user data with profile information from k_broadcasts
+- Dynamically calculates `followedUser` status based on requester's follows
+- Supports bidirectional pagination with `before` and `after` parameters
+
+**Expected Behavior:**
+- When `requesterPubkey` == `userPubkey`: Shows which followers the user follows back (mutual follows)
+  - `followedUser: true` = mutual follow (user follows them back)
+  - `followedUser: false` = one-way follow (they follow user, but user doesn't follow back)
+- When `requesterPubkey` != `userPubkey`: Shows which of userPubkey's followers the requester also follows
+  - `followedUser: true` = requester follows this follower
+  - `followedUser: false` = requester doesn't follow this follower
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+---
+
+### 11. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash

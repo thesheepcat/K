@@ -373,6 +373,94 @@ export const fetchFollowedUsers = async (requesterPubkey: string, options?: Pagi
 };
 
 /**
+ * Fetch users following (users that a specific user is following) from the server with pagination
+ */
+export const fetchUsersFollowing = async (requesterPubkey: string, userPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-users-following`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // User pubkey parameter is mandatory
+    url.searchParams.append('userPubkey', userPubkey);
+
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching users following:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch users followers (users that follow a specific user) from the server with pagination
+ */
+export const fetchUsersFollowers = async (requesterPubkey: string, userPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-users-followers`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // User pubkey parameter is mandatory
+    url.searchParams.append('userPubkey', userPubkey);
+
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching users followers:', error);
+    throw error;
+  }
+};
+
+/**
  * Convert server post format to client post format
  */
 export const convertServerPostToClientPost = async (serverPost: ServerPost, currentUserPubkey?: string, networkId?: string): Promise<Post> => {

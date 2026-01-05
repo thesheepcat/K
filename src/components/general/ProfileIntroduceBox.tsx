@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ const MAX_CHARACTERS = 100;
 const MAX_NICKNAME_CHARACTERS = 20;
 
 const ProfileIntroduceBox: React.FC = () => {
+  const navigate = useNavigate();
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -438,7 +440,12 @@ const ProfileIntroduceBox: React.FC = () => {
                   ) : (
                     <span className="font-semibold text-foreground">{followingCount}</span>
                   )}
-                  <span className="text-muted-foreground">Following</span>
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-following')}
+                  >
+                    Following
+                  </span>
                 </div>
                 <div className="flex gap-1 items-center">
                   {isLoading ? (
@@ -446,7 +453,12 @@ const ProfileIntroduceBox: React.FC = () => {
                   ) : (
                     <span className="font-semibold text-foreground">{followersCount}</span>
                   )}
-                  <span className="text-muted-foreground">Followers</span>
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-followers')}
+                  >
+                    Followers
+                  </span>
                 </div>
               </div>
             </div>

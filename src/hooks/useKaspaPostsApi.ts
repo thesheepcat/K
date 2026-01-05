@@ -9,6 +9,8 @@ import {
   fetchUsers,
   fetchBlockedUsers,
   fetchFollowedUsers,
+  fetchUsersFollowing,
+  fetchUsersFollowers,
   fetchUserDetails,
   fetchPostDetails,
   fetchPostReplies,
@@ -260,6 +262,76 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
 
+  const fetchAndConvertUsersFollowing = useCallback(async (requesterPubkey: string, userPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      if (!requesterPubkey) {
+        throw new Error('Requester public key is required for fetching users following');
+      }
+      if (!userPubkey) {
+        throw new Error('User public key is required for fetching users following');
+      }
+
+      const response = await fetchUsersFollowing(requesterPubkey, userPubkey, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchUsersFollowing returned null/undefined response');
+        throw new Error('No response from fetchUsersFollowing');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchUsersFollowing response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, requesterPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertUsersFollowing:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
+  const fetchAndConvertUsersFollowers = useCallback(async (requesterPubkey: string, userPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      if (!requesterPubkey) {
+        throw new Error('Requester public key is required for fetching users followers');
+      }
+      if (!userPubkey) {
+        throw new Error('User public key is required for fetching users followers');
+      }
+
+      const response = await fetchUsersFollowers(requesterPubkey, userPubkey, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchUsersFollowers returned null/undefined response');
+        throw new Error('No response from fetchUsersFollowers');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchUsersFollowers response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, requesterPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertUsersFollowers:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
   const fetchAndConvertPostDetails = useCallback(async (postId: string, currentUserPubkey: string): Promise<Post> => {
     try {
       const response = await fetchPostDetails(postId, currentUserPubkey, apiBaseUrl);
@@ -405,7 +477,7 @@ export const useKaspaPostsApi = () => {
     fetchPostReplies: boundFetchPostReplies,
     fetchUserReplies: boundFetchUserReplies,
     fetchPostComments: boundFetchPostComments,
-    
+
     // Enhanced conversion functions with network awareness (all paginated)
     fetchAndConvertMyPosts,
     fetchAndConvertFollowingPosts,
@@ -415,11 +487,13 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertUsers,
     fetchAndConvertBlockedUsers,
     fetchAndConvertFollowedUsers,
+    fetchAndConvertUsersFollowing,
+    fetchAndConvertUsersFollowers,
     fetchAndConvertPostDetails,
     fetchAndConvertPostReplies,
     fetchAndConvertUserReplies,
     fetchAndConvertPostComments,
-    
+
     // Network info
     selectedNetwork,
     networkId: getNetworkRPCId(selectedNetwork),
