@@ -5,7 +5,7 @@
 
 ### New features
 - Added following/followers count on "Profile"
-- Added user's following/followers list accessible from "Profile" or user's page
+- Added user's following/followers list accessible from "Profile" or user's page; removed "Followed" page
 - Added back button on all pages
 - Added "Follow" button on users list
 - Cleaned all users lists by removing timestamp
