@@ -7,14 +7,14 @@ import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 
-interface BlockedUsersViewProps {
+interface UsersBlockedViewProps {
   posts: Post[];
   onServerPostsUpdate: (posts: Post[]) => void;
 }
 
 const POLLING_INTERVAL = 10000; // 10 seconds
 
-const BlockedUsersView: React.FC<BlockedUsersViewProps> = ({ posts, onServerPostsUpdate }) => {
+const UsersBlockedView: React.FC<UsersBlockedViewProps> = ({ posts, onServerPostsUpdate }) => {
     const navigate = useNavigate();
     const { publicKey } = useAuth();
     const { fetchAndConvertBlockedUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
@@ -275,7 +275,7 @@ const loadMoreBlockedUsers = useCallback(async () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold">Blocked users</h1>
+            <h1 className="text-xl font-bold">Blocked</h1>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
@@ -338,4 +338,4 @@ const loadMoreBlockedUsers = useCallback(async () => {
   );
 };
 
-export default BlockedUsersView;
+export default UsersBlockedView;

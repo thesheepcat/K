@@ -13,7 +13,7 @@ import Following from "./components/views/FollowingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
-import BlockedUsersView from "./components/views/BlockedUsersView.tsx";
+import UsersBlockedView from "./components/views/UsersBlockedView.tsx";
 import UsersFollowingView from "./components/views/UsersFollowingView.tsx";
 import UsersFollowersView from "./components/views/UsersFollowersView.tsx";
 import PostDetailView from "./components/views/PostDetailView.tsx";
@@ -338,9 +338,9 @@ const MainApp: React.FC = () => {
             }
           />
           <Route
-            path="/blocked-users"
+            path="/users-blocked"
             element={
-              <BlockedUsersView
+              <UsersBlockedView
                 posts={blockedUsersData}
                 onServerPostsUpdate={handleBlockedUsersPostsUpdate}
               />

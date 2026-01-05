@@ -29,7 +29,7 @@ The K webapp API provides the following endpoints for social media functionality
 7. **`get-blocked-users`** - Retrieve blocked users list
    - Scope: Fetch paginated list of users blocked by the requester
 
-8. **`get-followed-users`** - Retrieve followed users list
+8. **`get-followed-users`** - Retrieve followed users list (TO BE REMOVED)
    - Scope: Fetch paginated list of users followed by the requester
 
 9. **`get-users-following`** - Retrieve users that a specific user is following
@@ -676,7 +676,8 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
   "blockedUser": false,
   "followedUser": true,
   "followersCount": 42,
-  "followingCount": 13
+  "followingCount": 13,
+  "blockedCount": 7
 }
 ```
 
@@ -692,14 +693,16 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 - `followedUser`: Boolean indicating whether the requester is following this user
 - `followersCount`: Number of users following this user (how many followers they have)
 - `followingCount`: Number of users this user is following
+- `blockedCount`: Number of users that this user has blocked
 
 **Block and Follow Status Logic:**
 - The `blockedUser` field indicates whether the requesting user (`requesterPubkey`) has blocked the target user (`user`). This is determined by checking the `k_blocks` table for records where `sender_pubkey` = `requesterPubkey` and `blocked_user_pubkey` = `user`.
 - The `followedUser` field indicates whether the requesting user (`requesterPubkey`) is following the target user (`user`). This is determined by checking the `k_follows` table for records where `sender_pubkey` = `requesterPubkey` and `followed_user_pubkey` = `user`.
 
-**Follower Counts:**
+**User Counts:**
 - `followersCount`: Total count from `k_follows` table where `followed_user_pubkey` = `user` (how many people follow this user)
 - `followingCount`: Total count from `k_follows` table where `sender_pubkey` = `user` (how many people this user follows)
+- `blockedCount`: Total count from `k_blocks` table where `sender_pubkey` = `user` (how many users this user has blocked)
 
 **Error Responses:**
 - `400 Bad Request`: Invalid or missing parameters

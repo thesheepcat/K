@@ -27,6 +27,7 @@ const ProfileIntroduceBox: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [blockedCount, setBlockedCount] = useState(0);
   const [originalData, setOriginalData] = useState<{
     nickname: string;
     content: string;
@@ -73,10 +74,11 @@ const ProfileIntroduceBox: React.FC = () => {
         setHasExistingData(false);
       }
 
-      // Update followers/following counts
+      // Update followers/following/blocked counts
       if (userDetails) {
         setFollowersCount(userDetails.followersCount || 0);
         setFollowingCount(userDetails.followingCount || 0);
+        setBlockedCount(userDetails.blockedCount || 0);
       }
 
       // Set current state (either with loaded data or empty)
@@ -432,9 +434,9 @@ const ProfileIntroduceBox: React.FC = () => {
                 )}
               </div>
 
-              {/* Followers and Following Counters */}
+              {/* Followers, Following, and Blocked Counters */}
               <div className="flex gap-4 text-sm pt-2">
-                <div className="flex gap-1 items-center">
+                <div className="flex gap-1 items-baseline">
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
                   ) : (
@@ -447,7 +449,7 @@ const ProfileIntroduceBox: React.FC = () => {
                     Following
                   </span>
                 </div>
-                <div className="flex gap-1 items-center">
+                <div className="flex gap-1 items-baseline">
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
                   ) : (
@@ -458,6 +460,19 @@ const ProfileIntroduceBox: React.FC = () => {
                     onClick={() => navigate('/users-followers')}
                   >
                     Followers
+                  </span>
+                </div>
+                <div className="flex gap-1 items-baseline">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{blockedCount}</span>
+                  )}
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-blocked')}
+                  >
+                    Blocked
                   </span>
                 </div>
               </div>

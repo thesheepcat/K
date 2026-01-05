@@ -676,6 +676,7 @@ export const fetchUserDetails = async (userPublicKey: string, requesterPubkey: s
   followedUser: boolean;
   followersCount: number;
   followingCount: number;
+  blockedCount: number;
 }> => {
   try {
     const url = new URL(`${apiBaseUrl}/get-user-details`);
