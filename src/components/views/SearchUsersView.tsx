@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectOption } from '@/components/ui/select';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
@@ -285,6 +284,19 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
     }
   };
 
+  // Paste from clipboard
+  const pasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setSearchValue(text.trim());
+    } catch (error) {
+      toast.error('Failed to paste from clipboard', {
+        description: 'Please check clipboard permissions',
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
@@ -311,61 +323,66 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
 
       {/* Search Form */}
       <div className="border-b border-border p-4">
-        <Card className="border border-border">
-          <CardContent className="p-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
-                  Search by
-                </label>
-                <Select
-                  value={searchType}
-                  onChange={(e) => handleSearchTypeChange(e.target.value)}
-                  disabled={isSearching}
-                  className="text-sm"
-                >
-                  <SelectOption value="pubkey">Public key</SelectOption>
-                  <SelectOption value="address">Address</SelectOption>
-                  <SelectOption value="nickname">Nickname</SelectOption>
-                </Select>
-              </div>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              Search by
+            </label>
+            <Select
+              value={searchType}
+              onChange={(e) => handleSearchTypeChange(e.target.value)}
+              disabled={isSearching}
+              className="text-sm"
+            >
+              <SelectOption value="pubkey">Public key</SelectOption>
+              <SelectOption value="address">Address</SelectOption>
+              <SelectOption value="nickname">Nickname</SelectOption>
+            </Select>
+          </div>
 
-              <div className="space-y-2">
-                <div className="relative">
-                  <Input
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={
-                      searchType === 'pubkey'
-                        ? 'Enter public key...'
-                        : searchType === 'address'
-                        ? 'Enter Kaspa address...'
-                        : 'Enter nickname...'
-                    }
-                    className="h-10 pr-10 text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
-                    disabled={isSearching}
-                  />
-                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
-                    <button
-                      type="button"
-                      onClick={handleSearch}
-                      disabled={isSearching || !searchValue.trim()}
-                      className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
-                      title="Search"
-                    >
-                      {isSearching ? (
-                        <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
-                      ) : (
-                        <Search className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+          <div className="space-y-2">
+            <div className="relative">
+              <Input
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  searchType === 'pubkey'
+                    ? 'Enter public key...'
+                    : searchType === 'address'
+                    ? 'Enter Kaspa address...'
+                    : 'Enter nickname...'
+                }
+                className="h-10 pr-16 text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
+                disabled={isSearching}
+              />
+              <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+                <button
+                  type="button"
+                  onClick={pasteFromClipboard}
+                  disabled={isSearching}
+                  className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                  title="Paste from clipboard"
+                >
+                  <Copy className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  disabled={isSearching || !searchValue.trim()}
+                  className="p-1 text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-50"
+                  title="Search"
+                >
+                  {isSearching ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle"></div>
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Results */}
