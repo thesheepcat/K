@@ -217,10 +217,10 @@ jobs:
         id: release-notes
         run: |
           {
-            echo "notes<<RELEASE_NOTES_EOF_DELIMITER"
+            echo 'notes<<EOF'
             cat .github/workflows/release-notes.md
-            echo "RELEASE_NOTES_EOF_DELIMITER"
-          } >> $GITHUB_OUTPUT
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
