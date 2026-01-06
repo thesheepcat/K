@@ -1,7 +1,7 @@
 ### Release notes
 - ⚠️ **IMPORTANT: This release is configured by default to work on Kaspa MAINNET**
-- This release uses **real KAS coins**. Please be aware that any transactions will involve actual cryptocurrency. Make sure you understand the implications before using this version.
-- Requires K-indexer 0.1.14
+- This release uses **real KAS coins**. Please be aware that any transactions will involve actual cryptocurrency. Make sure you understand the implications before using this version
+- This release requires K-indexer 0.1.14
 
 ### New features
 - Added following/followers/blocked count in "Profile" page
@@ -13,7 +13,7 @@
 - Cleaned all users lists by removing timestamp (useless)
 - Added back button on all pages
 
-
 ### Fixed bugs
 - Address visualization on "User's details" dialog, when opened from "Notifications" page
+- Quoted content truncation in posts (now limited to 250 characters)
 - Closing RPC connection to Kaspa node after every single interaction
