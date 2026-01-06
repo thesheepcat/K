@@ -2,39 +2,34 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PostCard from '../general/PostCard';
-import { type Post, type PaginationOptions } from '@/models/types';
+import UserPostCard from '../general/UserPostCard';
+import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 
-interface FollowingProps {
+interface UsersBlockedViewProps {
   posts: Post[];
-  onUpVote: (id: string) => void;
-  onDownVote: (id: string) => void;
-  onRepost: (id: string) => void;
   onServerPostsUpdate: (posts: Post[]) => void;
 }
 
-const POLLING_INTERVAL = 5000; // 5 seconds
+const POLLING_INTERVAL = 10000; // 10 seconds
 
-const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRepost, onServerPostsUpdate }) => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const { publicKey } = useAuth();
-  const { fetchAndConvertFollowingContents, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
-
-
+const UsersBlockedView: React.FC<UsersBlockedViewProps> = ({ posts, onServerPostsUpdate }) => {
+    const navigate = useNavigate();
+    const { publicKey } = useAuth();
+    const { fetchAndConvertBlockedUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Use refs to store the latest values to avoid dependency issues
   const onServerPostsUpdateRef = useRef(onServerPostsUpdate);
-  const fetchFunctionRef = useRef(fetchAndConvertFollowingContents);
+  const fetchFunctionRef = useRef(fetchAndConvertBlockedUsers);
   const publicKeyRef = useRef(publicKey);
   const postsRef = useRef(posts);
   const nextCursorRef = useRef(nextCursor);
@@ -43,14 +38,14 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
 
   // Update refs when values change
   onServerPostsUpdateRef.current = onServerPostsUpdate;
-  fetchFunctionRef.current = fetchAndConvertFollowingContents;
+  fetchFunctionRef.current = fetchAndConvertBlockedUsers;
   publicKeyRef.current = publicKey;
   postsRef.current = posts;
   nextCursorRef.current = nextCursor;
   hasMoreRef.current = hasMore;
   isLoadingMoreRef.current = isLoadingMore;
 
-  const loadPosts = useCallback(async (reset: boolean = true) => {
+const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
     try {
       if (reset) {
         setIsLoading(true);
@@ -59,12 +54,16 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
         setIsLoadingMore(true);
       }
 
-      const options: PaginationOptions = {
+      const options = {
         limit: 10,
         ...(reset ? {} : { before: nextCursorRef.current })
       };
 
-      const response = await fetchFunctionRef.current(publicKeyRef.current || '', options);
+
+      if (!publicKeyRef.current) {
+        throw new Error('User not authenticated');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, options);
 
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -77,16 +76,23 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       } else {
-        // Append new posts to existing ones
-        const updatedPosts = [...postsRef.current, ...(response.posts || [])];
+        // Append new posts to existing ones, filtering out duplicates
+        const existingPostIds = new Set(postsRef.current.map(post => post.id));
+        const newPosts = (response.posts || []).filter(post => !existingPostIds.has(post.id));
+
+        // If no new posts were found but API says there are more, we might be in a duplicate situation
+        if (newPosts.length === 0 && response.pagination.hasMore) {
+          console.warn('No new posts found despite hasMore=true, possible duplicate API response');
+        }
+
+        const updatedPosts = [...postsRef.current, ...newPosts];
         onServerPostsUpdateRef.current(updatedPosts);
         setNextCursor(response.pagination.nextCursor);
         setHasMore(response.pagination.hasMore);
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch following contents';
-      setError(errorMessage);
-      console.error('Error fetching following contents from server:', err);
+    } catch (error) {
+      console.error('Error loading blocked users:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load blocked users');
     } finally {
       if (reset) {
         setIsLoading(false);
@@ -96,19 +102,16 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
     }
   }, []); // Remove dependencies to prevent recreation
 
-  const loadMorePosts = useCallback(async () => {
-    if (!hasMoreRef.current || isLoadingMoreRef.current) {
-      return;
-    }
+const loadMoreBlockedUsers = useCallback(async () => {
+    if (!hasMoreRef.current || isLoadingMoreRef.current) return;
+    await loadBlockedUsers(false);
+  }, [loadBlockedUsers]);
 
-    await loadPosts(false);
-  }, [loadPosts]);
-
-// Load posts on component mount and when network or apiBaseUrl changes
+  // Load blocked users on component mount and when network or apiBaseUrl changes
   useEffect(() => {
     if (publicKey) {
       // Use setTimeout to make this non-blocking
-      setTimeout(() => loadPosts(true), 0);
+      setTimeout(() => loadBlockedUsers(true), 0);
     }
   }, [publicKey, selectedNetwork, apiBaseUrl]);
 
@@ -118,12 +121,12 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
       // Only refresh if user is near the top to avoid disrupting infinite scroll
       const scrollContainer = scrollContainerRef.current;
       if (scrollContainer && scrollContainer.scrollTop < 100) {
-        loadPosts(true);
+        loadBlockedUsers(true);
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [loadPosts]);
+  }, [loadBlockedUsers]);
 
   // Set up polling with stable references
   useEffect(() => {
@@ -132,11 +135,15 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
     const startPolling = () => {
       interval = setInterval(async () => {
         try {
-          const options: PaginationOptions = {
+          const options = {
             limit: 10
           };
 
-          const response = await fetchFunctionRef.current(publicKeyRef.current || '', options);
+          if (!publicKeyRef.current) {
+            console.error('User not authenticated for polling');
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
 
           // Defensive check for response structure
           if (!response || !response.pagination) {
@@ -154,21 +161,15 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
           if (serverPosts.length !== localPosts.length) {
             hasChanges = true;
           } else {
-            // Compare each post for changes in vote counts, timestamps, or other properties
+            // Compare each post for changes in timestamps or other properties
             for (let i = 0; i < Math.min(serverPosts.length, localPosts.length); i++) {
               const serverPost = serverPosts[i];
               const localPost = localPosts[i];
 
               if (
                 serverPost.id !== localPost.id ||
-                serverPost.upVotes !== localPost.upVotes ||
-                serverPost.downVotes !== localPost.downVotes ||
-                serverPost.replies !== localPost.replies ||
-                serverPost.reposts !== localPost.reposts ||
                 serverPost.timestamp !== localPost.timestamp ||
-                serverPost.upVoted !== localPost.upVoted ||
-                serverPost.downVoted !== localPost.downVoted ||
-                serverPost.reposted !== localPost.reposted
+                serverPost.content !== localPost.content
               ) {
                 hasChanges = true;
                 break;
@@ -197,9 +198,9 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
             }
           }
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch following contents';
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch blocked users';
           setError(errorMessage);
-          console.error('Error fetching following contents from server:', err);
+          console.error('Error fetching blocked users from server:', err);
         }
       }, POLLING_INTERVAL);
     };
@@ -211,7 +212,7 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
         clearInterval(interval);
       }
     };
-  }, [selectedNetwork, apiBaseUrl]); // Removed posts dependency since we use refs
+  }, [selectedNetwork, apiBaseUrl]);
 
   // Single scroll-based infinite scroll mechanism (works on both desktop and mobile)
   useEffect(() => {
@@ -221,42 +222,67 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
-      const shouldLoadMore = distanceFromBottom < 300; // Load when within 300px of bottom
+
+      // Check if content doesn't fill the container (no scrollable area) or if near bottom
+      const contentTooShort = scrollHeight <= clientHeight;
+      const shouldLoadMore = contentTooShort || distanceFromBottom < 300;
 
       if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
-        loadMorePosts();
+        loadMoreBlockedUsers();
       }
     };
 
     scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
 
+    // Note: Height check moved to separate effect that triggers when posts change
+
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [loadMorePosts]);
+  }, [loadMoreBlockedUsers]);
 
+  // Check if content fills container whenever posts change
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || posts.length === 0) return;
 
+    const checkContentHeight = () => {
+      const { scrollHeight, clientHeight } = scrollContainer;
+      const needsMoreContent = scrollHeight <= clientHeight + 50;
+
+      if (needsMoreContent && hasMoreRef.current && !isLoadingMoreRef.current) {
+        loadMoreBlockedUsers();
+      }
+    };
+
+    // Check after a delay to allow for DOM updates
+    const timeoutId = setTimeout(checkContentHeight, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [posts, loadMoreBlockedUsers]);
 
   return (
-    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
+    <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
-      <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-accent rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-bold">Following</h1>
-        </div>
-        {error && (
-          <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
-            Error: {error}
+      <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
+        <div className="p-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-accent rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-bold">Blocked</h1>
           </div>
-        )}
+          {error && (
+            <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+              Error: {error}
+            </div>
+          )}
+        </div>
       </div>
       <div
         ref={scrollContainerRef}
@@ -269,39 +295,40 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
         {isLoading && posts.length === 0 ? (
           <div className="p-8 text-center">
             <div className="w-8 h-8 border-2 border-transparent rounded-full animate-loader-circle mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading following contents...</p>
+            <p className="text-muted-foreground">Loading blocked users...</p>
           </div>
         ) : posts.length === 0 && !isLoading ? (
           <div className="p-8 text-center text-muted-foreground">
-            No following contents found.
+            No blocked users found.
           </div>
         ) : (
           <>
             {posts.map((post) => (
-              <PostCard
+              <UserPostCard
                 key={post.id}
                 post={post}
-                onUpVote={onUpVote}
-                onDownVote={onDownVote}
-                onRepost={onRepost}
-                context="list"
+                showUnblockButton={true}
+                onUnblock={(userPubkey) => {
+                  // Optimistically remove the user from the blocked list
+                  // The real update will come from the next polling cycle
+                  const updatedPosts = posts.filter(p => p.author.pubkey !== userPubkey);
+                  onServerPostsUpdate(updatedPosts);
+                }}
               />
             ))}
-
-
 
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">
                 <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto"></div>
-                <p className="text-sm text-muted-foreground mt-2">Loading more contents...</p>
+                <p className="text-sm text-muted-foreground mt-2">Loading more blocked users...</p>
               </div>
             )}
 
             {/* End of posts indicator */}
             {!hasMore && posts.length > 0 && (
               <div className="p-4 text-center text-muted-foreground text-sm">
-                No more contents to load
+                No more blocked users to load
               </div>
             )}
           </>
@@ -311,4 +338,4 @@ const Following: React.FC<FollowingProps> = ({ posts, onUpVote, onDownVote, onRe
   );
 };
 
-export default Following;
+export default UsersBlockedView;

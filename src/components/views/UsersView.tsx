@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Loader2, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +15,7 @@ interface UsersViewProps {
 const POLLING_INTERVAL = 5000; // 5 seconds
 
 const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => {
+      const navigate = useNavigate();
       const { publicKey } = useAuth();
       const { fetchAndConvertUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
     const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +23,8 @@ const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => 
     const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [usersCount, setUsersCount] = useState<number | null>(null);
+    const [isLoadingCount, setIsLoadingCount] = useState(true);
 
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -40,6 +46,22 @@ const UsersView: React.FC<UsersViewProps> = ({ posts, onServerPostsUpdate }) => 
   nextCursorRef.current = nextCursor;
   hasMoreRef.current = hasMore;
   isLoadingMoreRef.current = isLoadingMore;
+
+  // Function to fetch users count
+  const fetchUsersCount = useCallback(async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/get-users-count`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch users count');
+      }
+      const data = await response.json();
+      setUsersCount(data.count);
+      setIsLoadingCount(false);
+    } catch (error) {
+      console.error('Error fetching users count:', error);
+      setIsLoadingCount(false);
+    }
+  }, [apiBaseUrl]);
 
 const loadUsers = useCallback(async (reset: boolean = true) => {
     try {
@@ -101,6 +123,19 @@ const loadMoreUsers = useCallback(async () => {
       setTimeout(() => loadUsers(true), 0);
     }
   }, [publicKey, selectedNetwork, apiBaseUrl]);
+
+  // Fetch users count on mount and poll every 30 seconds
+  useEffect(() => {
+    // Initial fetch
+    fetchUsersCount();
+
+    // Set up polling every 30 seconds
+    const interval = setInterval(() => {
+      fetchUsersCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchUsersCount]);
 
   // Auto-refresh every 30 seconds (less aggressive to avoid interfering with infinite scroll)
   useEffect(() => {
@@ -244,13 +279,49 @@ const loadMoreUsers = useCallback(async () => {
     return () => clearTimeout(timeoutId);
   }, [posts, isLoading, loadMoreUsers]);
 
+  const handleFollow = (userPubkey: string) => {
+    // Optimistically update the UI
+    const updatedPosts = posts.map(post =>
+      post.author.pubkey === userPubkey
+        ? { ...post, followedUser: true }
+        : post
+    );
+    onServerPostsUpdate(updatedPosts);
+  };
+
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">Users</h1>
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-accent rounded-full"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold">Users</h1>
+                {isLoadingCount ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : usersCount !== null ? (
+                  <span className="text-xl font-bold">({usersCount.toLocaleString()})</span>
+                ) : null}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/search-users')}
+              className="p-2 hover:bg-accent rounded-full"
+              title="Search users"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
@@ -282,9 +353,11 @@ const loadMoreUsers = useCallback(async () => {
               <UserPostCard
                 key={post.id}
                 post={post}
+                showFollowButton={true}
+                onFollow={handleFollow}
               />
             ))}
-            
+
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">

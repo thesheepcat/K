@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Server, Network, Globe, Palette, Info, RefreshCw, Code } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Server, Network, Globe, Palette, Info, RefreshCw, Code, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { normalizeApiUrl } from '@/utils/urlUtils';
 import packageJson from '../../../package.json';
 
 const SettingsView: React.FC = () => {
+  const navigate = useNavigate();
   const {
     selectedNetwork,
     setSelectedNetwork,
@@ -102,7 +104,17 @@ const SettingsView: React.FC = () => {
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
-        <h1 className="text-lg sm:text-xl font-bold">Settings</h1>
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-accent rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg sm:text-xl font-bold">Settings</h1>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-scroll p-3 sm:p-4" style={{

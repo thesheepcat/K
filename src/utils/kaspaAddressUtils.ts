@@ -59,9 +59,101 @@ export const formatPublicKeyForDisplay = (pubkey: string, maxLength: number = 20
   if (pubkey.length <= maxLength) {
     return pubkey;
   }
-  
+
   // For public keys, show first 4 chars + ... + last 4 chars
   const prefixLength = 4;
   const suffixLength = 4;
   return `${pubkey.substring(0, prefixLength)}...${pubkey.substring(pubkey.length - suffixLength)}`;
+};
+
+/**
+ * Validate a Kaspa address format and optionally check network consistency
+ */
+export const validateKaspaAddress = async (
+  address: string,
+  expectedNetwork?: string
+): Promise<boolean> => {
+  try {
+    await kaspaService.ensureLoaded();
+    const kaspa = kaspaService.getKaspa();
+    const { Address } = kaspa;
+
+    const trimmedAddress = address.trim();
+
+    // Use Address.validate if available
+    if (Address.validate) {
+      const isValid = Address.validate(trimmedAddress);
+      if (!isValid) {
+        console.error('Address validation failed: Invalid address format');
+        return false;
+      }
+    }
+
+    // Try to create Address object
+    const addressObj = new Address(trimmedAddress);
+
+    // If expectedNetwork is provided, check prefix consistency
+    if (expectedNetwork) {
+      const prefix = addressObj.prefix;
+
+      // Mainnet addresses have prefix "kaspa"
+      // Testnet addresses have prefix "kaspatest" or similar
+      if (expectedNetwork.includes('mainnet') && prefix !== 'kaspa') {
+        console.error(`Address validation failed: Expected mainnet address but got prefix "${prefix}"`);
+        return false;
+      }
+      if (expectedNetwork.includes('testnet') && !prefix.includes('test')) {
+        console.error(`Address validation failed: Expected testnet address but got prefix "${prefix}"`);
+        return false;
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Address validation error:', error);
+    return false;
+  }
+};
+
+/**
+ * Derive public key from script public key
+ */
+const derivePublicKeyFromScriptPublicKey = (scriptPublicKey: any): string => {
+  const scriptFromAddress = scriptPublicKey.script;
+  const derivedPublicKey = scriptFromAddress.slice(2, -2);
+  const formattedPublicKey = '02' + derivedPublicKey;
+  return formattedPublicKey;
+};
+
+/**
+ * Convert Kaspa address to public key
+ */
+export const addressToPublicKey = async (address: string): Promise<string | null> => {
+  try {
+    await kaspaService.ensureLoaded();
+    const kaspa = kaspaService.getKaspa();
+    const { Address, payToAddressScript } = kaspa;
+
+    const trimmedAddress = address.trim();
+
+    // Validate address first
+    const isValid = await validateKaspaAddress(trimmedAddress);
+    if (!isValid) {
+      return null;
+    }
+
+    // Convert address to Address object
+    const peerAddress = new Address(trimmedAddress);
+
+    // Get script public key from address
+    const scriptPublicKey = payToAddressScript(peerAddress);
+
+    // Derive public key from script
+    const publicKey = derivePublicKeyFromScriptPublicKey(scriptPublicKey);
+
+    return publicKey;
+  } catch (error) {
+    console.error('Error converting address to public key:', error);
+    return null;
+  }
 };
