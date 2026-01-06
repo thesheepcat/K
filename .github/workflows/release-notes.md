@@ -4,13 +4,14 @@
 - Requires K-indexer 0.1.14
 
 ### New features
-- Added following/followers/blocked count on "Profile" page
-- Added access to "Following/Followers" page on "Profile" page and "User" page; removed "Followed" page
+- Added following/followers/blocked count in "Profile" page
+- Added access to "Following/Followers" page in "Profile" page and "User" page; removed "Followed" page
 - Moved access to "Blocked users" page from left sidebar to "Profile" page
-- Added back button on all pages
-- Added "Follow" button on users list
-- Cleaned all users lists by removing timestamp
 - Added total number of users in "Users" page
+- Added "Follow" button in "Users" page
+- Added "Search user" in "Users" page
+- Cleaned all users lists by removing timestamp (useless)
+- Added back button on all pages
 
 
 ### Fixed bugs

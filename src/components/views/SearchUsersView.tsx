@@ -9,7 +9,6 @@ import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
-import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { validateKaspaAddress, addressToPublicKey } from '@/utils/kaspaAddressUtils';
 import { toast } from 'sonner';
 
@@ -21,7 +20,7 @@ interface SearchUsersViewProps {
 const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsUpdate }) => {
   const navigate = useNavigate();
   const { publicKey } = useAuth();
-  const { fetchAndConvertSearchUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
+  const { fetchAndConvertSearchUsers, selectedNetwork } = useKaspaPostsApi();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
