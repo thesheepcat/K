@@ -215,7 +215,12 @@ jobs:
 
       - name: Read release notes
         id: release-notes
-        run: echo "notes<<EOF" >> $GITHUB_OUTPUT && cat .github/workflows/release-notes.md >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
+        run: |
+          {
+            echo "notes<<RELEASE_NOTES_EOF_DELIMITER"
+            cat .github/workflows/release-notes.md
+            echo "RELEASE_NOTES_EOF_DELIMITER"
+          } >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
