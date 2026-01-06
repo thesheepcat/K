@@ -9,6 +9,7 @@ import {
   fetchUsers,
   fetchBlockedUsers,
   fetchFollowedUsers,
+  fetchSearchUsers,
   fetchUsersFollowing,
   fetchUsersFollowers,
   fetchUserDetails,
@@ -262,6 +263,43 @@ export const useKaspaPostsApi = () => {
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
 
+  const fetchAndConvertSearchUsers = useCallback(async (
+    requesterPubkey: string,
+    searchedUserPubkey?: string,
+    searchedUserNickname?: string,
+    options?: PaginationOptions
+  ): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      if (!requesterPubkey) {
+        throw new Error('Requester public key is required for searching users');
+      }
+
+      const response = await fetchSearchUsers(requesterPubkey, searchedUserPubkey, searchedUserNickname, options, apiBaseUrl);
+
+      // Defensive check for response structure
+      if (!response) {
+        console.error('fetchSearchUsers returned null/undefined response');
+        throw new Error('No response from fetchSearchUsers');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchSearchUsers response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, requesterPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertSearchUsers:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
   const fetchAndConvertUsersFollowing = useCallback(async (requesterPubkey: string, userPubkey: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
     try {
       if (!requesterPubkey) {
@@ -487,6 +525,7 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertUsers,
     fetchAndConvertBlockedUsers,
     fetchAndConvertFollowedUsers,
+    fetchAndConvertSearchUsers,
     fetchAndConvertUsersFollowing,
     fetchAndConvertUsersFollowers,
     fetchAndConvertPostDetails,

@@ -13,6 +13,7 @@ import Following from "./components/views/FollowingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
+import SearchUsersView from "./components/views/SearchUsersView.tsx";
 import UsersBlockedView from "./components/views/UsersBlockedView.tsx";
 import UsersFollowingView from "./components/views/UsersFollowingView.tsx";
 import UsersFollowersView from "./components/views/UsersFollowersView.tsx";
@@ -74,6 +75,7 @@ const MainApp: React.FC = () => {
   const [followingData, setFollowingData] = useState<Post[]>([]);
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
+  const [searchUsersData, setSearchUsersData] = useState<Post[]>([]);
   const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
   const [usersFollowingData, setUsersFollowingData] = useState<Post[]>([]);
   const [usersFollowersData, setUsersFollowersData] = useState<Post[]>([]);
@@ -230,6 +232,10 @@ const MainApp: React.FC = () => {
     setUsersData(serverPosts);
   };
 
+  const handleSearchUsersPostsUpdate = (serverPosts: Post[]) => {
+    setSearchUsersData(serverPosts);
+  };
+
   const handleBlockedUsersPostsUpdate = (serverPosts: Post[]) => {
     setBlockedUsersData(serverPosts);
   };
@@ -334,6 +340,15 @@ const MainApp: React.FC = () => {
               <UsersView
                 posts={usersData}
                 onServerPostsUpdate={handleUsersPostsUpdate}
+              />
+            }
+          />
+          <Route
+            path="/search-users"
+            element={
+              <SearchUsersView
+                posts={searchUsersData}
+                onServerPostsUpdate={handleSearchUsersPostsUpdate}
               />
             }
           />

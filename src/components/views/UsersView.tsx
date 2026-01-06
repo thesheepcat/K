@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
@@ -294,23 +294,34 @@ const loadMoreUsers = useCallback(async () => {
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-accent rounded-full"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold">Users</h1>
+                {isLoadingCount ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : usersCount !== null ? (
+                  <span className="text-xl font-bold">({usersCount.toLocaleString()})</span>
+                ) : null}
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/search-users')}
               className="p-2 hover:bg-accent rounded-full"
+              title="Search users"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <Search className="h-5 w-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold">Users</h1>
-              {isLoadingCount ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : usersCount !== null ? (
-                <span className="text-xl font-bold">({usersCount.toLocaleString()})</span>
-              ) : null}
-            </div>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">

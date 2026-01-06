@@ -332,6 +332,61 @@ export const fetchBlockedUsers = async (requesterPubkey: string, options?: Pagin
 };
 
 /**
+ * Search users by public key or nickname with pagination
+ */
+export const fetchSearchUsers = async (
+  requesterPubkey: string,
+  searchedUserPubkey?: string,
+  searchedUserNickname?: string,
+  options?: PaginationOptions,
+  apiBaseUrl: string = 'http://localhost:3000'
+): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/search-users`);
+
+    // Requester pubkey parameter is mandatory
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+
+    // Limit is mandatory for paginated endpoints
+    const limit = options?.limit || 10; // Default to 10 if not provided
+    url.searchParams.append('limit', limit.toString());
+
+    // Add search parameters if provided
+    if (searchedUserPubkey) {
+      url.searchParams.append('searchedUserPubkey', searchedUserPubkey);
+    }
+    if (searchedUserNickname !== undefined) {
+      url.searchParams.append('searchedUserNickname', searchedUserNickname);
+    }
+
+    // Before and after are optional
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error searching users:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch followed users from the server with pagination
  */
 export const fetchFollowedUsers = async (requesterPubkey: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
