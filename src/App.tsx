@@ -13,8 +13,10 @@ import Following from "./components/views/FollowingView.tsx";
 import Mentions from "./components/views/MentionsView.tsx";
 import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
-import BlockedUsersView from "./components/views/BlockedUsersView.tsx";
-import FollowedUsersView from "./components/views/FollowedUsersView.tsx";
+import SearchUsersView from "./components/views/SearchUsersView.tsx";
+import UsersBlockedView from "./components/views/UsersBlockedView.tsx";
+import UsersFollowingView from "./components/views/UsersFollowingView.tsx";
+import UsersFollowersView from "./components/views/UsersFollowersView.tsx";
 import PostDetailView from "./components/views/PostDetailView.tsx";
 import UserPostsView from "./components/views/UserPostsView.tsx";
 import ProfileView from "./components/views/ProfileView.tsx";
@@ -73,8 +75,10 @@ const MainApp: React.FC = () => {
   const [followingData, setFollowingData] = useState<Post[]>([]);
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
+  const [searchUsersData, setSearchUsersData] = useState<Post[]>([]);
   const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
-  const [followedUsersData, setFollowedUsersData] = useState<Post[]>([]);
+  const [usersFollowingData, setUsersFollowingData] = useState<Post[]>([]);
+  const [usersFollowersData, setUsersFollowersData] = useState<Post[]>([]);
 
   // Validate network after login
   useNetworkValidator();
@@ -228,15 +232,23 @@ const MainApp: React.FC = () => {
     setUsersData(serverPosts);
   };
 
+  const handleSearchUsersPostsUpdate = (serverPosts: Post[]) => {
+    setSearchUsersData(serverPosts);
+  };
+
   const handleBlockedUsersPostsUpdate = (serverPosts: Post[]) => {
     setBlockedUsersData(serverPosts);
   };
 
-  const handleFollowedUsersPostsUpdate = (serverPosts: Post[]) => {
-    setFollowedUsersData(serverPosts);
+  const handleUsersFollowingPostsUpdate = (serverPosts: Post[]) => {
+    setUsersFollowingData(serverPosts);
   };
 
-  
+  const handleUsersFollowersPostsUpdate = (serverPosts: Post[]) => {
+    setUsersFollowersData(serverPosts);
+  };
+
+
 
   const handlePost = (content: string) => {
     // Note: The post will appear in My Posts once the server returns it 
@@ -332,20 +344,38 @@ const MainApp: React.FC = () => {
             }
           />
           <Route
-            path="/blocked-users"
+            path="/search-users"
             element={
-              <BlockedUsersView
+              <SearchUsersView
+                posts={searchUsersData}
+                onServerPostsUpdate={handleSearchUsersPostsUpdate}
+              />
+            }
+          />
+          <Route
+            path="/users-blocked"
+            element={
+              <UsersBlockedView
                 posts={blockedUsersData}
                 onServerPostsUpdate={handleBlockedUsersPostsUpdate}
               />
             }
           />
           <Route
-            path="/followed-users"
+            path="/users-following/:userPubkey?"
             element={
-              <FollowedUsersView
-                posts={followedUsersData}
-                onServerPostsUpdate={handleFollowedUsersPostsUpdate}
+              <UsersFollowingView
+                posts={usersFollowingData}
+                onServerPostsUpdate={handleUsersFollowingPostsUpdate}
+              />
+            }
+          />
+          <Route
+            path="/users-followers/:userPubkey?"
+            element={
+              <UsersFollowersView
+                posts={usersFollowersData}
+                onServerPostsUpdate={handleUsersFollowersPostsUpdate}
               />
             }
           />

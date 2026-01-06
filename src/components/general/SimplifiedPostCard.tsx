@@ -27,6 +27,13 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
     ? quote.referencedNickname
     : `${quote.referencedSenderPubkey.slice(0, 4)}...${quote.referencedSenderPubkey.slice(-4)}`;
 
+  // Truncate long quoted messages
+  const MAX_CHARS = 250;
+  const isLongMessage = quote.referencedMessage.length > MAX_CHARS;
+  const displayContent = isLongMessage
+    ? quote.referencedMessage.substring(0, MAX_CHARS) + '.....'
+    : quote.referencedMessage;
+
   return (
     <div
       className={`border border-border p-3 bg-muted rounded-md transition-colors ${
@@ -48,7 +55,7 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
             </span>
           </div>
           <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
-            <LinkifiedText onMentionClick={() => {}}>{quote.referencedMessage}</LinkifiedText>
+            <LinkifiedText onMentionClick={() => {}}>{displayContent}</LinkifiedText>
           </div>
         </div>
       </div>

@@ -8,14 +8,14 @@ The K webapp API provides the following endpoints for social media functionality
 
 ### Available API Endpoints
 
-1. **`get-posts`** - Retrieve posts from a specific user
-   - Scope: Fetch all posts created by a particular user with pagination support
-
-2. **`get-posts-following`** - Retrieve posts from followed users
+1. **`get-posts-following`** - Retrieve posts from followed users
    - Scope: Fetch posts from users that the requester is following
 
-3. **`get-posts-watching`** - Retrieve posts from watched users
+2. **`get-posts-watching`** - Retrieve posts from watched users
    - Scope: Fetch posts from users that the requester is watching
+
+3. **`get-contents-following`** - Retrieve all content from followed users
+   - Scope: Fetch posts, replies, and quotes from users that the requester is following
 
 4. **`get-mentions`** - Retrieve posts where a user is mentioned
    - Scope: Fetch posts and replies that mention a specific user
@@ -23,16 +23,40 @@ The K webapp API provides the following endpoints for social media functionality
 5. **`get-users`** - Retrieve user introduction posts
    - Scope: Fetch user introduction posts (max 100 characters) for community discovery
 
-6. **`get-replies`** - Retrieve replies to a specific post or by a specific user
+6. **`get-users-count`** - Get total count of users
+   - Scope: Get the total count of users (broadcasts) in the system
+
+7. **`search-users`** - Search users by public key or nickname
+   - Scope: Search and filter users by exact public key match or partial nickname match
+
+8. **`get-user-details`** - Retrieve details for a specific user
+   - Scope: Fetch detailed user information including introduction post, block status, and follow counts
+
+9. **`get-blocked-users`** - Retrieve blocked users list
+   - Scope: Fetch paginated list of users blocked by the requester
+
+10. **`get-followed-users`** - Retrieve followed users list (TO BE REMOVED)
+   - Scope: Fetch paginated list of users followed by the requester
+
+11. **`get-users-following`** - Retrieve users that a specific user is following
+   - Scope: Fetch paginated list of users followed by a specific user, with indication of requester's follow status
+
+12. **`get-users-followers`** - Retrieve users that follow a specific user
+   - Scope: Fetch paginated list of followers for a specific user, with indication of requester's follow status
+
+13. **`get-posts`** - Retrieve posts from a specific user
+   - Scope: Fetch all posts created by a particular user with pagination support
+
+14. **`get-replies`** - Retrieve replies to a specific post or by a specific user
    - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
 
-7. **`get-post-details`** - Retrieve details for a specific post
+15. **`get-post-details`** - Retrieve details for a specific post
    - Scope: Fetch complete details for a single post or reply with voting status
 
-8. **`get-notifications-count`** - Count notifications for a user
+16. **`get-notifications-count`** - Count notifications for a user
    - Scope: Get the total count of unread notifications (posts, replies, votes that mention the user, and quotes of user's content)
 
-9. **`get-notifications`** - Retrieve notifications for a user
+17. **`get-notifications`** - Retrieve notifications for a user
    - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
 
 ## General Pagination Rules
@@ -270,7 +294,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 - `prevCursor`: Timestamp cursor for fetching newer posts (use with `after` parameter)
 - Both cursors are `null` when no more posts are available in that direction
 
-### 2.1. Get Contents Following
+### 3. Get Contents Following
 
 Fetch all content (posts, replies, and quotes) from users that the requester is following. This endpoint provides a comprehensive feed of followed users' activities with pagination support and voting status:
 
@@ -432,7 +456,7 @@ Each content item includes optional user profile fields:
 - Includes user profile data and referenced content details for quotes
 - Single optimized SQL query for maximum performance
 
-### 3. Get Mentions
+### 4. Get Mentions
 
 Fetch posts where a specific user has been mentioned with voting status. This endpoint requires pagination parameters:
 
@@ -508,8 +532,8 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 
 **Note:** This endpoint returns posts, quotes, and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
-### 4. Get Users
-Fetch user introduction posts with pagination support and blocked users awareness:
+### 5. Get Users
+Fetch user introduction posts with pagination support, blocked users awareness, and followed users status:
 
 ```bash
 curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
@@ -533,7 +557,8 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
       "timestamp": 1703190000,
       "userNickname": "QWxpY2U=",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": false
+      "blockedUser": false,
+      "followedUser": true
     },
     {
       "id": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
@@ -543,7 +568,8 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
       "timestamp": 1703185000,
       "userNickname": "Qm9i",
       "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "blockedUser": true
+      "blockedUser": true,
+      "followedUser": false
     }
   ],
   "pagination": {
@@ -565,15 +591,212 @@ curl "http://localhost:3000/get-users?requesterPubkey=02218b3732df2353978154ec53
 - The requester's own posts will never be marked as blocked (`blockedUser: false`)
 - This allows client applications to filter or style blocked users' content appropriately
 
-**Database Query Logic:**
-This endpoint performs a LEFT JOIN between `k_broadcasts` and `k_blocks` tables:
-1. Fetches all user introduction posts from `k_broadcasts`
-2. Checks if each user is blocked by the requester via LEFT JOIN with `k_blocks`
-3. Returns all posts with blocking status information
+**Followed Users Awareness:**
+- `followedUser`: Boolean field indicating if the user is followed by the requester
+- `true`: The requester is following this user (requesterPubkey is in `sender_pubkey` and user is in `followed_user_pubkey` in k_follows table)
+- `false`: The requester is not following this user
+- This allows client applications to display follow status and enable/disable follow/unfollow buttons appropriately
 
 This endpoint is specifically designed for displaying user introduction posts with a character limit of 100 characters.
 
-### 5. Get User Details
+---
+
+### 6. Get Users Count
+
+Returns the total count of users (broadcasts) in the system.
+
+#### Request
+
+No parameters required.
+
+#### Response
+
+**Status Code**: `200 OK`
+
+```json
+{
+  "count": 575
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `count` | integer | Total number of users in `k_broadcasts` table |
+
+#### Error Responses
+
+**Status Code**: `500 INTERNAL_SERVER_ERROR`
+
+```json
+{
+  "error": "Internal server error during database query",
+  "code": "DATABASE_ERROR"
+}
+```
+
+#### Notes
+
+- This endpoint enforces rate limiting (same as other API endpoints)
+- Count is retrieved from the `k_broadcasts` table (same as `broadcasts` field in `/stats`)
+- Useful for displaying total user count in the UI
+- No authentication required (public endpoint)
+
+#### Example Usage
+
+```bash
+curl "http://localhost:3001/get-users-count"
+```
+
+---
+
+### 7. Search Users
+
+Search and filter users by public key or nickname with pagination support. This endpoint allows searching for specific users by exact public key match or partial nickname match.
+
+#### Request
+
+**Endpoint**: `GET /search-users`
+
+**Query Parameters**:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `requesterPubkey` | string | Yes | Public key of the user making the request (66-character hex string with 02/03 prefix) |
+| `limit` | integer | Yes | Number of users to return (min: 1, max: 100) |
+| `searchedUserPubkey` | string | No | Public key to search for - returns exact match only (66-character hex string with 02/03 prefix) |
+| `searchedUserNickname` | string | No | Nickname to search for - returns partial matches (plain text, case-insensitive) |
+| `before` | string | No | Cursor for pagination to fetch older users (format: `timestamp_id`) |
+| `after` | string | No | Cursor for pagination to fetch newer users (format: `timestamp_id`) |
+
+**Notes**:
+- At least one of `searchedUserPubkey` or `searchedUserNickname` should be provided for meaningful search results
+- If neither search parameter is provided, returns all users (same as `/get-users`)
+- If both search parameters are provided, both filters are applied (AND logic)
+- Empty `searchedUserNickname` (`""`) will match all users (returns all users)
+
+#### Response
+
+**Status Code**: `200 OK`
+
+```json
+{
+  "posts": [
+    {
+      "id": "bd09054cbe12c052d9712230731924e0ee1fbc370858b854759e864ac526b93d",
+      "userPublicKey": "02341c65e443465cfb06a3ced897666dc19ced411864bff3eaa6f6606557f45482",
+      "postContent": "S2FzcGF0YXJpYW4=",
+      "signature": "edef99fb69f3462f36e295c2fa36061f0f925428d51ddb7bd0a17a8446b270ac6512427c0aa5463d959117f52c86b3990a21e86612e71b5652bda48487359289",
+      "timestamp": 1766941626612,
+      "userNickname": "S2FzcGF0YXJpYW4=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAD...",
+      "blockedUser": false,
+      "followedUser": true
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1766941626612_123",
+    "prevCursor": null
+  }
+}
+```
+
+#### Response Structure
+
+Same as `/get-users` endpoint:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `posts` | array | Array of user objects matching the search criteria |
+| `pagination` | object | Pagination metadata with cursors |
+
+Each user object contains:
+- `id`: Transaction ID of the user's introduction post
+- `userPublicKey`: The user's public key
+- `postContent`: Base64 encoded introduction message (max 100 characters)
+- `signature`: User's signature for the introduction post
+- `timestamp`: Unix timestamp when the introduction was posted
+- `userNickname`: Base64 encoded nickname (optional)
+- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px PNG
+- `blockedUser`: Boolean - whether the requester has blocked this user
+- `followedUser`: Boolean - whether the requester is following this user
+
+#### Use Cases
+
+1. **Search by Public Key**: Find a specific user when you know their exact public key
+   ```bash
+   curl "http://localhost:3001/search-users?requesterPubkey=02f1d88...&searchedUserPubkey=020d09ad...&limit=10"
+   ```
+
+2. **Search by Nickname**: Find users with nicknames containing a specific string (case-insensitive)
+   ```bash
+   curl "http://localhost:3001/search-users?requesterPubkey=02f1d88...&searchedUserNickname=Sheep&limit=10"
+   ```
+   This would find users with nicknames like "TheSheepCatOfficial", "sheep123", "BlackSheep" (plain text search, case-insensitive)
+
+3. **Combined Search**: Search for a specific user by both pubkey and nickname
+   ```bash
+   curl "http://localhost:3001/search-users?requesterPubkey=02f1d88...&searchedUserPubkey=020d09ad...&searchedUserNickname=John&limit=10"
+   ```
+
+4. **Pagination**: Navigate through search results
+   ```bash
+   curl "http://localhost:3001/search-users?requesterPubkey=02f1d88...&searchedUserNickname=Bit&limit=10&before=1767196702457_789"
+   ```
+
+#### Error Responses
+
+**Status Code**: `400 BAD_REQUEST`
+
+Missing required parameters:
+```json
+{
+  "error": "Missing required parameter: requesterPubkey",
+  "code": "MISSING_PARAMETER"
+}
+```
+
+Invalid limit:
+```json
+{
+  "error": "Limit parameter must be between 1 and 100",
+  "code": "INVALID_LIMIT"
+}
+```
+
+Invalid public key format:
+```json
+{
+  "error": "Invalid searched user public key format. Must be 66 hex characters.",
+  "code": "INVALID_USER_KEY"
+}
+```
+
+**Status Code**: `500 INTERNAL_SERVER_ERROR`
+
+Database error:
+```json
+{
+  "error": "Internal server error during database query",
+  "code": "DATABASE_ERROR"
+}
+```
+
+#### Notes
+
+- Users are ordered by timestamp (newest first), same as `/get-users`
+- The `blockedUser` and `followedUser` fields show the requester's relationship with each found user
+- Nickname search is **case-insensitive** and searches plain text (database automatically decodes Base64-encoded nicknames)
+- Empty nickname search (`searchedUserNickname=""`) will return all users
+- The search uses PostgreSQL's `ILIKE` operator for case-insensitive partial matching
+- Example: Searching "sheep" will find "TheSheepCatOfficial", "SHEEP123", "BlackSheep", etc.
+- This endpoint respects the same rate limiting as other endpoints
+
+---
+
+### 8. Get User Details
 Fetch detailed information for a specific user including their introduction post and block status:
 
 ```bash
@@ -597,7 +820,8 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
   "blockedUser": false,
   "followedUser": true,
   "followersCount": 42,
-  "followingCount": 13
+  "followingCount": 13,
+  "blockedCount": 7
 }
 ```
 
@@ -613,14 +837,16 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 - `followedUser`: Boolean indicating whether the requester is following this user
 - `followersCount`: Number of users following this user (how many followers they have)
 - `followingCount`: Number of users this user is following
+- `blockedCount`: Number of users that this user has blocked
 
 **Block and Follow Status Logic:**
 - The `blockedUser` field indicates whether the requesting user (`requesterPubkey`) has blocked the target user (`user`). This is determined by checking the `k_blocks` table for records where `sender_pubkey` = `requesterPubkey` and `blocked_user_pubkey` = `user`.
 - The `followedUser` field indicates whether the requesting user (`requesterPubkey`) is following the target user (`user`). This is determined by checking the `k_follows` table for records where `sender_pubkey` = `requesterPubkey` and `followed_user_pubkey` = `user`.
 
-**Follower Counts:**
+**User Counts:**
 - `followersCount`: Total count from `k_follows` table where `followed_user_pubkey` = `user` (how many people follow this user)
 - `followingCount`: Total count from `k_follows` table where `sender_pubkey` = `user` (how many people this user follows)
+- `blockedCount`: Total count from `k_blocks` table where `sender_pubkey` = `user` (how many users this user has blocked)
 
 **Error Responses:**
 - `400 Bad Request`: Invalid or missing parameters
@@ -629,7 +855,7 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 
 **Note:** This endpoint returns the same data structure as the `get-users` endpoint but for a single specific user, with the addition of the `blockedUser` field. Unlike the paginated `get-users` endpoint, this returns a single user object directly (not wrapped in a `posts` array with pagination metadata).
 
-### 6. Get Blocked Users
+### 9. Get Blocked Users
 Fetch a paginated list of users blocked by the requester:
 
 ```bash
@@ -670,19 +896,13 @@ curl "http://localhost:3000/get-blocked-users?requesterPubkey=02218b3732df235397
 - `pagination`: Standard pagination metadata for navigating through the results
 - `blockedUser`: Always `true` for all users in this response (since they are blocked by the requester)
 
-**Database Query Logic:**
-This endpoint performs an INNER JOIN between `k_blocks` and `k_broadcasts` tables:
-1. Finds all records in `k_blocks` where `sender_pubkey` = `requesterPubkey`
-2. Joins with `k_broadcasts` to get user profile data for each `blocked_user_pubkey`
-3. Returns the broadcast/profile information for all blocked users
-
 **Error Responses:**
 - `400 Bad Request`: Invalid or missing parameters
 - `429 Too Many Requests`: Rate limit exceeded
 
 **Note:** This endpoint returns users in the order they were blocked (most recent blocks first). The response format matches `get-users` with pagination support, but includes only users that have been blocked by the requesting user.
 
-### 7. Get Followed Users
+### 10. Get Followed Users
 Fetch a paginated list of users followed by the requester:
 
 ```bash
@@ -740,13 +960,6 @@ curl "http://localhost:3000/get-followed-users?requesterPubkey=02218b3732df23539
 - `followedUser`: Always `true` for all users in this response
 - `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
 
-**Database Query Logic:**
-This endpoint performs an INNER JOIN between `k_follows` and `k_broadcasts` tables:
-1. Finds all records in `k_follows` where `sender_pubkey` = `requesterPubkey`
-2. Joins with `k_broadcasts` to get user profile data for each `followed_user_pubkey`
-3. Returns the broadcast/profile information for all followed users
-4. Orders by `block_time` DESC (most recent follows first)
-
 **Use Cases:**
 - Display a user's "Following" list in their profile
 - Show who the user is currently following
@@ -765,7 +978,188 @@ This endpoint performs an INNER JOIN between `k_follows` and `k_broadcasts` tabl
 
 **Note:** This endpoint returns users in the order they were followed (most recent follows first). The response format matches `get-users` with pagination support, but includes only users that are currently followed by the requesting user.
 
-### 8. Get User Posts
+---
+
+### 11. Get Users Following (`get-users-following`)
+
+Retrieve the list of users that a specific user is following, with indication of whether the requester also follows each user.
+
+**Endpoint:** `GET /get-users-following`
+
+**Example Request:**
+
+```bash
+curl "http://localhost:3000/get-users-following?requesterPubkey=030542e68293fa37c646c08bb9ed9fe95af99cc22ad4e68458f8d591e2605c6a45&userPubkey=0219e53da53a6569ebddabaceb7a460a895c0d8fb25c4730277a9082cbb0c2b46a&limit=100"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user making the request (66-character hex string with 02/03 prefix)
+- `userPubkey` (required): Public key of the user whose following list to retrieve (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of users to return (max: 100, min: 1)
+- `before` (optional): Return users followed before this timestamp (for pagination to older follows)
+- `after` (optional): Return users followed after this timestamp (for fetching newer follows)
+
+**Key Features:**
+- **Following List**: Returns users that `userPubkey` is following
+- **Follow Status Indication**: Each user includes `followedUser` field indicating if `requesterPubkey` also follows that user
+- **User Profile Information**: Includes complete profile data (nickname, profile image)
+- **Chronological Ordering**: Ordered by follow timestamp (most recent first by default)
+- **Pagination Support**: Compound cursor pagination for efficient navigation through large lists
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "24f865e469a99c6ef16b2112891b461b5434fd5cb5c0905479105c176c00ed57",
+      "userPublicKey": "03f8c3330d892e5b58eb2b31e7c9324239dc1498f8b3f103cee696e80f023ae008",
+      "postContent": "",
+      "signature": "f3cbd1edfa4171dc7683599fac88ab784a15c0b149a5c3e938d66ed68b159978ec135f49792405363055ba5e31e76d68913df6535de7a3869ac9b464c6218c0d",
+      "timestamp": 1767169726964,
+      "userNickname": "RmxleA==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    },
+    {
+      "id": "01b681f8831a08c51492f94abd7bbea96b31c1aedac5ac8fd7429d694de79bba",
+      "userPublicKey": "03bfd5d323fb68f2f2f8f7416a1753e1c38fb5ce429eb239f22d3d1b5b57a1dd8b",
+      "postContent": "",
+      "signature": "fc1afdc671356d33b4fdeba0c110c506789f34b0f5f796f84b831c7b697ab4ed6bafe38df08f5984f7e8e40cb573f4f1ab7a3becdea9cc026853db00cfab287c",
+      "timestamp": 1767167865621,
+      "userNickname": "Y29kZXJvZnN0dWZm",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": false
+    }
+  ],
+  "pagination": {
+    "hasMore": false,
+    "nextCursor": null,
+    "prevCursor": "1767169726964_2538"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of user objects that `userPubkey` is following
+- `pagination`: Standard pagination metadata with compound cursors (timestamp:id format)
+- `followedUser`: Indicates whether `requesterPubkey` also follows this user (`true`/`false`)
+- `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
+
+**Use Cases:**
+- Display a user's "Following" list in their profile
+- Show common follows between two users
+- Implement "follow suggestions" based on mutual connections
+- Navigate through large lists of followed users with pagination
+
+**Implementation Details:**
+- Uses compound cursor pagination (timestamp:id) for consistent results
+- Automatically enriches user data with profile information from k_broadcasts
+- Dynamically calculates `followedUser` status based on requester's follows
+- Supports bidirectional pagination with `before` and `after` parameters
+
+**Expected Behavior:**
+- When `requesterPubkey` == `userPubkey`: All users will have `followedUser: true` (you follow everyone you follow)
+- When `requesterPubkey` != `userPubkey`: Mixed `true`/`false` values based on requester's follow relationships
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+---
+
+### 12. Get Users Followers (`get-users-followers`)
+
+Retrieve the list of users that follow a specific user, with indication of whether the requester follows each follower.
+
+**Endpoint:** `GET /get-users-followers`
+
+**Example Request:**
+
+```bash
+curl "http://localhost:3000/get-users-followers?requesterPubkey=030542e68293fa37c646c08bb9ed9fe95af99cc22ad4e68458f8d591e2605c6a45&userPubkey=02f1d88357dfaa48357b3411c59f696fee275de8c4a79550c474c4012d8c0c761a&limit=100"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user making the request (66-character hex string with 02/03 prefix)
+- `userPubkey` (required): Public key of the user whose followers list to retrieve (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of followers to return (max: 100, min: 1)
+- `before` (optional): Return followers from before this timestamp (for pagination to older followers)
+- `after` (optional): Return followers from after this timestamp (for fetching newer followers)
+
+**Key Features:**
+- **Followers List**: Returns users that follow `userPubkey`
+- **Follow Status Indication**: Each follower includes `followedUser` field indicating if `requesterPubkey` follows that follower
+- **User Profile Information**: Includes complete profile data (nickname, profile image)
+- **Chronological Ordering**: Ordered by follow timestamp (most recent followers first by default)
+- **Pagination Support**: Compound cursor pagination for efficient navigation through large follower lists
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "9608be82f890cd86b8847183a88237b6519f740250187dc91e62d9c15be3a81f",
+      "userPublicKey": "036af3c19f150f461192a3c9dfcb67334c3b637bcb4ec37ccf725f8fd1c15c5822",
+      "postContent": "",
+      "signature": "6b3c9aac3e7ca8bf5d9d1510b01e7ac5a67341ad82270373d3850c56c39981ca9772ea9c71385678f64333c0dc4d97daaa78bc6f47e87a979b3626752341d17b",
+      "timestamp": 1767044902266,
+      "userNickname": "ZWxwZXJvcnI=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": true
+    },
+    {
+      "id": "03a1af57e085eab23112d4171301176001a90971b9427646d9d66bf18537592222",
+      "userPublicKey": "03a1af57e085eab23112d4171301176001a90971b9427646d9d66bf18537592222",
+      "postContent": "",
+      "signature": "a1b2c3d4e5f6789012345678901234567890123456789012345678901234567890",
+      "timestamp": 1767044000000,
+      "userNickname": "dXNlcjEyMw==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmH...",
+      "followedUser": false
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1767044000000_1234",
+    "prevCursor": "1767044902266_5678"
+  }
+}
+```
+
+**Response Structure:**
+- `posts`: Array of user objects that follow `userPubkey`
+- `pagination`: Standard pagination metadata with compound cursors (timestamp:id format)
+- `followedUser`: Indicates whether `requesterPubkey` follows this follower (`true`/`false`)
+- `postContent`: Empty string (content removed as this endpoint focuses on user profiles)
+
+**Use Cases:**
+- Display a user's "Followers" list in their profile
+- Show which followers the requester also follows
+- Identify mutual follows (when used with `get-users-following`)
+- Implement "follow back" suggestions
+- Navigate through large follower lists with pagination
+
+**Implementation Details:**
+- Uses compound cursor pagination (timestamp:id) for consistent results
+- Automatically enriches user data with profile information from k_broadcasts
+- Dynamically calculates `followedUser` status based on requester's follows
+- Supports bidirectional pagination with `before` and `after` parameters
+
+**Expected Behavior:**
+- When `requesterPubkey` == `userPubkey`: Shows which followers the user follows back (mutual follows)
+  - `followedUser: true` = mutual follow (user follows them back)
+  - `followedUser: false` = one-way follow (they follow user, but user doesn't follow back)
+- When `requesterPubkey` != `userPubkey`: Shows which of userPubkey's followers the requester also follows
+  - `followedUser: true` = requester follows this follower
+  - `followedUser: false` = requester doesn't follow this follower
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing parameters
+- `429 Too Many Requests`: Rate limit exceeded
+
+---
+
+### 13. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
@@ -874,7 +1268,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
   // Result: "Hello 世界 🌍"
   ```
 
-### 8. Get Post Replies
+### 14. Get Replies
 Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
@@ -888,7 +1282,8 @@ curl "http://localhost:3000/get-replies?post=d81d2b8ba4b71c2ecb7c07013fe200c5b3b
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
 
-### 6b. Get User Replies
+**Alternative Mode - User Replies:**
+
 Fetch all replies made by a specific user with pagination support and voting status:
 
 ```bash
@@ -902,7 +1297,7 @@ curl "http://localhost:3000/get-replies?user=02218b3732df2353978154ec5323b745bce
 - `before` (optional): Return replies created before this timestamp (for pagination to older replies)
 - `after` (optional): Return replies created after this timestamp (for fetching newer replies)
 
-**Note:** The `get-replies` endpoint now supports two modes:
+**Note:** The `get-replies` endpoint supports two modes:
 1. **Post Replies Mode**: Use `post` parameter to get replies to a specific post
 2. **User Replies Mode**: Use `user` parameter to get all replies made by a specific user
 
@@ -942,7 +1337,7 @@ Exactly one of `post` or `user` must be provided, but not both.
 
 **Note:** The `quotesCount` field indicates how many quotes reference this reply. Replies can be quoted just like posts.
 
-### 9. Get Post Details
+### 15. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
@@ -1356,7 +1751,7 @@ The webapp polls different endpoints at different intervals:
 
 All polling is automatic and includes loading indicators and error handling.
 
-### 10. Get Notifications Count
+### 16. Get Notifications Count
 Get the total count of notifications for a user, optionally filtered by cursor timestamp:
 
 ```bash
@@ -1392,7 +1787,7 @@ curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df
 - Quotes are counted separately from mentions to avoid double-counting
 - Returns simple integer count for efficient UI updates
 
-### 11. Get Notifications
+### 17. Get Notifications
 Fetch paginated notifications for a user including posts, replies, votes mentioning them, and quotes of their content:
 
 ```bash

@@ -1,32 +1,43 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 
-interface BlockedUsersViewProps {
+interface UsersFollowingViewProps {
   posts: Post[];
   onServerPostsUpdate: (posts: Post[]) => void;
 }
 
 const POLLING_INTERVAL = 10000; // 10 seconds
 
-const BlockedUsersView: React.FC<BlockedUsersViewProps> = ({ posts, onServerPostsUpdate }) => {
-    const { publicKey } = useAuth();
-    const { fetchAndConvertBlockedUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
+const UsersFollowingView: React.FC<UsersFollowingViewProps> = ({ posts, onServerPostsUpdate }) => {
+      const navigate = useNavigate();
+      const { userPubkey } = useParams<{ userPubkey?: string }>();
+      const { publicKey } = useAuth();
+      const { fetchAndConvertUsersFollowing, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [nextCursor, setNextCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  // Determine which userPubkey to use:
+  // - If userPubkey param exists (from UserPostsView), use it
+  // - Otherwise use current user's publicKey (from ProfileView)
+  const targetUserPubkey = userPubkey ? decodeURIComponent(userPubkey) : publicKey;
+
   // Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Use refs to store the latest values to avoid dependency issues
   const onServerPostsUpdateRef = useRef(onServerPostsUpdate);
-  const fetchFunctionRef = useRef(fetchAndConvertBlockedUsers);
+  const fetchFunctionRef = useRef(fetchAndConvertUsersFollowing);
   const publicKeyRef = useRef(publicKey);
+  const targetUserPubkeyRef = useRef(targetUserPubkey);
   const postsRef = useRef(posts);
   const nextCursorRef = useRef(nextCursor);
   const hasMoreRef = useRef(hasMore);
@@ -34,14 +45,15 @@ const BlockedUsersView: React.FC<BlockedUsersViewProps> = ({ posts, onServerPost
 
   // Update refs when values change
   onServerPostsUpdateRef.current = onServerPostsUpdate;
-  fetchFunctionRef.current = fetchAndConvertBlockedUsers;
+  fetchFunctionRef.current = fetchAndConvertUsersFollowing;
   publicKeyRef.current = publicKey;
+  targetUserPubkeyRef.current = targetUserPubkey;
   postsRef.current = posts;
   nextCursorRef.current = nextCursor;
   hasMoreRef.current = hasMore;
   isLoadingMoreRef.current = isLoadingMore;
 
-const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
+const loadUsersFollowing = useCallback(async (reset: boolean = true) => {
     try {
       if (reset) {
         setIsLoading(true);
@@ -59,7 +71,10 @@ const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
       if (!publicKeyRef.current) {
         throw new Error('User not authenticated');
       }
-      const response = await fetchFunctionRef.current(publicKeyRef.current, options);
+      if (!targetUserPubkeyRef.current) {
+        throw new Error('Target user not specified');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, targetUserPubkeyRef.current, options);
 
       // Defensive check for response structure
       if (!response || !response.pagination) {
@@ -87,8 +102,8 @@ const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
         setHasMore(response.pagination.hasMore);
       }
     } catch (error) {
-      console.error('Error loading blocked users:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load blocked users');
+      console.error('Error loading users following:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load users following');
     } finally {
       if (reset) {
         setIsLoading(false);
@@ -98,18 +113,18 @@ const loadBlockedUsers = useCallback(async (reset: boolean = true) => {
     }
   }, []); // Remove dependencies to prevent recreation
 
-const loadMoreBlockedUsers = useCallback(async () => {
+const loadMoreUsersFollowing = useCallback(async () => {
     if (!hasMoreRef.current || isLoadingMoreRef.current) return;
-    await loadBlockedUsers(false);
-  }, [loadBlockedUsers]);
+    await loadUsersFollowing(false);
+  }, [loadUsersFollowing]);
 
-  // Load blocked users on component mount and when network or apiBaseUrl changes
+  // Load users following on component mount and when network or apiBaseUrl changes
   useEffect(() => {
-    if (publicKey) {
+    if (publicKey && targetUserPubkey) {
       // Use setTimeout to make this non-blocking
-      setTimeout(() => loadBlockedUsers(true), 0);
+      setTimeout(() => loadUsersFollowing(true), 0);
     }
-  }, [publicKey, selectedNetwork, apiBaseUrl]);
+  }, [publicKey, targetUserPubkey, selectedNetwork, apiBaseUrl]);
 
   // Auto-refresh every 30 seconds (less aggressive to avoid interfering with infinite scroll)
   useEffect(() => {
@@ -117,12 +132,12 @@ const loadMoreBlockedUsers = useCallback(async () => {
       // Only refresh if user is near the top to avoid disrupting infinite scroll
       const scrollContainer = scrollContainerRef.current;
       if (scrollContainer && scrollContainer.scrollTop < 100) {
-        loadBlockedUsers(true);
+        loadUsersFollowing(true);
       }
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [loadBlockedUsers]);
+  }, [loadUsersFollowing]);
 
   // Set up polling with stable references
   useEffect(() => {
@@ -139,7 +154,11 @@ const loadMoreBlockedUsers = useCallback(async () => {
             console.error('User not authenticated for polling');
             return;
           }
-          const response = await fetchFunctionRef.current(publicKeyRef.current, options);
+          if (!targetUserPubkeyRef.current) {
+            console.error('Target user not specified for polling');
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, targetUserPubkeyRef.current, options);
 
           // Defensive check for response structure
           if (!response || !response.pagination) {
@@ -194,9 +213,9 @@ const loadMoreBlockedUsers = useCallback(async () => {
             }
           }
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch blocked users';
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users following';
           setError(errorMessage);
-          console.error('Error fetching blocked users from server:', err);
+          console.error('Error fetching users following from server:', err);
         }
       }, POLLING_INTERVAL);
     };
@@ -224,7 +243,7 @@ const loadMoreBlockedUsers = useCallback(async () => {
       const shouldLoadMore = contentTooShort || distanceFromBottom < 300;
 
       if (shouldLoadMore && hasMoreRef.current && !isLoadingMoreRef.current) {
-        loadMoreBlockedUsers();
+        loadMoreUsersFollowing();
       }
     };
 
@@ -235,7 +254,7 @@ const loadMoreBlockedUsers = useCallback(async () => {
     return () => {
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [loadMoreBlockedUsers]);
+  }, [loadMoreUsersFollowing]);
 
   // Check if content fills container whenever posts change
   useEffect(() => {
@@ -247,7 +266,7 @@ const loadMoreBlockedUsers = useCallback(async () => {
       const needsMoreContent = scrollHeight <= clientHeight + 50;
 
       if (needsMoreContent && hasMoreRef.current && !isLoadingMoreRef.current) {
-        loadMoreBlockedUsers();
+        loadMoreUsersFollowing();
       }
     };
 
@@ -255,15 +274,53 @@ const loadMoreBlockedUsers = useCallback(async () => {
     const timeoutId = setTimeout(checkContentHeight, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [posts, loadMoreBlockedUsers]);
+  }, [posts, loadMoreUsersFollowing]);
+
+  // Determine the title based on whether viewing own following or another user's following
+  const isOwnFollowing = !userPubkey || decodeURIComponent(userPubkey) === publicKey;
+  const title = isOwnFollowing ? 'Following' : 'Following';
+
+  const handleFollow = (userPubkey: string) => {
+    // Optimistically update the UI
+    const updatedPosts = posts.map(post =>
+      post.author.pubkey === userPubkey
+        ? { ...post, followedUser: true }
+        : post
+    );
+    onServerPostsUpdate(updatedPosts);
+  };
+
+  const handleUnfollow = (userPubkey: string) => {
+    if (isOwnFollowing) {
+      // If viewing own following list, remove the user from the list
+      const updatedPosts = posts.filter(p => p.author.pubkey !== userPubkey);
+      onServerPostsUpdate(updatedPosts);
+    } else {
+      // If viewing another user's following list, just update the followedUser status
+      const updatedPosts = posts.map(post =>
+        post.author.pubkey === userPubkey
+          ? { ...post, followedUser: false }
+          : post
+      );
+      onServerPostsUpdate(updatedPosts);
+    }
+  };
 
   return (
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-10">
         <div className="p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">Blocked users</h1>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-accent rounded-full"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-bold">{title}</h1>
           </div>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
@@ -283,40 +340,48 @@ const loadMoreBlockedUsers = useCallback(async () => {
         {isLoading && posts.length === 0 ? (
           <div className="p-8 text-center">
             <div className="w-8 h-8 border-2 border-transparent rounded-full animate-loader-circle mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading blocked users...</p>
+            <p className="text-muted-foreground">Loading following...</p>
           </div>
         ) : posts.length === 0 && !isLoading ? (
           <div className="p-8 text-center text-muted-foreground">
-            No blocked users found.
+            No following found.
           </div>
         ) : (
           <>
-            {posts.map((post) => (
-              <UserPostCard
-                key={post.id}
-                post={post}
-                showUnblockButton={true}
-                onUnblock={(userPubkey) => {
-                  // Optimistically remove the user from the blocked list
-                  // The real update will come from the next polling cycle
-                  const updatedPosts = posts.filter(p => p.author.pubkey !== userPubkey);
-                  onServerPostsUpdate(updatedPosts);
-                }}
-              />
-            ))}
+            {isOwnFollowing ? (
+              // Viewing own following list - show Unfollow button
+              posts.map((post) => (
+                <UserPostCard
+                  key={post.id}
+                  post={post}
+                  showUnfollowButton={true}
+                  onUnfollow={handleUnfollow}
+                />
+              ))
+            ) : (
+              // Viewing another user's following list - show Follow/Following buttons based on followedUser
+              posts.map((post) => (
+                <UserPostCard
+                  key={post.id}
+                  post={post}
+                  showFollowButton={true}
+                  onFollow={handleFollow}
+                />
+              ))
+            )}
 
             {/* Auto-load more content when scrolling near bottom */}
             {hasMore && isLoadingMore && (
               <div className="p-4 text-center">
                 <div className="w-6 h-6 border-2 border-transparent rounded-full animate-loader-circle mx-auto"></div>
-                <p className="text-sm text-muted-foreground mt-2">Loading more blocked users...</p>
+                <p className="text-sm text-muted-foreground mt-2">Loading more following...</p>
               </div>
             )}
 
             {/* End of posts indicator */}
             {!hasMore && posts.length > 0 && (
               <div className="p-4 text-center text-muted-foreground text-sm">
-                No more blocked users to load
+                No more following to load
               </div>
             )}
           </>
@@ -326,4 +391,4 @@ const loadMoreBlockedUsers = useCallback(async () => {
   );
 };
 
-export default BlockedUsersView;
+export default UsersFollowingView;

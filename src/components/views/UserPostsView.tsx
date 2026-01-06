@@ -522,11 +522,21 @@ const loadMorePosts = useCallback(async () => {
                     <div className="flex gap-4 mt-2 text-sm">
                       <div className="flex gap-1">
                         <span className="font-semibold text-foreground">{userDetails.followingCount}</span>
-                        <span className="text-muted-foreground">Following</span>
+                        <span
+                          className="text-muted-foreground cursor-pointer hover:underline"
+                          onClick={() => navigate(`/users-following/${encodeURIComponent(userIdentifier)}`)}
+                        >
+                          Following
+                        </span>
                       </div>
                       <div className="flex gap-1">
                         <span className="font-semibold text-foreground">{userDetails.followersCount}</span>
-                        <span className="text-muted-foreground">Followers</span>
+                        <span
+                          className="text-muted-foreground cursor-pointer hover:underline"
+                          onClick={() => navigate(`/users-followers/${encodeURIComponent(userIdentifier)}`)}
+                        >
+                          Followers
+                        </span>
                       </div>
                     </div>
                   )}

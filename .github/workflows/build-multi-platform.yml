@@ -213,15 +213,17 @@ jobs:
           name: android-release-artifacts
           path: ./release-artifacts
 
+      - name: Read release notes
+        id: release-notes
+        run: echo "notes<<EOF" >> $GITHUB_OUTPUT && cat .github/workflows/release-notes.md >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
           name: Release v${{ steps.package-version.outputs.version }}
           body: |
-            ### Release notes
-            - ⚠️ **IMPORTANT: This is the first release configured by default to work on Kaspa MAINNET**
-            - This release uses **real KAS coins**. Please be aware that any transactions will involve actual cryptocurrency. Make sure you understand the implications before using this version.
+            ${{ steps.release-notes.outputs.notes }}
 
             ---
 

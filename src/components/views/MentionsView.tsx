@@ -1,4 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import PostCard from '../general/PostCard';
 import { type Post, type PaginationOptions } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,9 +18,10 @@ interface MentionsProps {
 const POLLING_INTERVAL = 5000; // 5 seconds
 
 const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepost, onServerPostsUpdate }) => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const { publicKey } = useAuth();
@@ -246,7 +250,15 @@ const Mentions: React.FC<MentionsProps> = ({ posts, onUpVote, onDownVote, onRepo
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full">
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-accent rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h1 className="text-xl font-bold">Mentions</h1>
         </div>
         {error && (

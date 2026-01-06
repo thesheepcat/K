@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Copy, RefreshCw, Key, CreditCard, Send, User, QrCode, ExternalLink, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ interface UtxoData {
 }
 
 const ProfileView: React.FC = () => {
+  const navigate = useNavigate();
   const { privateKey, publicKey, address, unlockSession } = useAuth();
   const { selectedNetwork, getNetworkRPCId } = useUserSettings();
   const { getNetworkAwareAddress } = useKaspaAuth();
@@ -128,7 +130,7 @@ const ProfileView: React.FC = () => {
     // Get network-aware address
     const currentAddress = await getNetworkAwareAddress();
     setNetworkAwareAddress(currentAddress);
-    
+
     if (!currentAddress) {
       setUtxoError('No address available');
       return;
@@ -136,17 +138,19 @@ const ProfileView: React.FC = () => {
 
     setIsLoadingUtxo(true);
     setUtxoError(null);
-    
+
+    let rpc: any = null;
+
     try {
       await kaspaService.ensureLoaded();
       const kaspa = kaspaService.getKaspa();
       const { Resolver, RpcClient } = kaspa;
-      
+
       // Get connection settings from user settings
       const storedSettings = localStorage.getItem('kaspa_user_settings');
       let kaspaConnectionType = 'resolver';
       let customKaspaNodeUrl = '';
-      
+
       if (storedSettings) {
         try {
           const settings = JSON.parse(storedSettings);
@@ -156,7 +160,7 @@ const ProfileView: React.FC = () => {
           console.error('Error parsing settings:', error);
         }
       }
-      
+
       let rpcConfig;
       if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
         // Use custom node URL
@@ -171,9 +175,9 @@ const ProfileView: React.FC = () => {
           networkId: getNetworkRPCId(selectedNetwork)
         };
       }
-      
-      const rpc = new RpcClient(rpcConfig);
-      
+
+      rpc = new RpcClient(rpcConfig);
+
       await rpc.connect();
       const isConnected = await rpc.isConnected;
       
@@ -194,20 +198,21 @@ const ProfileView: React.FC = () => {
             entries: [],
             networkId
           });
+          await rpc.disconnect();
           return;
         }
-        
+
         // Calculate total balance and UTXO count
         let totalBalance = 0;
         const validEntries = [];
-        
+
         for (let i = 0; i < entries.length; i++) {
           const entry = entries[i];
-          
+
           try {
             // Handle different possible structures for amount
             let amount = 0;
-            
+
             // Try different property paths for amount
             if (entry?.utxoEntry?.amount !== undefined) {
               amount = Number(entry.utxoEntry.amount);
@@ -218,10 +223,10 @@ const ProfileView: React.FC = () => {
             } else {
               continue; // Skip this entry
             }
-            
+
             totalBalance += amount;
             validEntries.push(entry);
-            
+
           } catch (entryError) {
             // Continue with other entries
           }
@@ -233,7 +238,7 @@ const ProfileView: React.FC = () => {
           entries: validEntries,
           networkId
         });
-        
+
       } catch (utxoError: unknown) {
         const errorMessage = utxoError instanceof Error ? utxoError.message : String(utxoError);
         throw new Error(`Failed to fetch UTXOs: ${errorMessage}`);
@@ -241,11 +246,19 @@ const ProfileView: React.FC = () => {
 
       await rpc.disconnect();
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
+      const errorMessage = error instanceof Error
+        ? error.message
         : 'Failed to fetch UTXO data';
       setUtxoError(`${errorMessage}. This is normal for new addresses with no transactions.`);
     } finally {
+      // Ensure RPC is disconnected even if an error occurred
+      if (rpc) {
+        try {
+          await rpc.disconnect();
+        } catch (disconnectError) {
+          console.error("Error disconnecting RPC:", disconnectError);
+        }
+      }
       setIsLoadingUtxo(false);
     }
   };
@@ -548,7 +561,17 @@ const ProfileView: React.FC = () => {
     <div className="flex-1 w-full max-w-3xl mx-auto lg:border-r border-border flex flex-col h-full" data-main-content>
       {/* Header */}
       <div className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border p-4 z-10">
-        <h1 className="text-lg sm:text-xl font-bold">Profile</h1>
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="p-2 hover:bg-accent rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg sm:text-xl font-bold">Profile</h1>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-scroll p-3 sm:p-4" style={{

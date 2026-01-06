@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ const MAX_CHARACTERS = 100;
 const MAX_NICKNAME_CHARACTERS = 20;
 
 const ProfileIntroduceBox: React.FC = () => {
+  const navigate = useNavigate();
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -23,6 +25,9 @@ const ProfileIntroduceBox: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasExistingData, setHasExistingData] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [blockedCount, setBlockedCount] = useState(0);
   const [originalData, setOriginalData] = useState<{
     nickname: string;
     content: string;
@@ -67,6 +72,13 @@ const ProfileIntroduceBox: React.FC = () => {
       } else {
         // No data exists - keep fields empty
         setHasExistingData(false);
+      }
+
+      // Update followers/following/blocked counts
+      if (userDetails) {
+        setFollowersCount(userDetails.followersCount || 0);
+        setFollowingCount(userDetails.followingCount || 0);
+        setBlockedCount(userDetails.blockedCount || 0);
       }
 
       // Set current state (either with loaded data or empty)
@@ -330,7 +342,7 @@ const ProfileIntroduceBox: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <User className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Your profile</h2>
+              <h2 className="text-lg font-semibold">Profile</h2>
             </div>
             {!isEditing && !isLoading && (
               <Button
@@ -420,6 +432,49 @@ const ProfileIntroduceBox: React.FC = () => {
                     rows={3}
                   />
                 )}
+              </div>
+
+              {/* Followers, Following, and Blocked Counters */}
+              <div className="flex gap-4 text-sm pt-2">
+                <div className="flex gap-1 items-baseline">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{followingCount}</span>
+                  )}
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-following')}
+                  >
+                    Following
+                  </span>
+                </div>
+                <div className="flex gap-1 items-baseline">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{followersCount}</span>
+                  )}
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-followers')}
+                  >
+                    Followers
+                  </span>
+                </div>
+                <div className="flex gap-1 items-baseline">
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-transparent rounded-full animate-loader-circle" style={{borderColor: 'hsl(var(--muted-foreground))'}}></div>
+                  ) : (
+                    <span className="font-semibold text-foreground">{blockedCount}</span>
+                  )}
+                  <span
+                    className="text-muted-foreground cursor-pointer hover:underline"
+                    onClick={() => navigate('/users-blocked')}
+                  >
+                    Blocked
+                  </span>
+                </div>
               </div>
             </div>
           ) : (
