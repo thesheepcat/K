@@ -9,6 +9,8 @@ import UserPostCard from '../general/UserPostCard';
 import { type Post } from '@/models/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
+import { validateKaspaAddress, addressToPublicKey } from '@/utils/kaspaAddressUtils';
 import { toast } from 'sonner';
 
 interface SearchUsersViewProps {
@@ -27,7 +29,7 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Search form state
-  const [searchType, setSearchType] = useState<'pubkey' | 'nickname'>('pubkey');
+  const [searchType, setSearchType] = useState<'pubkey' | 'address' | 'nickname'>('pubkey');
   const [searchValue, setSearchValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [shouldPaginate, setShouldPaginate] = useState(false);
@@ -69,7 +71,8 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
   // Handle search button click
   const handleSearch = useCallback(async () => {
     if (!searchValue.trim()) {
-      toast.error(`Please enter a ${searchType === 'pubkey' ? 'public key' : 'nickname'} to search`);
+      const searchTypeLabel = searchType === 'pubkey' ? 'public key' : searchType === 'address' ? 'address' : 'nickname';
+      toast.error(`Please enter a ${searchTypeLabel} to search`);
       return;
     }
 
@@ -80,6 +83,18 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
         duration: 4000,
       });
       return;
+    }
+
+    // Validate and convert address if that's the selected search type
+    if (searchType === 'address') {
+      const isValidAddress = await validateKaspaAddress(searchValue.trim(), selectedNetwork);
+      if (!isValidAddress) {
+        toast.error('Invalid Kaspa address', {
+          description: `Please enter a valid ${selectedNetwork.includes('mainnet') ? 'mainnet' : 'testnet'} address`,
+          duration: 4000,
+        });
+        return;
+      }
     }
 
     setIsSearching(true);
@@ -93,8 +108,21 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
       }
 
       // Prepare search parameters based on search type
-      const searchedPubkey = searchType === 'pubkey' ? searchValue.trim() : undefined;
-      const searchedNickname = searchType === 'nickname' ? searchValue.trim() : undefined;
+      let searchedPubkey: string | undefined;
+      let searchedNickname: string | undefined;
+
+      if (searchType === 'pubkey') {
+        searchedPubkey = searchValue.trim();
+      } else if (searchType === 'address') {
+        // Convert address to public key
+        const convertedPubkey = await addressToPublicKey(searchValue.trim());
+        if (!convertedPubkey) {
+          throw new Error('Failed to convert address to public key');
+        }
+        searchedPubkey = convertedPubkey;
+      } else if (searchType === 'nickname') {
+        searchedNickname = searchValue.trim();
+      }
 
       // Store search params for pagination
       setLastSearchPubkey(searchedPubkey);
@@ -144,7 +172,7 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
       setIsLoading(false);
       setIsSearching(false);
     }
-  }, [searchValue, searchType]);
+  }, [searchValue, searchType, selectedNetwork]);
 
   // Load more users (pagination)
   const loadMoreUsers = useCallback(async () => {
@@ -190,7 +218,7 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
 
   // Handle search type change - clear search value when switching types
   const handleSearchTypeChange = (value: string) => {
-    setSearchType(value as 'pubkey' | 'nickname');
+    setSearchType(value as 'pubkey' | 'address' | 'nickname');
     setSearchValue(''); // Clear input when switching types
   };
 
@@ -298,6 +326,7 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
                   className="text-sm"
                 >
                   <SelectOption value="pubkey">Public key</SelectOption>
+                  <SelectOption value="address">Address</SelectOption>
                   <SelectOption value="nickname">Nickname</SelectOption>
                 </Select>
               </div>
@@ -308,7 +337,13 @@ const SearchUsersView: React.FC<SearchUsersViewProps> = ({ posts, onServerPostsU
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder={searchType === 'pubkey' ? 'Enter public key...' : 'Enter nickname...'}
+                    placeholder={
+                      searchType === 'pubkey'
+                        ? 'Enter public key...'
+                        : searchType === 'address'
+                        ? 'Enter Kaspa address...'
+                        : 'Enter nickname...'
+                    }
                     className="h-10 pr-10 text-sm border-input-thin focus-visible:border-input-thin-focus focus-visible:ring-0"
                     disabled={isSearching}
                   />
