@@ -17,3 +17,4 @@
 - Address visualization on "User's details" dialog, when opened from "Notifications" page
 - Quoted content truncation in posts (now limited to 250 characters)
 - Closing RPC connection to Kaspa node after every single interaction
+- Fixed bug on "Custom indexer" configuration storage

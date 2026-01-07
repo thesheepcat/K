@@ -56,11 +56,7 @@ const SettingsView: React.FC = () => {
 
   const handleIndexerTypeChange = (type: IndexerType) => {
     setIndexerType(type);
-    if (type !== 'custom') {
-      // Clear custom indexer URL when switching away from custom
-      setLocalCustomIndexerUrl('');
-      setCustomIndexerUrl('');
-    }
+    // Don't clear custom indexer URL when switching away - preserve it for later use
   };
 
   const handleCustomIndexerUrlChange = (value: string) => {

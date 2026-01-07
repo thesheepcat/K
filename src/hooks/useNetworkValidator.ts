@@ -10,11 +10,11 @@ import { toast } from 'sonner';
  */
 export const useNetworkValidator = () => {
   const { isAuthenticated } = useAuth();
-  const { selectedNetwork, apiBaseUrl, getNetworkDisplayName } = useUserSettings();
+  const { selectedNetwork, apiBaseUrl, getNetworkDisplayName, isSettingsLoaded } = useUserSettings();
 
   useEffect(() => {
-    // Only validate after successful login
-    if (!isAuthenticated) {
+    // Only validate after successful login AND settings are loaded
+    if (!isAuthenticated || !isSettingsLoaded) {
       return;
     }
 
@@ -59,5 +59,5 @@ export const useNetworkValidator = () => {
     };
 
     validateNetwork();
-  }, [isAuthenticated, selectedNetwork, apiBaseUrl, getNetworkDisplayName]);
+  }, [isAuthenticated, isSettingsLoaded, selectedNetwork, apiBaseUrl, getNetworkDisplayName]);
 };
