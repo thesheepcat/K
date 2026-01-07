@@ -30,6 +30,7 @@ interface UserSettingsContextType {
   setCustomKaspaNodeUrl: (url: string) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  isSettingsLoaded: boolean;
 }
 
 const UserSettingsContext = createContext<UserSettingsContextType | undefined>(undefined);
@@ -55,6 +56,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
   const apiBaseUrl = indexerType === 'public'
@@ -115,6 +117,9 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     } catch (error) {
       console.error('Error loading user settings:', error);
       // Continue with default settings if loading fails
+    } finally {
+      // Mark settings as loaded
+      setIsSettingsLoaded(true);
     }
 
     // Apply default theme if no settings exist
@@ -239,7 +244,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     customKaspaNodeUrl,
     setCustomKaspaNodeUrl,
     theme,
-    setTheme
+    setTheme,
+    isSettingsLoaded
   };
 
   return (
