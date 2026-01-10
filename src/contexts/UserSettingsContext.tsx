@@ -9,7 +9,7 @@ import {
 } from '@/constants/networks';
 
 export type { KaspaNetwork } from '@/constants/networks';
-export type KaspaConnectionType = 'resolver' | 'custom-node';
+export type KaspaConnectionType = 'resolver' | 'public-node' | 'custom-node';
 export type IndexerType = 'public' | 'local' | 'custom';
 export type Theme = 'light' | 'dark';
 
@@ -28,6 +28,7 @@ interface UserSettingsContextType {
   setKaspaConnectionType: (type: KaspaConnectionType) => void;
   customKaspaNodeUrl: string;
   setCustomKaspaNodeUrl: (url: string) => void;
+  kaspaNodeUrl: string;
   theme: Theme;
   setTheme: (theme: Theme) => void;
   isSettingsLoaded: boolean;
@@ -53,7 +54,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [selectedNetwork, setSelectedNetworkState] = useState<KaspaNetwork>(DEFAULT_NETWORK);
   const [indexerType, setIndexerTypeState] = useState<IndexerType>('public');
   const [customIndexerUrl, setCustomIndexerUrlState] = useState<string>('');
-  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('resolver');
+  const [kaspaConnectionType, setKaspaConnectionTypeState] = useState<KaspaConnectionType>('public-node');
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
@@ -64,6 +65,11 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     : indexerType === 'local'
     ? '/api'
     : customIndexerUrl;
+
+  // Derive kaspaNodeUrl from kaspaConnectionType and customKaspaNodeUrl
+  const kaspaNodeUrl = kaspaConnectionType === 'public-node'
+    ? 'wss://node.k-social.network/ws'
+    : customKaspaNodeUrl;
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -98,7 +104,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         }
 
         if (settings.kaspaConnectionType &&
-            ['resolver', 'custom-node'].includes(settings.kaspaConnectionType)) {
+            ['resolver', 'public-node', 'custom-node'].includes(settings.kaspaConnectionType)) {
           setKaspaConnectionTypeState(settings.kaspaConnectionType);
         }
 
@@ -143,7 +149,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     const isInitialLoad = selectedNetwork === DEFAULT_NETWORK &&
                          indexerType === 'public' &&
                          customIndexerUrl === '' &&
-                         kaspaConnectionType === 'resolver' &&
+                         kaspaConnectionType === 'public-node' &&
                          customKaspaNodeUrl === '' &&
                          theme === 'light';
 
@@ -243,6 +249,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     setKaspaConnectionType,
     customKaspaNodeUrl,
     setCustomKaspaNodeUrl,
+    kaspaNodeUrl,
     theme,
     setTheme,
     isSettingsLoaded

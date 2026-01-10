@@ -145,7 +145,7 @@ const SettingsView: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-1">Connection</label>
                     <div className="bg-muted border border-border p-2 text-sm rounded-md">
-                      {kaspaConnectionType === 'resolver' ? 'Automatic (resolver)' : 'Custom Node'}
+                      {kaspaConnectionType === 'public-node' ? 'Public node #1' : kaspaConnectionType === 'resolver' ? 'Automatic (resolver)' : 'Custom Node'}
                     </div>
                   </div>
 
@@ -261,6 +261,7 @@ const SettingsView: React.FC = () => {
                     onChange={(e) => handleConnectionTypeChange(e.target.value as KaspaConnectionType)}
                     className="w-full"
                   >
+                    <SelectOption value="public-node">Public node #1</SelectOption>
                     <SelectOption value="resolver">Automatic (resolver)</SelectOption>
                     <SelectOption value="custom-node">Your Kaspa node</SelectOption>
                   </Select>
