@@ -7,4 +7,4 @@
 - Added possibility to access posts, replies, quotes and user's profiles using direct links (still login is required, to read the contents)
 
 ### Fixed bugs
-
+- New logic for "link" identification in messages (posts/replies/etc)
