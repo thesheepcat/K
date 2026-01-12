@@ -9,7 +9,7 @@ import {
 } from '@/constants/networks';
 
 export type { KaspaNetwork } from '@/constants/networks';
-export type KaspaConnectionType = 'resolver' | 'custom-node';
+export type KaspaConnectionType = 'resolver' | 'public-node' | 'custom-node';
 export type IndexerType = 'public' | 'local' | 'custom';
 export type Theme = 'light' | 'dark';
 
@@ -28,6 +28,7 @@ interface UserSettingsContextType {
   setKaspaConnectionType: (type: KaspaConnectionType) => void;
   customKaspaNodeUrl: string;
   setCustomKaspaNodeUrl: (url: string) => void;
+  kaspaNodeUrl: string;
   theme: Theme;
   setTheme: (theme: Theme) => void;
   isSettingsLoaded: boolean;
@@ -65,6 +66,13 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     ? '/api'
     : customIndexerUrl;
 
+  // Derive kaspaNodeUrl from kaspaConnectionType and customKaspaNodeUrl
+  const kaspaNodeUrl = kaspaConnectionType === 'public-node'
+    ? 'wss://node.k-social.network'
+    : kaspaConnectionType === 'custom-node'
+    ? customKaspaNodeUrl
+    : ''; // Empty string for 'resolver' to trigger automatic resolution
+
   // Load settings from localStorage on mount
   useEffect(() => {
     try {
@@ -98,7 +106,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         }
 
         if (settings.kaspaConnectionType &&
-            ['resolver', 'custom-node'].includes(settings.kaspaConnectionType)) {
+            ['resolver', 'public-node', 'custom-node'].includes(settings.kaspaConnectionType)) {
           setKaspaConnectionTypeState(settings.kaspaConnectionType);
         }
 
@@ -128,8 +136,13 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     }
   }, []);
 
-  // Save settings whenever they change (backup mechanism)
+  // Save settings whenever they change (after initial load is complete)
   useEffect(() => {
+    // Only save if settings have been loaded (prevents saving defaults on mount)
+    if (!isSettingsLoaded) {
+      return;
+    }
+
     const settings = {
       selectedNetwork,
       indexerType,
@@ -139,49 +152,16 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       theme
     };
 
-    // Don't save on initial load (when all values are defaults)
-    const isInitialLoad = selectedNetwork === DEFAULT_NETWORK &&
-                         indexerType === 'public' &&
-                         customIndexerUrl === '' &&
-                         kaspaConnectionType === 'resolver' &&
-                         customKaspaNodeUrl === '' &&
-                         theme === 'light';
-
-    if (!isInitialLoad) {
-      try {
-        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
-      } catch (error) {
-        console.error('Error auto-saving settings:', error);
-      }
-    }
-  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme]);
-
-  const saveSettings = (overrides: Partial<{
-    selectedNetwork: KaspaNetwork;
-    indexerType: IndexerType;
-    customIndexerUrl: string;
-    kaspaConnectionType: KaspaConnectionType;
-    customKaspaNodeUrl: string;
-    theme: Theme;
-  }> = {}) => {
     try {
-      const settings = {
-        selectedNetwork: overrides.selectedNetwork ?? selectedNetwork,
-        indexerType: overrides.indexerType ?? indexerType,
-        customIndexerUrl: overrides.customIndexerUrl ?? customIndexerUrl,
-        kaspaConnectionType: overrides.kaspaConnectionType ?? kaspaConnectionType,
-        customKaspaNodeUrl: overrides.customKaspaNodeUrl ?? customKaspaNodeUrl,
-        theme: overrides.theme ?? theme
-      };
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.error('Error saving user settings:', error);
+      console.error('Error auto-saving settings:', error);
     }
-  };
+  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, isSettingsLoaded]);
 
   const setSelectedNetwork = (network: KaspaNetwork) => {
     setSelectedNetworkState(network);
-    saveSettings({ selectedNetwork: network });
+    // Note: Settings are auto-saved via useEffect when state changes
   };
 
   // Deprecated: kept for backward compatibility, but now a no-op
@@ -192,27 +172,27 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
 
   const setIndexerType = (type: IndexerType) => {
     setIndexerTypeState(type);
-    saveSettings({ indexerType: type });
+    // Note: Settings are auto-saved via useEffect when state changes
   };
 
   const setCustomIndexerUrl = (url: string) => {
     setCustomIndexerUrlState(url);
-    saveSettings({ customIndexerUrl: url });
+    // Note: Settings are auto-saved via useEffect when state changes
   };
 
   const setKaspaConnectionType = (type: KaspaConnectionType) => {
     setKaspaConnectionTypeState(type);
-    saveSettings({ kaspaConnectionType: type });
+    // Note: Settings are auto-saved via useEffect when state changes
   };
 
   const setCustomKaspaNodeUrl = (url: string) => {
     setCustomKaspaNodeUrlState(url);
-    saveSettings({ customKaspaNodeUrl: url });
+    // Note: Settings are auto-saved via useEffect when state changes
   };
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    saveSettings({ theme: newTheme });
+    // Note: Settings are auto-saved via useEffect when state changes
 
     // Apply theme to document root
     if (typeof document !== 'undefined') {
@@ -243,6 +223,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     setKaspaConnectionType,
     customKaspaNodeUrl,
     setCustomKaspaNodeUrl,
+    kaspaNodeUrl,
     theme,
     setTheme,
     isSettingsLoaded

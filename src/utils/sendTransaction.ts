@@ -60,14 +60,20 @@ export const sendKProtocolTransaction = async (options: TransactionOptions): Pro
         }
 
         let rpcConfig;
-        if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+        if (kaspaConnectionType === 'public-node') {
+          // Use public node
+          rpcConfig = {
+            url: 'wss://node.k-social.network',
+            networkId: connectionNetworkId
+          };
+        } else if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
           // Use custom node URL
           rpcConfig = {
             url: customKaspaNodeUrl.trim(),
             networkId: connectionNetworkId
           };
         } else {
-          // Use resolver (default)
+          // Use resolver (default for 'resolver' type or fallback)
           rpcConfig = {
             resolver: new Resolver(),
             networkId: connectionNetworkId
@@ -324,14 +330,20 @@ export const sendCoinTransaction = async (options: SendCoinOptions): Promise<Tra
         }
 
         let rpcConfig;
-        if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+        if (kaspaConnectionType === 'public-node') {
+          // Use public node
+          rpcConfig = {
+            url: 'wss://node.k-social.network',
+            networkId: connectionNetworkId
+          };
+        } else if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
           // Use custom node URL
           rpcConfig = {
             url: customKaspaNodeUrl.trim(),
             networkId: connectionNetworkId
           };
         } else {
-          // Use resolver (default)
+          // Use resolver (default for 'resolver' type or fallback)
           rpcConfig = {
             resolver: new Resolver(),
             networkId: connectionNetworkId
@@ -480,14 +492,20 @@ export const sendSingleUtxoTransaction = async (options: SendSingleUtxoOptions):
         }
 
         let rpcConfig;
-        if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+        if (kaspaConnectionType === 'public-node') {
+          // Use public node
+          rpcConfig = {
+            url: 'wss://node.k-social.network',
+            networkId: connectionNetworkId
+          };
+        } else if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
           // Use custom node URL
           rpcConfig = {
             url: customKaspaNodeUrl.trim(),
             networkId: connectionNetworkId
           };
         } else {
-          // Use resolver (default)
+          // Use resolver (default for 'resolver' type or fallback)
           rpcConfig = {
             resolver: new Resolver(),
             networkId: connectionNetworkId

@@ -4,17 +4,9 @@
 - This release requires K-indexer 0.1.14
 
 ### New features
-- Added following/followers/blocked count in "Profile" page
-- Added access to "Following/Followers" page in "Profile" page and "User" page; removed "Followed" page
-- Moved access to "Blocked users" page from left sidebar to "Profile" page
-- Added total number of users in "Users" page
-- Added "Follow" button in "Users" page
-- Added "Search user" in "Users" page
-- Cleaned all users lists by removing timestamp (useless)
-- Added back button on all pages
+- Added public Kaspa node as option on "Kaspa node connection"
+- Added possibility to access user's contentes and user's profiles using direct links (login is still required)
 
 ### Fixed bugs
-- Address visualization on "User's details" dialog, when opened from "Notifications" page
-- Quoted content truncation in posts (now limited to 250 characters)
-- Closing RPC connection to Kaspa node after every single interaction
-- Fixed bug on "Custom indexer" configuration storage
+- Changed logic for link identification in user contents (posts/replies/quotes)
+- Added link identification in the message visualized on user pages
