@@ -15,6 +15,7 @@ import { Base64 } from 'js-base64';
 import { toast } from 'sonner';
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
+import { LinkifiedText } from '@/utils/linkUtils';
 
 interface UserPostsViewProps {
   onUpVote: (id: string) => void;
@@ -516,7 +517,9 @@ const loadMorePosts = useCallback(async () => {
                     {isCurrentUser ? 'My posts' : `${decodedNickname || authorInfo?.name || 'Loading...'}`}
                   </h1>
                   {decodedPostContent && (
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{decodedPostContent}</p>
+                    <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                      <LinkifiedText>{decodedPostContent}</LinkifiedText>
+                    </div>
                   )}
                   {userDetails && (
                     <div className="flex gap-4 mt-2 text-sm">
