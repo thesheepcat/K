@@ -5,9 +5,9 @@ import { defineConfig } from "vite"
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
-  // Use relative paths for Electron compatibility
-  base: './',
+export default defineConfig(({ mode }) => ({
+  // Use relative paths for Electron, absolute paths for web
+  base: mode === 'web' ? '/' : './',
   plugins: [
     react(),
     tailwindcss(),
@@ -87,6 +87,6 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['buffer']
   }
-})
+}))
 
 

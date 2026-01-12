@@ -162,14 +162,20 @@ const ProfileView: React.FC = () => {
       }
 
       let rpcConfig;
-      if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
+      if (kaspaConnectionType === 'public-node') {
+        // Use public node
+        rpcConfig = {
+          url: 'wss://node.k-social.network',
+          networkId: getNetworkRPCId(selectedNetwork)
+        };
+      } else if (kaspaConnectionType === 'custom-node' && customKaspaNodeUrl.trim()) {
         // Use custom node URL
         rpcConfig = {
           url: customKaspaNodeUrl.trim(),
           networkId: getNetworkRPCId(selectedNetwork)
         };
       } else {
-        // Use resolver (default)
+        // Use resolver (default for 'resolver' type or fallback)
         rpcConfig = {
           resolver: new Resolver(),
           networkId: getNetworkRPCId(selectedNetwork)
