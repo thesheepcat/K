@@ -217,9 +217,9 @@ jobs:
         id: release-notes
         run: |
           {
-            echo 'notes<<EOF'
+            echo 'notes<<__END_OF_RELEASE_NOTES__'
             cat .github/workflows/release-notes.md
-            echo 'EOF'
+            echo '__END_OF_RELEASE_NOTES__'
           } >> "$GITHUB_OUTPUT"
 
       - name: Create Release
