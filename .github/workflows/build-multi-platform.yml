@@ -216,11 +216,10 @@ jobs:
       - name: Read release notes
         id: release-notes
         run: |
-          {
-            echo 'notes<<__END_OF_RELEASE_NOTES__'
-            cat .github/workflows/release-notes.md
-            echo '__END_OF_RELEASE_NOTES__'
-          } >> "$GITHUB_OUTPUT"
+          NOTES=$(cat .github/workflows/release-notes.md)
+          echo "notes<<HEREDOC_DELIMITER" >> "$GITHUB_OUTPUT"
+          echo "$NOTES" >> "$GITHUB_OUTPUT"
+          echo "HEREDOC_DELIMITER" >> "$GITHUB_OUTPUT"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
