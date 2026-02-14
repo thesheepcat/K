@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { type QuoteData } from "@/models/types";
 import { toSvg } from 'jdenticon';
 import { LinkifiedText } from '@/utils/linkUtils';
+import { useNavigate } from 'react-router-dom';
 
 interface SimplifiedPostCardProps {
   quote: QuoteData;
@@ -10,6 +11,14 @@ interface SimplifiedPostCardProps {
 }
 
 const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick }) => {
+  const navigate = useNavigate();
+
+  const handleHashtagClick = (hashtag: string) => {
+    // Navigate to search contents view with the hashtag
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
+    });
+  };
   // Generate avatar for referenced post
   const displayAvatar = useMemo(() => {
     if (quote.referencedProfileImage) {
@@ -55,7 +64,7 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
             </span>
           </div>
           <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
-            <LinkifiedText onMentionClick={() => {}}>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={() => {}} onHashtagClick={handleHashtagClick}>{displayContent}</LinkifiedText>
           </div>
         </div>
       </div>

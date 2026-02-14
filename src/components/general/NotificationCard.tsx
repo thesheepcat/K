@@ -80,6 +80,13 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
     });
   };
 
+  // Handle hashtag clicks
+  const handleHashtagClick = (hashtag: string) => {
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
+    });
+  };
+
   // Use PostCard approach: check if message is longer than 500 characters and truncate if needed
   const MAX_CHARS = 500;
   const getDisplayContent = (content: string) => {
@@ -211,7 +218,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
             {notification.contentType === 'vote' && decodedVotedContent ? (
               <div className="mt-2">
                 <div className="text-sm">
-                  <LinkifiedText onMentionClick={handleMentionClick}>
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>
                     {getDisplayContent(decodedVotedContent)}
                   </LinkifiedText>
                 </div>
@@ -219,7 +226,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
             ) : decodedContent ? (
               <div className="mt-2">
                 <div className="text-sm">
-                  <LinkifiedText onMentionClick={handleMentionClick}>
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>
                     {getDisplayContent(decodedContent)}
                   </LinkifiedText>
                 </div>

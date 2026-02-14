@@ -41,8 +41,15 @@ const PostCard: React.FC<PostCardProps> = ({
   const handleMentionClick = (pubkey: string) => {
     // Navigate to user profile using the pubkey as identifier
     // Pass state to indicate this is a mention click so UI can show loading state
-    navigate(`/user/${encodeURIComponent(pubkey)}`, { 
-      state: { fromMention: true } 
+    navigate(`/user/${encodeURIComponent(pubkey)}`, {
+      state: { fromMention: true }
+    });
+  };
+
+  const handleHashtagClick = (hashtag: string) => {
+    // Navigate to search contents view with the hashtag
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
     });
   };
   const [showUserDetailsDialog, setShowUserDetailsDialog] = useState(false);
@@ -219,7 +226,7 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className={`text-muted-foreground ${timestampSize} flex-shrink-0 ml-2`}>{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
-            <LinkifiedText onMentionClick={handleMentionClick}>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>{displayContent}</LinkifiedText>
           </div>
           {isLongMessage && !isDetailView && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
