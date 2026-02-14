@@ -218,6 +218,20 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
     }
   };
 
+  // Handle mention clicks
+  const handleMentionClick = (pubkey: string) => {
+    navigate(`/user/${encodeURIComponent(pubkey)}`, {
+      state: { fromMention: true }
+    });
+  };
+
+  // Handle hashtag clicks
+  const handleHashtagClick = (hashtag: string) => {
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
+    });
+  };
+
   const avatarSize = isDetailView ? "h-12 w-12" : isComment ? "h-8 w-8" : "h-10 w-10";
   const contentTextSize = isDetailView ? "text-lg" : "text-base";
   
@@ -313,7 +327,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
           </div>
           {post.content && (
             <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
-              <LinkifiedText>{post.content}</LinkifiedText>
+              <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>{post.content}</LinkifiedText>
             </div>
           )}
           {/* No interaction buttons (likes, reposts, replies) for Users view */}

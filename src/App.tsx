@@ -14,6 +14,7 @@ import Mentions from "./components/views/MentionsView.tsx";
 import NotificationsView from "./components/views/NotificationsView.tsx";
 import UsersView from "./components/views/UsersView.tsx";
 import SearchUsersView from "./components/views/SearchUsersView.tsx";
+import SearchContentsView from "./components/views/SearchContentsView.tsx";
 import UsersBlockedView from "./components/views/UsersBlockedView.tsx";
 import UsersFollowingView from "./components/views/UsersFollowingView.tsx";
 import UsersFollowersView from "./components/views/UsersFollowersView.tsx";
@@ -76,6 +77,7 @@ const MainApp: React.FC = () => {
   const [mentionsData, setMentionsData] = useState<Post[]>([]);
   const [usersData, setUsersData] = useState<Post[]>([]);
   const [searchUsersData, setSearchUsersData] = useState<Post[]>([]);
+  const [searchContentsData, setSearchContentsData] = useState<Post[]>([]);
   const [blockedUsersData, setBlockedUsersData] = useState<Post[]>([]);
   const [usersFollowingData, setUsersFollowingData] = useState<Post[]>([]);
   const [usersFollowersData, setUsersFollowersData] = useState<Post[]>([]);
@@ -173,6 +175,7 @@ const MainApp: React.FC = () => {
     setWatchingData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setFollowingData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
+    setSearchContentsData(prev => updatePostRecursively(prev, postId, upVoteUpdateFn));
   };
 
   const handleDownVote = (postId: string) => {
@@ -191,6 +194,7 @@ const MainApp: React.FC = () => {
     setWatchingData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setFollowingData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
+    setSearchContentsData(prev => updatePostRecursively(prev, postId, downVoteUpdateFn));
   };
 
   const handleRepost = (postId: string) => {
@@ -206,6 +210,7 @@ const MainApp: React.FC = () => {
     setWatchingData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setFollowingData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
     setMentionsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
+    setSearchContentsData(prev => updatePostRecursively(prev, postId, repostUpdateFn));
   };
 
   const handleServerPostsUpdate = (serverPosts: Post[]) => {
@@ -246,6 +251,10 @@ const MainApp: React.FC = () => {
 
   const handleUsersFollowersPostsUpdate = (serverPosts: Post[]) => {
     setUsersFollowersData(serverPosts);
+  };
+
+  const handleSearchContentsPostsUpdate = (serverPosts: Post[]) => {
+    setSearchContentsData(serverPosts);
   };
 
 
@@ -333,6 +342,18 @@ const MainApp: React.FC = () => {
   <Route
     path="/notifications"
     element={<NotificationsView />}
+  />
+  <Route
+    path="/search-contents"
+    element={
+      <SearchContentsView
+        posts={searchContentsData}
+        onUpVote={handleUpVote}
+        onDownVote={handleDownVote}
+        onRepost={handleRepost}
+        onServerPostsUpdate={handleSearchContentsPostsUpdate}
+      />
+    }
   />
           <Route
             path="/users"

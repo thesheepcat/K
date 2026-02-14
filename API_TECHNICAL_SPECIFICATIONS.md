@@ -59,6 +59,12 @@ The K webapp API provides the following endpoints for social media functionality
 17. **`get-notifications`** - Retrieve notifications for a user
    - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
 
+18. **`get-hashtag-content`** - Retrieve content containing a specific hashtag
+   - Scope: Fetch posts, replies, and quotes containing a specific hashtag with pagination support
+
+19. **`get-trending-hashtags`** - Retrieve trending hashtags within a time window
+   - Scope: Fetch the most-used hashtags within a specified time period (1h, 6h, 24h, 7d, 30d)
+
 ## General Pagination Rules
 
 The API uses cursor-based pagination for efficient handling of large datasets. Pagination is implemented across all major endpoints.
@@ -1930,6 +1936,168 @@ Each notification includes a `cursor` field that can be used with the `get-notif
 curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b...&after=1758996519522_571321"
 ```
 This allows the webapp to determine how many new notifications have arrived since the last viewed notification.
+
+### 18. Get Hashtag Content
+
+Retrieve all content (posts, replies, quotes) containing a specific hashtag with pagination support:
+
+```bash
+# First page (latest 20 items with #socialism)
+curl "http://localhost:3001/get-hashtag-content?hashtag=socialism&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=20"
+
+# Next page (older content)
+curl "http://localhost:3001/get-hashtag-content?hashtag=socialism&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=20&before=1703185000_12345"
+
+# Check for newer content
+curl "http://localhost:3001/get-hashtag-content?hashtag=socialism&requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=20&after=1703190000_54321"
+```
+
+**Query Parameters:**
+- `hashtag` (required): The hashtag to search for (without # symbol, case-insensitive, max 30 characters)
+- `requesterPubkey` (required): Public key of the user requesting the content (66-character hex string with 02/03 prefix)
+- `limit` (optional): Number of items to return (default: 20, max: 100, min: 1)
+- `before` (optional): Return content created before this compound cursor (for pagination to older content)
+- `after` (optional): Return content created after this compound cursor (for fetching newer content)
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+      "userPublicKey": "021234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12",
+      "postContent": "TGVhcm5pbmcgI3J1c3QgaXMgYW1hemluZyEgI3Byb2dyYW1taW5n",
+      "signature": "3045022100f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2022071f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2",
+      "timestamp": 1703186000,
+      "repliesCount": 5,
+      "upVotesCount": 12,
+      "downVotesCount": 1,
+      "quotesCount": 3,
+      "repostsCount": 3,
+      "parentPostId": null,
+      "mentionedPubkeys": [],
+      "isUpvoted": false,
+      "isDownvoted": false,
+      "userNickname": "TWFyeQ==",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false,
+      "contentType": "post",
+      "isQuote": false
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "1703185000_12345",
+    "prevCursor": "1703187000_67890"
+  }
+}
+```
+
+**Response Fields:**
+Same as `get-contents-following` endpoint - includes posts, replies, and quotes with all metadata:
+- Basic fields: `id`, `userPublicKey`, `postContent`, `signature`, `timestamp`
+- Engagement counts: `repliesCount`, `upVotesCount`, `downVotesCount`, `quotesCount`, `repostsCount`
+- Relationships: `parentPostId`, `mentionedPubkeys`
+- User data: `userNickname`, `userProfileImage`, `blockedUser`
+- Voting status: `isUpvoted`, `isDownvoted` (based on requesterPubkey)
+- Content metadata: `contentType` ("post", "reply", "quote"), `isQuote`
+- Quote data: For quotes, includes `quote` object with referenced content details
+
+**Database Implementation:**
+- Queries `k_hashtags` table joined with `k_contents`
+- Filters by normalized (lowercase) hashtag
+- Excludes content from blocked users
+- Includes voting status based on requester's votes
+- Returns posts, replies, and quotes in chronological order
+- Uses compound cursor pagination (block_time + id)
+- Enriches results with user profile data from `k_broadcasts`
+
+**Notes:**
+- Hashtag matching is case-insensitive (stored as lowercase)
+- Hashtags are automatically extracted from content during indexing
+- Maximum hashtag length is 30 characters
+- Hashtags support Unicode characters (all languages)
+- Results include all content types (posts, replies, quotes)
+- Blocked users' content is automatically filtered out
+
+### 19. Get Trending Hashtags
+
+Retrieve the most-used hashtags within a specified time window:
+
+```bash
+# Get top 20 trending hashtags in the last 24 hours
+curl "http://localhost:3001/get-trending-hashtags?timeWindow=24h&limit=20"
+
+# Get top 10 trending hashtags in the last 7 days
+curl "http://localhost:3001/get-trending-hashtags?timeWindow=7d&limit=10"
+
+# Get top 50 trending hashtags in the last hour
+curl "http://localhost:3001/get-trending-hashtags?timeWindow=1h&limit=50"
+```
+
+**Query Parameters:**
+- `timeWindow` (optional): Time window for trending calculation (default: "24h")
+  - Valid values: "1h", "6h", "24h", "7d", "30d"
+- `limit` (optional): Number of trending hashtags to return (default: 20, max: 100, min: 1)
+
+**Response:**
+```json
+{
+  "timeWindow": "24h",
+  "fromTime": 1703100000,
+  "toTime": 1703186400,
+  "hashtags": [
+    {
+      "hashtag": "kaspa",
+      "usageCount": 1234,
+      "rank": 1
+    },
+    {
+      "hashtag": "crypto",
+      "usageCount": 987,
+      "rank": 2
+    },
+    {
+      "hashtag": "defi",
+      "usageCount": 654,
+      "rank": 3
+    }
+  ]
+}
+```
+
+**Response Fields:**
+- `timeWindow`: The requested time window
+- `fromTime`: Start of time window (Unix timestamp in seconds)
+- `toTime`: End of time window (Unix timestamp in seconds)
+- `hashtags`: Array of trending hashtags
+  - `hashtag`: The hashtag text (lowercase, without # symbol)
+  - `usageCount`: Number of times the hashtag was used in the time window
+  - `rank`: Ranking position (1 = most used)
+
+**Time Window Mappings:**
+- `1h`: Last 1 hour (3,600 seconds)
+- `6h`: Last 6 hours (21,600 seconds)
+- `24h`: Last 24 hours (86,400 seconds) - default
+- `7d`: Last 7 days (604,800 seconds)
+- `30d`: Last 30 days (2,592,000 seconds)
+
+**Database Implementation:**
+- Queries `k_hashtags` table
+- Filters by `block_time` within the specified window (stored in milliseconds)
+- Groups by hashtag and counts occurrences
+- Orders by usage count descending
+- Returns top N hashtags based on limit
+- No authentication required (public data)
+
+**Notes:**
+- This endpoint does not require `requesterPubkey` (public trending data)
+- Hashtags are counted across all content types (posts, replies, quotes)
+- Time calculations use millisecond precision for `block_time`
+- Response times (`fromTime`, `toTime`) are returned in seconds for API compatibility
+- Trending is calculated in real-time from the database
+- Results are sorted by usage count (most used first)
+- Secondary sort by hashtag name (alphabetical) for ties
 
 ## Error Handling
 
