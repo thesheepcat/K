@@ -6,8 +6,13 @@ import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { useKaspaPostsApi } from "@/hooks/useKaspaPostsApi";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Post } from "@/models/types";
+import TrendingHashtagsCard from "./TrendingHashtagsCard";
 
 const POLLING_INTERVAL = 10000; // 10 seconds
+
+interface RightSidebarProps {
+  showTrending?: boolean;
+}
 
 interface UserItemProps {
   user: Post;
@@ -53,7 +58,12 @@ const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
   );
 };
 
-const RightSidebar: React.FC = () => {
+const RightSidebar: React.FC<RightSidebarProps> = ({ showTrending = false }) => {
+  // If showing trending hashtags, render TrendingHashtagsCard instead
+  if (showTrending) {
+    return <TrendingHashtagsCard />;
+  }
+
   const navigate = useNavigate();
   const { publicKey } = useAuth();
   const { fetchAndConvertUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
@@ -162,8 +172,9 @@ const RightSidebar: React.FC = () => {
       <Card className="border-border gap-2">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-foreground">Meet new users</h3>
+            <h3 className="text-xl font-bold text-foreground">New users</h3>
           </div>
+          <p className="text-sm text-muted-foreground">Connect with the community</p>
           {error && (
             <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
               Error: {error}

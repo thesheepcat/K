@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { useLocation } from 'react-router-dom';
 import { X, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LeftSidebar from '../general/LeftSidebar';
@@ -10,8 +10,12 @@ interface ResponsiveLayoutProps {
 }
 
 const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [screenSize, setScreenSize] = useState('lg');
+
+  // Determine if we should show trending hashtags based on current route
+  const showTrending = location.pathname === '/search-contents';
 
   useEffect(() => {
     const handleResize = () => {
@@ -116,10 +120,10 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({ children }) => {
           </div>
         </div>
 
-        {/* Right Sidebar */} 
+        {/* Right Sidebar */}
         {showRightSidebar && (
           <div className="hidden 2xl:block">
-            <RightSidebar />
+            <RightSidebar showTrending={showTrending} />
           </div>
         )}
         

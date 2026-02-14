@@ -1,12 +1,14 @@
 ### Release notes
 - ⚠️ **IMPORTANT: This release is configured by default to work on Kaspa MAINNET**
 - This release uses **real KAS coins**. Please be aware that any transactions will involve actual cryptocurrency. Make sure you understand the implications before using this version
-- This release requires K-indexer 0.1.14
+- This release requires K-indexer 0.1.17
 
 ### New features
-- Added public Kaspa node as option on "Kaspa node connection"
-- Added possibility to access user's contentes and user's profiles using direct links (login is still required)
+- **Hashtag support** - Added full hashtag functionality across the platform:
+  - Hashtags are automatically detected and linkified in posts, replies, quotes, notifications, and user bios
+  - Click any hashtag to search for related content
+  - New "Search" page with hashtag search functionality
+  - Trending hashtags sidebar showing top 10 hot topics this week
 
 ### Fixed bugs
-- Changed logic for link identification in user contents (posts/replies/quotes)
-- Added link identification in the message visualized on user pages
+- Improved link styling consistency: all clickable elements (links, mentions, hashtags) now have consistent hover behavior
