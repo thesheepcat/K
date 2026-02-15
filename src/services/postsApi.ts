@@ -702,6 +702,7 @@ export const convertServerUserPostToClientPost = async (serverUserPost: ServerUs
     downVoted: false, // Default to not downvoted
     reposted: false, // Default to not reposted
     followedUser: serverUserPost.followedUser, // Whether the requesting user follows this user
+    contentsCount: serverUserPost.contentsCount, // Total content count (only from most-active-users endpoint)
     nestedReplies: [], // Replies will be empty for user posts
     // Note: Users API doesn't include parentPostId and mentionedPubkeys
   };
@@ -896,6 +897,43 @@ export const fetchPostComments = async (postId: string, requesterPubkey: string,
   };
 };
 
+
+/**
+ * Fetch most active users from the server
+ */
+export const fetchMostActiveUsers = async (requesterPubkey: string, limit: number, timeWindow: string, options?: PaginationOptions, apiBaseUrl: string = 'http://localhost:3000'): Promise<PaginatedUsersResponse> => {
+  try {
+    const url = new URL(`${apiBaseUrl}/get-most-active-users`);
+
+    url.searchParams.append('requesterPubkey', requesterPubkey);
+    url.searchParams.append('limit', limit.toString());
+    url.searchParams.append('timeWindow', timeWindow);
+
+    if (options?.before) {
+      url.searchParams.append('before', options.before);
+    }
+    if (options?.after) {
+      url.searchParams.append('after', options.after);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: PaginatedUsersResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching most active users:', error);
+    throw error;
+  }
+};
 
 /**
  * Format timestamp to relative time string

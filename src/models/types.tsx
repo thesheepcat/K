@@ -19,6 +19,7 @@ export interface Post {
   downVoted: boolean;
   reposted: boolean;
   followedUser?: boolean; // Whether the requesting user follows this user (only in Users view)
+  contentsCount?: number; // Total content count in time window (only in most-active-users view)
   nestedReplies?: Post[];
   parentPostId?: string; // ID of the post/reply being replied to (only for replies)
   mentionedPubkeys?: string[]; // Array of mentioned pubkeys from the original transaction
@@ -93,6 +94,8 @@ export interface ServerUserPost {
   userNickname?: string; // Base64 encoded nickname (optional)
   userProfileImage?: string; // Base64 encoded profile image (optional)
   followedUser: boolean; // Whether the requesting user follows this user
+  blockedUser?: boolean; // Whether the requesting user has blocked this user (only in most-active-users)
+  contentsCount?: number; // Total content count in time window (only in most-active-users)
   // Note: Users API doesn't include repliesCount, upVotesCount, downVotesCount, repostsCount, parentPostId, mentionedPubkeys
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Server, Network, Globe, Palette, Info, RefreshCw, Code, ArrowLeft } from 'lucide-react';
+import { Server, Network, Globe, Palette, Info, RefreshCw, Code, ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -356,6 +356,62 @@ const SettingsView: React.FC = () => {
                       variant="ghost"
                     >
                       <RefreshCw className={`h-4 w-4 ${isCheckingHealth ? 'animate-spin' : ''}`} />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Official Code Repository */}
+          <Card className="border border-border">
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Github className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">Official code repository</h2>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    K repository
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value="github.com/thesheepcat/K"
+                      readOnly
+                      className="text-sm border-input-thin bg-muted"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => window.open('https://github.com/thesheepcat/K/', '_blank', 'noopener,noreferrer')}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    K-indexer repository
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value="github.com/thesheepcat/K-indexer"
+                      readOnly
+                      className="text-sm border-input-thin bg-muted"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => window.open('https://github.com/thesheepcat/K-indexer', '_blank', 'noopener,noreferrer')}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <ExternalLink className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
