@@ -28,7 +28,9 @@ const SettingsView: React.FC = () => {
     customKaspaNodeUrl,
     setCustomKaspaNodeUrl,
     theme,
-    setTheme
+    setTheme,
+    showSuccessNotifications,
+    setShowSuccessNotifications
   } = useUserSettings();
 
   const [localCustomIndexerUrl, setLocalCustomIndexerUrl] = useState<string>(customIndexerUrl);
@@ -310,6 +312,20 @@ const SettingsView: React.FC = () => {
                   >
                     <SelectOption value="light">Light</SelectOption>
                     <SelectOption value="dark">Dark</SelectOption>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    Transaction notifications
+                  </label>
+                  <Select
+                    value={showSuccessNotifications ? 'show' : 'hide'}
+                    onChange={(e) => setShowSuccessNotifications(e.target.value === 'show')}
+                    className="w-full"
+                  >
+                    <SelectOption value="show">All notifications</SelectOption>
+                    <SelectOption value="hide">Errors only</SelectOption>
                   </Select>
                 </div>
               </div>

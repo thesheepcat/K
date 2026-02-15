@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useKaspaTransactions } from '@/hooks/useKaspaTransactions';
 import { useKaspaPostsApi } from '@/hooks/useKaspaPostsApi';
 import EmojiPickerButton from '@/components/ui/emoji-picker';
+import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { Base64 } from 'js-base64';
 
 const MAX_CHARACTERS = 100;
@@ -37,6 +38,7 @@ const ProfileIntroduceBox: React.FC = () => {
   const { privateKey, publicKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
   const { fetchUserDetails } = useKaspaPostsApi();
+  const { showSuccessNotifications } = useUserSettings();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -283,16 +285,18 @@ const ProfileIntroduceBox: React.FC = () => {
 
         // Show success toast with transaction details
         if (result) {
-          toast.success(hasExistingData ? "Profile updated successfully!" : "Profile created successfully!", {
-            description: (
-              <div className="space-y-1">
-                <div>Transaction ID: {result.id}</div>
-                <div>Fees: {result.feeAmount.toString()} sompi</div>
-                <div>Fees: {result.feeKAS} KAS</div>
-              </div>
-            ),
-            duration: 5000,
-          });
+          if (showSuccessNotifications) {
+            toast.success(hasExistingData ? "Profile updated successfully!" : "Profile created successfully!", {
+              description: (
+                <div className="space-y-1">
+                  <div>Transaction ID: {result.id}</div>
+                  <div>Fees: {result.feeAmount.toString()} sompi</div>
+                  <div>Fees: {result.feeKAS} KAS</div>
+                </div>
+              ),
+              duration: 5000,
+            });
+          }
 
           // Update original data with the newly saved data
           setOriginalData({
