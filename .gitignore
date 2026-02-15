@@ -27,6 +27,8 @@ TO_DO.md
 build
 .claude
 render.html
+experimenting
+MEDIA_RENDERING_STRATEGIES.md
 
 # Capacitor - Keep configuration but ignore build artifacts and local files
 android/.gradle/

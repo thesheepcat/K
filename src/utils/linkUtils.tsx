@@ -1,6 +1,8 @@
 import React from 'react';
 import Linkify from 'linkify-react';
 import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAddressUtils';
+import { isImageUrl } from '@/utils/mediaDetection';
+import ExternalImage from '@/components/general/ExternalImage';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -128,10 +130,26 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
         <Linkify
           key={`text-${nodeIndex++}`}
           options={{
-            className: 'text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all',
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            onClick: (e: React.MouseEvent) => e.stopPropagation(), // Prevent card click when clicking link
+            render: {
+              url: ({ attributes, content }: { attributes: Record<string, any>; content: string }) => {
+                const href: string = attributes.href || '';
+                if (isImageUrl(href)) {
+                  return <ExternalImage key={`img-${href}`} src={href} />;
+                }
+                return (
+                  <a
+                    key={`link-${href}`}
+                    href={href}
+                    className="text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  >
+                    {content}
+                  </a>
+                );
+              },
+            },
           }}
         >
           {segment.text}
