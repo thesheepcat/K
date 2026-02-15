@@ -114,7 +114,7 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   return (
     <span
       ref={containerRef}
-      className={`my-2 block ${className}`}
+      className={`external-image-wrap my-2 block ${className}`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Sized container */}
