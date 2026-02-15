@@ -24,7 +24,7 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
   const [validatedMentions, setValidatedMentions] = useState<Array<{pubkey: string}>>([]);
   const { privateKey } = useAuth();
   const { sendTransaction, networkId } = useKaspaTransactions();
-  const { selectedNetwork } = useUserSettings();
+  const { selectedNetwork, showSuccessNotifications } = useUserSettings();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Validate mentions whenever content changes
@@ -93,23 +93,25 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
 
         // Show success toast with transaction details
         if (result) {
-          toast.success("Reply transaction successful!", {
-            description: (
-              <div className="space-y-2">
-                <div>Transaction ID: {result.id}</div>
-                <div>Fees: {result.feeAmount.toString()} sompi</div>
-                <div>Fees: {result.feeKAS} KAS</div>
-                <button
-                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-                >
-                  Open explorer
-                </button>
-              </div>
-            ),
-            duration: 5000
-          });
-          
+          if (showSuccessNotifications) {
+            toast.success("Reply transaction successful!", {
+              description: (
+                <div className="space-y-2">
+                  <div>Transaction ID: {result.id}</div>
+                  <div>Fees: {result.feeAmount.toString()} sompi</div>
+                  <div>Fees: {result.feeKAS} KAS</div>
+                  <button
+                    onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                    className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                  >
+                    Open explorer
+                  </button>
+                </div>
+              ),
+              duration: 5000
+            });
+          }
+
           // Only clear content and call parent handler after successful transaction
           onReply(content);
           setContent('');

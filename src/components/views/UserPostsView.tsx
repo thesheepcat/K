@@ -38,7 +38,7 @@ const UserPostsView: React.FC<UserPostsViewProps> = ({ onUpVote, onDownVote, onR
   const { publicKey, privateKey } = useAuth();
   const { fetchAndConvertMyPosts, fetchUserDetails, networkId, apiBaseUrl } = useKaspaPostsApi();
   const { sendTransaction } = useKaspaTransactions();
-  const { selectedNetwork } = useUserSettings();
+  const { selectedNetwork, showSuccessNotifications } = useUserSettings();
   
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -347,22 +347,24 @@ const loadMorePosts = useCallback(async () => {
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
-        toast.success(`${action === 'block' ? 'Block' : 'Unblock'} transaction successful!`, {
-          description: (
-            <div className="space-y-2">
-              <div>Transaction ID: {result.id}</div>
-              <div>Fees: {result.feeAmount.toString()} sompi</div>
-              <div>Fees: {result.feeKAS} KAS</div>
-              <button
-                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open explorer
-              </button>
-            </div>
-          ),
-          duration: 5000
-        });
+        if (showSuccessNotifications) {
+          toast.success(`${action === 'block' ? 'Block' : 'Unblock'} transaction successful!`, {
+            description: (
+              <div className="space-y-2">
+                <div>Transaction ID: {result.id}</div>
+                <div>Fees: {result.feeAmount.toString()} sompi</div>
+                <div>Fees: {result.feeKAS} KAS</div>
+                <button
+                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                >
+                  Open explorer
+                </button>
+              </div>
+            ),
+            duration: 5000
+          });
+        }
 
         // Optimistically update the UI
         setUserDetails(prev => prev ? { ...prev, blockedUser: !prev.blockedUser } : null);
@@ -397,22 +399,24 @@ const loadMorePosts = useCallback(async () => {
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
-        toast.success(`${action === 'follow' ? 'Follow' : 'Unfollow'} transaction successful!`, {
-          description: (
-            <div className="space-y-2">
-              <div>Transaction ID: {result.id}</div>
-              <div>Fees: {result.feeAmount.toString()} sompi</div>
-              <div>Fees: {result.feeKAS} KAS</div>
-              <button
-                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open explorer
-              </button>
-            </div>
-          ),
-          duration: 5000
-        });
+        if (showSuccessNotifications) {
+          toast.success(`${action === 'follow' ? 'Follow' : 'Unfollow'} transaction successful!`, {
+            description: (
+              <div className="space-y-2">
+                <div>Transaction ID: {result.id}</div>
+                <div>Fees: {result.feeAmount.toString()} sompi</div>
+                <div>Fees: {result.feeKAS} KAS</div>
+                <button
+                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                >
+                  Open explorer
+                </button>
+              </div>
+            ),
+            duration: 5000
+          });
+        }
 
         // Optimistically update the UI
         setUserDetails(prev => prev ? { ...prev, followedUser: !prev.followedUser } : null);
@@ -426,6 +430,12 @@ const loadMorePosts = useCallback(async () => {
     } finally {
       setIsSubmittingFollow(false);
     }
+  };
+
+  const handleHashtagClick = (hashtag: string) => {
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
+    });
   };
 
   // Generate dynamic avatar (must be called before any early returns)
@@ -518,7 +528,7 @@ const loadMorePosts = useCallback(async () => {
                   </h1>
                   {decodedPostContent && (
                     <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                      <LinkifiedText>{decodedPostContent}</LinkifiedText>
+                      <LinkifiedText onHashtagClick={handleHashtagClick}>{decodedPostContent}</LinkifiedText>
                     </div>
                   )}
                   {userDetails && (

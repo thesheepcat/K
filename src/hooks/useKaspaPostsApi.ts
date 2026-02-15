@@ -7,6 +7,7 @@ import {
   fetchFollowingContents,
   fetchMentions,
   fetchUsers,
+  fetchMostActiveUsers,
   fetchBlockedUsers,
   fetchFollowedUsers,
   fetchSearchUsers,
@@ -195,6 +196,33 @@ export const useKaspaPostsApi = () => {
       };
     } catch (error) {
       console.error('Error in fetchAndConvertUsers:', error);
+      throw error;
+    }
+  }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
+
+  const fetchAndConvertMostActiveUsers = useCallback(async (currentUserPubkey: string, limit: number, timeWindow: string, options?: PaginationOptions): Promise<{ posts: Post[], pagination: PaginatedUsersResponse['pagination'] }> => {
+    try {
+      const response = await fetchMostActiveUsers(currentUserPubkey, limit, timeWindow, options, apiBaseUrl);
+
+      if (!response) {
+        console.error('fetchMostActiveUsers returned null/undefined response');
+        throw new Error('No response from fetchMostActiveUsers');
+      }
+
+      if (!response.pagination) {
+        console.error('fetchMostActiveUsers response missing pagination:', response);
+        throw new Error('Response missing pagination data');
+      }
+
+      const posts = response.posts || [];
+      const convertedPosts = await networkAwareConvertServerUserPostsToClientPosts(posts, currentUserPubkey);
+
+      return {
+        posts: convertedPosts,
+        pagination: response.pagination
+      };
+    } catch (error) {
+      console.error('Error in fetchAndConvertMostActiveUsers:', error);
       throw error;
     }
   }, [networkAwareConvertServerUserPostsToClientPosts, apiBaseUrl]);
@@ -523,6 +551,7 @@ export const useKaspaPostsApi = () => {
     fetchAndConvertFollowingContents,
     fetchAndConvertMentions,
     fetchAndConvertUsers,
+    fetchAndConvertMostActiveUsers,
     fetchAndConvertBlockedUsers,
     fetchAndConvertFollowedUsers,
     fetchAndConvertSearchUsers,

@@ -8,62 +8,63 @@ The K webapp API provides the following endpoints for social media functionality
 
 ### Available API Endpoints
 
-1. **`get-posts-following`** - Retrieve posts from followed users
-   - Scope: Fetch posts from users that the requester is following
-
-2. **`get-posts-watching`** - Retrieve posts from watched users
+1. **`get-posts-watching`** - Retrieve posts from watched users
    - Scope: Fetch posts from users that the requester is watching
 
-3. **`get-contents-following`** - Retrieve all content from followed users
+2. **`get-contents-following`** - Retrieve all content from followed users
    - Scope: Fetch posts, replies, and quotes from users that the requester is following
 
-4. **`get-mentions`** - Retrieve posts where a user is mentioned
+3. **`get-mentions`** - Retrieve posts where a user is mentioned
    - Scope: Fetch posts and replies that mention a specific user
 
-5. **`get-users`** - Retrieve user introduction posts
+4. **`get-users`** - Retrieve user introduction posts
    - Scope: Fetch user introduction posts (max 100 characters) for community discovery
 
-6. **`get-users-count`** - Get total count of users
+5. **`get-users-count`** - Get total count of users
    - Scope: Get the total count of users (broadcasts) in the system
 
-7. **`search-users`** - Search users by public key or nickname
+6. **`search-users`** - Search users by public key or nickname
    - Scope: Search and filter users by exact public key match or partial nickname match
 
-8. **`get-user-details`** - Retrieve details for a specific user
+7. **`get-user-details`** - Retrieve details for a specific user
    - Scope: Fetch detailed user information including introduction post, block status, and follow counts
 
-9. **`get-blocked-users`** - Retrieve blocked users list
+8. **`get-blocked-users`** - Retrieve blocked users list
    - Scope: Fetch paginated list of users blocked by the requester
 
-10. **`get-followed-users`** - Retrieve followed users list (TO BE REMOVED)
+9. **`get-followed-users`** - Retrieve followed users list (TO BE REMOVED)
    - Scope: Fetch paginated list of users followed by the requester
 
-11. **`get-users-following`** - Retrieve users that a specific user is following
-   - Scope: Fetch paginated list of users followed by a specific user, with indication of requester's follow status
+10. **`get-users-following`** - Retrieve users that a specific user is following
+    - Scope: Fetch paginated list of users followed by a specific user, with indication of requester's follow status
 
-12. **`get-users-followers`** - Retrieve users that follow a specific user
-   - Scope: Fetch paginated list of followers for a specific user, with indication of requester's follow status
+11. **`get-users-followers`** - Retrieve users that follow a specific user
+    - Scope: Fetch paginated list of followers for a specific user, with indication of requester's follow status
 
-13. **`get-posts`** - Retrieve posts from a specific user
-   - Scope: Fetch all posts created by a particular user with pagination support
+12. **`get-posts`** - Retrieve posts from a specific user
+    - Scope: Fetch all posts created by a particular user with pagination support
 
-14. **`get-replies`** - Retrieve replies to a specific post or by a specific user
-   - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
+13. **`get-replies`** - Retrieve replies to a specific post or by a specific user
+    - Scope: Fetch all replies (including nested replies) for a given post, or fetch all replies made by a specific user
 
-15. **`get-post-details`** - Retrieve details for a specific post
-   - Scope: Fetch complete details for a single post or reply with voting status
+14. **`get-post-details`** - Retrieve details for a specific post
+    - Scope: Fetch complete details for a single post or reply with voting status
 
-16. **`get-notifications-count`** - Count notifications for a user
-   - Scope: Get the total count of unread notifications (posts, replies, votes that mention the user, and quotes of user's content)
+15. **`get-notifications-count`** - Count notifications for a user
+    - Scope: Get the total count of unread notifications (posts, replies, votes that mention the user, and quotes of user's content)
 
-17. **`get-notifications`** - Retrieve notifications for a user
-   - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
+16. **`get-notifications`** - Retrieve notifications for a user
+    - Scope: Fetch paginated notifications including posts, replies, votes mentioning the user, and quotes of user's content with full details
 
-18. **`get-hashtag-content`** - Retrieve content containing a specific hashtag
-   - Scope: Fetch posts, replies, and quotes containing a specific hashtag with pagination support
+17. **`get-hashtag-content`** - Retrieve content containing a specific hashtag
+    - Scope: Fetch posts, replies, and quotes containing a specific hashtag with pagination support
 
-19. **`get-trending-hashtags`** - Retrieve trending hashtags within a time window
-   - Scope: Fetch the most-used hashtags within a specified time period (1h, 6h, 24h, 7d, 30d)
+18. **`get-trending-hashtags`** - Retrieve trending hashtags within a time window
+    - Scope: Fetch the most-used hashtags within a specified time period (1h, 6h, 24h, 7d, 30d)
+
+19. **`get-most-active-users`** - Retrieve users ranked by content activity
+    - Scope: Fetch users ordered by total content count (posts, replies, quotes) within a specified time window (1h, 6h, 24h, 7d, 30d)
+   - Scope: Fetch users ordered by total content count (posts, replies, quotes) within a specified time window (1h, 6h, 24h, 7d, 30d)
 
 ## General Pagination Rules
 
@@ -123,57 +124,7 @@ curl "http://localhost:3000/get-posts-watching?limit=5"
 
 ## API Endpoint Details
 
-### 1. Get Following Posts
-Fetch posts from users you follow with pagination support and voting status:
-
-```bash
-curl "http://localhost:3000/get-posts-following?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10"
-```
-
-**Query Parameters:**
-- `requesterPubkey` (required): Public key of the user requesting the posts (66-character hex string with 02/03 prefix)
-- `limit` (required): Number of posts to return (max: 100, min: 1)
-- `before` (optional): Return posts created before this timestamp (for pagination to older posts)
-- `after` (optional): Return posts created after this timestamp (for fetching newer posts)
-
-**User Profile Information:**
-The `get-posts-following` API includes optional user profile fields for each post:
-- `userNickname`: Base64 encoded nickname (optional) - When decoded, shows the user's display name
-- `userProfileImage`: Base64 encoded profile image (optional) - 48x48px image in PNG format
-
-These fields are populated when users have shared profile information through broadcast transactions. If not available, they will be omitted from the response.
-
-**Response:**
-```json
-{
-  "posts": [
-    {
-      "id": "f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
-      "userPublicKey": "021234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12",
-      "postContent": "R3JlYXQgZGlzY3Vzc2lvbiBhYm91dCBjcnlwdG9jdXJyZW5jeSB0cmVuZHMh",
-      "signature": "3045022100f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2022071f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2f3f4f5f6f7f8f9f0f1f2",
-      "timestamp": 1703186000,
-      "repliesCount": 2,
-      "upVotesCount": 18,
-      "downVotesCount": 3,
-      "repostsCount": 5,
-      "parentPostId": null,
-      "mentionedPubkeys": [],
-      "isUpvoted": true,
-      "isDownvoted": false,
-      "userNickname": "TWFyeQ==",
-      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
-    }
-  ],
-  "pagination": {
-    "hasMore": true,
-    "nextCursor": "1703185000",
-    "prevCursor": "1703187000"
-  }
-}
-```
-
-### 2. Get Watching Posts
+### 1. Get Watching Posts
 
 Fetch posts from users you're watching with voting status. This endpoint requires pagination parameters:
 
@@ -300,7 +251,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 - `prevCursor`: Timestamp cursor for fetching newer posts (use with `after` parameter)
 - Both cursors are `null` when no more posts are available in that direction
 
-### 3. Get Contents Following
+### 2. Get Contents Following
 
 Fetch all content (posts, replies, and quotes) from users that the requester is following. This endpoint provides a comprehensive feed of followed users' activities with pagination support and voting status:
 
@@ -462,7 +413,7 @@ Each content item includes optional user profile fields:
 - Includes user profile data and referenced content details for quotes
 - Single optimized SQL query for maximum performance
 
-### 4. Get Mentions
+### 3. Get Mentions
 
 Fetch posts where a specific user has been mentioned with voting status. This endpoint requires pagination parameters:
 
@@ -538,7 +489,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
 
 **Note:** This endpoint returns posts, quotes, and replies where the specified user's public key appears in the `mentionedPubkeys` array. The response follows the same format as other post endpoints with full interaction counts and reply threading support.
 
-### 5. Get Users
+### 4. Get Users
 Fetch user introduction posts with pagination support, blocked users awareness, and followed users status:
 
 ```bash
@@ -607,7 +558,7 @@ This endpoint is specifically designed for displaying user introduction posts wi
 
 ---
 
-### 6. Get Users Count
+### 5. Get Users Count
 
 Returns the total count of users (broadcasts) in the system.
 
@@ -657,7 +608,7 @@ curl "http://localhost:3001/get-users-count"
 
 ---
 
-### 7. Search Users
+### 6. Search Users
 
 Search and filter users by public key or nickname with pagination support. This endpoint allows searching for specific users by exact public key match or partial nickname match.
 
@@ -802,7 +753,7 @@ Database error:
 
 ---
 
-### 8. Get User Details
+### 7. Get User Details
 Fetch detailed information for a specific user including their introduction post and block status:
 
 ```bash
@@ -861,7 +812,7 @@ curl "http://localhost:3000/get-user-details?user=02218b3732df2353978154ec5323b7
 
 **Note:** This endpoint returns the same data structure as the `get-users` endpoint but for a single specific user, with the addition of the `blockedUser` field. Unlike the paginated `get-users` endpoint, this returns a single user object directly (not wrapped in a `posts` array with pagination metadata).
 
-### 9. Get Blocked Users
+### 8. Get Blocked Users
 Fetch a paginated list of users blocked by the requester:
 
 ```bash
@@ -908,7 +859,7 @@ curl "http://localhost:3000/get-blocked-users?requesterPubkey=02218b3732df235397
 
 **Note:** This endpoint returns users in the order they were blocked (most recent blocks first). The response format matches `get-users` with pagination support, but includes only users that have been blocked by the requesting user.
 
-### 10. Get Followed Users
+### 9. Get Followed Users
 Fetch a paginated list of users followed by the requester:
 
 ```bash
@@ -986,7 +937,7 @@ curl "http://localhost:3000/get-followed-users?requesterPubkey=02218b3732df23539
 
 ---
 
-### 11. Get Users Following (`get-users-following`)
+### 10. Get Users Following (`get-users-following`)
 
 Retrieve the list of users that a specific user is following, with indication of whether the requester also follows each user.
 
@@ -1073,7 +1024,7 @@ curl "http://localhost:3000/get-users-following?requesterPubkey=030542e68293fa37
 
 ---
 
-### 12. Get Users Followers (`get-users-followers`)
+### 11. Get Users Followers (`get-users-followers`)
 
 Retrieve the list of users that follow a specific user, with indication of whether the requester follows each follower.
 
@@ -1165,7 +1116,7 @@ curl "http://localhost:3000/get-users-followers?requesterPubkey=030542e68293fa37
 
 ---
 
-### 13. Get User Posts
+### 12. Get User Posts
 Fetch posts for a specific user with pagination support and voting status:
 
 ```bash
@@ -1274,7 +1225,7 @@ Quotes are treated as posts with all standard interaction fields (upvotes, downv
   // Result: "Hello 世界 🌍"
   ```
 
-### 14. Get Replies
+### 13. Get Replies
 Fetch replies for a specific post with pagination support and voting status:
 
 ```bash
@@ -1343,7 +1294,7 @@ Exactly one of `post` or `user` must be provided, but not both.
 
 **Note:** The `quotesCount` field indicates how many quotes reference this reply. Replies can be quoted just like posts.
 
-### 15. Get Post Details
+### 14. Get Post Details
 Fetch details for a specific post or reply with voting status for the requesting user:
 
 ```bash
@@ -1757,7 +1708,7 @@ The webapp polls different endpoints at different intervals:
 
 All polling is automatic and includes loading indicators and error handling.
 
-### 16. Get Notifications Count
+### 15. Get Notifications Count
 Get the total count of notifications for a user, optionally filtered by cursor timestamp:
 
 ```bash
@@ -1793,7 +1744,7 @@ curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b3732df
 - Quotes are counted separately from mentions to avoid double-counting
 - Returns simple integer count for efficient UI updates
 
-### 17. Get Notifications
+### 16. Get Notifications
 Fetch paginated notifications for a user including posts, replies, votes mentioning them, and quotes of their content:
 
 ```bash
@@ -1937,7 +1888,7 @@ curl "http://localhost:3000/get-notifications-count?requesterPubkey=02218b...&af
 ```
 This allows the webapp to determine how many new notifications have arrived since the last viewed notification.
 
-### 18. Get Hashtag Content
+### 17. Get Hashtag Content
 
 Retrieve all content (posts, replies, quotes) containing a specific hashtag with pagination support:
 
@@ -2020,7 +1971,7 @@ Same as `get-contents-following` endpoint - includes posts, replies, and quotes 
 - Results include all content types (posts, replies, quotes)
 - Blocked users' content is automatically filtered out
 
-### 19. Get Trending Hashtags
+### 18. Get Trending Hashtags
 
 Retrieve the most-used hashtags within a specified time window:
 
@@ -2098,6 +2049,118 @@ curl "http://localhost:3001/get-trending-hashtags?timeWindow=1h&limit=50"
 - Trending is calculated in real-time from the database
 - Results are sorted by usage count (most used first)
 - Secondary sort by hashtag name (alphabetical) for ties
+
+### 19. Get Most Active Users
+
+Retrieve users ranked by total content count (posts, replies, quotes) within a specified time window:
+
+```bash
+# Get top 5 most active users in the last 24 hours
+curl "http://localhost:3001/get-most-active-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=5&timeWindow=24h"
+
+# Get top 10 most active users in the last 7 days
+curl "http://localhost:3001/get-most-active-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=10&timeWindow=7d"
+
+# Get top 20 most active users in the last 30 days
+curl "http://localhost:3001/get-most-active-users?requesterPubkey=02218b3732df2353978154ec5323b745bce9520a5ed506a96de4f4e3dad20dc44f&limit=20&timeWindow=30d"
+```
+
+**Query Parameters:**
+- `requesterPubkey` (required): Public key of the user requesting the data (66-character hex string with 02/03 prefix)
+- `limit` (required): Number of users to return (max: 100, min: 1)
+- `timeWindow` (required): Time window for activity calculation
+  - Valid values: "1h", "6h", "24h", "7d", "30d"
+- `before` (optional): Cursor for pagination to lower-ranked users (format: `contentCount_broadcastId`)
+- `after` (optional): Cursor for pagination to higher-ranked users (format: `contentCount_broadcastId`)
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": "u1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
+      "userPublicKey": "0371f8368bf7043d3872ee0379de88d622980b2bc72d3d2a947e50aa1d344f1566",
+      "postContent": "SGkgZXZlcnlvbmUhIEknbSBhIEthc3BhIGVudGh1c2lhc3QgYW5kIGRldmVsb3Blci4=",
+      "signature": "3045022100d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d2d3d4d5d6d7d8d9d0d1d20220333435363738393031323334353637383930313233343536373839303132333435",
+      "timestamp": 1703190000,
+      "userNickname": "QWxpY2U=",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": false,
+      "followedUser": true,
+      "contentsCount": 142
+    },
+    {
+      "id": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+      "userPublicKey": "0246c19c6be6907a861a42d14d840694de2611c57a709018279a94f29e318c77f1",
+      "postContent": "KioqKioqKioqKg==",
+      "signature": "304502210098765432109876543210987654321098765432109876543210987654321098765020200fedcba0987654321fedcba0987654321fedcba0987654321fedcba098765432109",
+      "timestamp": 1703185000,
+      "userNickname": "Qm9i",
+      "userProfileImage": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+      "blockedUser": true,
+      "followedUser": false,
+      "contentsCount": 108
+    }
+  ],
+  "pagination": {
+    "hasMore": true,
+    "nextCursor": "108_95",
+    "prevCursor": "142_1298"
+  }
+}
+```
+
+**Response Fields:**
+- `posts`: Array of user objects ordered by content count (most active first)
+  - `id`: Transaction ID of the user's broadcast (hex string)
+  - `userPublicKey`: User's public key (66-character hex string)
+  - `postContent`: Base64 encoded broadcast message (masked with `"KioqKioqKioqKg=="` for blocked users)
+  - `signature`: Transaction signature (hex string)
+  - `timestamp`: Broadcast timestamp (Unix timestamp in milliseconds)
+  - `userNickname`: Base64 encoded nickname (optional)
+  - `userProfileImage`: Base64 encoded profile image (optional, 48x48px PNG)
+  - `blockedUser`: Boolean indicating if the user is blocked by the requester
+  - `followedUser`: Boolean indicating if the user is followed by the requester
+  - `contentsCount`: Total number of contents (posts, replies, quotes) created by the user within the time window
+- `pagination`: Pagination metadata
+  - `hasMore`: Boolean indicating if more lower-ranked users are available
+  - `nextCursor`: Cursor for the next page of lower-ranked users (use with `before`)
+  - `prevCursor`: Cursor for higher-ranked users (use with `after`)
+
+**Time Window Mappings:**
+- `1h`: Last 1 hour (3,600,000 milliseconds)
+- `6h`: Last 6 hours (21,600,000 milliseconds)
+- `24h`: Last 24 hours (86,400,000 milliseconds)
+- `7d`: Last 7 days (604,800,000 milliseconds)
+- `30d`: Last 30 days (2,592,000,000 milliseconds)
+
+**Blocked Users Awareness:**
+- `blockedUser`: Boolean field indicating if the user is blocked by the requester
+- For blocked users, `postContent` will show masked content (`"KioqKioqKioqKg=="` - Base64 encoded "**********")
+- Blocked users are still included in the ranking at their ranked position
+- This allows client applications to filter or style blocked users' content appropriately
+
+**Followed Users Awareness:**
+- `followedUser`: Boolean field indicating if the user is followed by the requester
+- `true`: The requester is following this user
+- `false`: The requester is not following this user
+
+**Database Implementation:**
+- Uses a CTE (Common Table Expression) to count contents per user from the `k_contents` table within the time window
+- INNER JOINs with `k_broadcasts` for user profile data (only users with a broadcast are included)
+- LEFT JOINs with `k_blocks` and `k_follows` for block/follow status relative to the requester
+- Orders by content count descending, with broadcast ID as tiebreaker
+- Users with zero contents in the time window are excluded from results
+- Cursor-based pagination uses compound cursors (`contentCount_broadcastId`) instead of timestamp-based cursors
+
+**Notes:**
+- Only users who have both a broadcast (profile) and at least one content entry within the time window appear in results
+- Content count includes all content types: posts, replies, and quotes
+- Time calculations use millisecond precision for `block_time` comparison
+- Pagination cursors encode `contentCount_broadcastId` (e.g., `"142_1298"`) rather than timestamps, since results are ordered by activity count
+- Results are calculated in real-time from the database
+
+---
 
 ## Error Handling
 

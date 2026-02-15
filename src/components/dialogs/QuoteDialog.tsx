@@ -33,7 +33,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const { privateKey, publicKey } = useAuth();
   const { sendTransaction, networkId } = useKaspaTransactions();
-  const { apiBaseUrl, selectedNetwork } = useUserSettings();
+  const { apiBaseUrl, selectedNetwork, showSuccessNotifications } = useUserSettings();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load the post details when dialog opens
@@ -94,22 +94,24 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
 
         // Show success toast with transaction details
         if (result) {
-          toast.success('Quote transaction successful!', {
-            description: (
-              <div className="space-y-2">
-                <div>Transaction ID: {result.id}</div>
-                <div>Fees: {result.feeAmount.toString()} sompi</div>
-                <div>Fees: {result.feeKAS} KAS</div>
-                <button
-                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-                >
-                  Open explorer
-                </button>
-              </div>
-            ),
-            duration: 5000
-          });
+          if (showSuccessNotifications) {
+            toast.success('Quote transaction successful!', {
+              description: (
+                <div className="space-y-2">
+                  <div>Transaction ID: {result.id}</div>
+                  <div>Fees: {result.feeAmount.toString()} sompi</div>
+                  <div>Fees: {result.feeKAS} KAS</div>
+                  <button
+                    onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                    className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                  >
+                    Open explorer
+                  </button>
+                </div>
+              ),
+              duration: 5000
+            });
+          }
 
           // Clear content and close dialog after successful transaction
           setContent('');
