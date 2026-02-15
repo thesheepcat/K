@@ -9,6 +9,7 @@ import { type Post } from "@/models/types";
 import TrendingHashtagsCard from "./TrendingHashtagsCard";
 
 const POLLING_INTERVAL = 10000; // 10 seconds
+const MOST_ACTIVE_POLLING_INTERVAL = 30000; // 30 seconds
 
 interface RightSidebarProps {
   showTrending?: boolean;
@@ -21,40 +22,185 @@ interface UserItemProps {
 
 const UserItem: React.FC<UserItemProps> = ({ user, onUserClick }) => {
   const jdenticonAvatar = useJdenticonAvatar(user.author.pubkey, 40);
-  
+
   // Use profile image if available, otherwise use generated avatar
   const displayAvatar = user.author.avatar || jdenticonAvatar;
-  
+
   return (
-    <div className="p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 border-b border-border/50 last:border-b-0">
+    <div
+      className="p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 border-b border-border/50 last:border-b-0"
+      onClick={() => onUserClick(user.author.pubkey || '')}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <Avatar 
-            className="h-10 w-10 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={() => onUserClick(user.author.pubkey || '')}
-          >
+          <Avatar className="h-10 w-10">
             <AvatarImage src={displayAvatar} />
             <AvatarFallback className="bg-muted text-muted-foreground">
               {user.author.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p 
-              className="font-bold text-foreground hover:underline cursor-pointer"
-              onClick={() => onUserClick(user.author.pubkey || '')}
-            >
+            <p className="font-bold text-foreground">
               {user.author.name}
             </p>
           </div>
         </div>
-        {/* Temporarily disabled */}
-        {/* 
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 font-bold rounded-none">
-          Follow
-        </Button>
-        */}
       </div>
     </div>
+  );
+};
+
+interface ActiveUserItemProps {
+  user: Post;
+  onUserClick: (userPubkey: string) => void;
+}
+
+const ActiveUserItem: React.FC<ActiveUserItemProps> = ({ user, onUserClick }) => {
+  const jdenticonAvatar = useJdenticonAvatar(user.author.pubkey, 40);
+  const displayAvatar = user.author.avatar || jdenticonAvatar;
+
+  return (
+    <div
+      className="p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 border-b border-border/50 last:border-b-0"
+      onClick={() => onUserClick(user.author.pubkey || '')}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={displayAvatar} />
+            <AvatarFallback className="bg-muted text-muted-foreground">
+              {user.author.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-bold text-foreground">
+              {user.author.name}
+            </p>
+            {user.contentsCount !== undefined && (
+              <p className="text-xs text-muted-foreground">
+                {user.contentsCount} {user.contentsCount === 1 ? 'post' : 'posts'}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MostActiveUsersCard: React.FC = () => {
+  const navigate = useNavigate();
+  const { publicKey } = useAuth();
+  const { fetchAndConvertMostActiveUsers, selectedNetwork, apiBaseUrl } = useKaspaPostsApi();
+
+  const [activeUsers, setActiveUsers] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchFunctionRef = useRef(fetchAndConvertMostActiveUsers);
+  const publicKeyRef = useRef(publicKey);
+
+  fetchFunctionRef.current = fetchAndConvertMostActiveUsers;
+  publicKeyRef.current = publicKey;
+
+  const loadActiveUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (!publicKeyRef.current) {
+        throw new Error('User not authenticated');
+      }
+      const response = await fetchFunctionRef.current(publicKeyRef.current, 5, '7d');
+
+      if (!response || !response.pagination) {
+        console.error('Invalid response structure:', response);
+        throw new Error('Invalid response from server');
+      }
+
+      setActiveUsers(response.posts || []);
+    } catch (error) {
+      console.error('Error loading most active users:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load active users');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadActiveUsers();
+  }, [publicKey, selectedNetwork, apiBaseUrl, loadActiveUsers]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const startPolling = () => {
+      interval = setInterval(async () => {
+        try {
+          if (!publicKeyRef.current) {
+            return;
+          }
+          const response = await fetchFunctionRef.current(publicKeyRef.current, 5, '7d');
+
+          if (!response || !response.pagination) {
+            console.error('Invalid polling response structure:', response);
+            return;
+          }
+
+          setError(null);
+          setActiveUsers(response.posts || []);
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch active users';
+          setError(errorMessage);
+          console.error('Error fetching most active users from server:', err);
+        }
+      }, MOST_ACTIVE_POLLING_INTERVAL);
+    };
+
+    startPolling();
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [selectedNetwork, apiBaseUrl]);
+
+  const handleUserClick = (userPubkey: string) => {
+    if (userPubkey) {
+      navigate(`/user/${userPubkey}`);
+    }
+  };
+
+  return (
+    <Card className="border-border gap-2 mt-4">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-bold text-foreground">Most active users</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">Top users this week</p>
+        {error && (
+          <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive">
+            Error: {error}
+          </div>
+        )}
+      </CardHeader>
+      <CardContent className="p-0">
+        {activeUsers.length === 0 && !isLoading ? (
+          <div className="p-4 text-center text-muted-foreground">
+            No active users found
+          </div>
+        ) : (
+          activeUsers.map((user) => (
+            <ActiveUserItem
+              key={user.id}
+              user={user}
+              onUserClick={handleUserClick}
+            />
+          ))
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
@@ -168,11 +314,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ showTrending = false }) => 
   };
 
   return (
-    <div className="w-80 h-screen p-4 bg-background">
+    <div className="w-80 h-screen overflow-y-auto p-4 bg-background">
       <Card className="border-border gap-2">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-foreground">New users</h3>
+            <h3 className="text-xl font-bold text-foreground">Meet users</h3>
           </div>
           <p className="text-sm text-muted-foreground">Connect with the community</p>
           {error && (
@@ -197,6 +343,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ showTrending = false }) => 
           )}
         </CardContent>
       </Card>
+      <MostActiveUsersCard />
     </div>
   );
 };

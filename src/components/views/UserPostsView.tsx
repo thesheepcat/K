@@ -428,6 +428,12 @@ const loadMorePosts = useCallback(async () => {
     }
   };
 
+  const handleHashtagClick = (hashtag: string) => {
+    navigate('/search-contents', {
+      state: { initialHashtag: hashtag }
+    });
+  };
+
   // Generate dynamic avatar (must be called before any early returns)
   const jdenticonAvatar = useJdenticonAvatar(userIdentifier || '', 48);
 
@@ -518,7 +524,7 @@ const loadMorePosts = useCallback(async () => {
                   </h1>
                   {decodedPostContent && (
                     <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                      <LinkifiedText>{decodedPostContent}</LinkifiedText>
+                      <LinkifiedText onHashtagClick={handleHashtagClick}>{decodedPostContent}</LinkifiedText>
                     </div>
                   )}
                   {userDetails && (
