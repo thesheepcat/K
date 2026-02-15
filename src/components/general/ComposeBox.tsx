@@ -20,7 +20,7 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
   const [validatedMentions, setValidatedMentions] = useState<Array<{pubkey: string}>>([]);
   const { privateKey } = useAuth();
   const { sendTransaction, networkId } = useKaspaTransactions();
-  const { selectedNetwork } = useUserSettings();
+  const { selectedNetwork, showSuccessNotifications } = useUserSettings();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 
@@ -81,23 +81,25 @@ const ComposeBox: React.FC<ComposeBoxProps> = ({ onPost }) => {
 
         // Show success toast with transaction details
         if (result) {
-          toast.success("Post transaction successful!", {
-            description: (
-              <div className="space-y-2">
-                <div>Transaction ID: {result.id}</div>
-                <div>Fees: {result.feeAmount.toString()} sompi</div>
-                <div>Fees: {result.feeKAS} KAS</div>
-                <button
-                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-                >
-                  Open explorer
-                </button>
-              </div>
-            ),
-            duration: 5000
-          });
-          
+          if (showSuccessNotifications) {
+            toast.success("Post transaction successful!", {
+              description: (
+                <div className="space-y-2">
+                  <div>Transaction ID: {result.id}</div>
+                  <div>Fees: {result.feeAmount.toString()} sompi</div>
+                  <div>Fees: {result.feeKAS} KAS</div>
+                  <button
+                    onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                    className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                  >
+                    Open explorer
+                  </button>
+                </div>
+              ),
+              duration: 5000
+            });
+          }
+
           // Only clear content and call parent handler after successful transaction
           onPost(content);
           setContent('');

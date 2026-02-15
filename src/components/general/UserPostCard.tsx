@@ -44,7 +44,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const { privateKey } = useAuth();
   const { sendTransaction } = useKaspaTransactions();
-  const { selectedNetwork } = useUserSettings();
+  const { selectedNetwork, showSuccessNotifications } = useUserSettings();
   
   // Generate dynamic avatar based on pubkey for consistency, but use profile image if available
   const avatarSizePixels = isDetailView ? 48 : isComment ? 32 : 40;
@@ -70,22 +70,24 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
-        toast.success('Unblock transaction successful!', {
-          description: (
-            <div className="space-y-2">
-              <div>Transaction ID: {result.id}</div>
-              <div>Fees: {result.feeAmount.toString()} sompi</div>
-              <div>Fees: {result.feeKAS} KAS</div>
-              <button
-                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open explorer
-              </button>
-            </div>
-          ),
-          duration: 5000
-        });
+        if (showSuccessNotifications) {
+          toast.success('Unblock transaction successful!', {
+            description: (
+              <div className="space-y-2">
+                <div>Transaction ID: {result.id}</div>
+                <div>Fees: {result.feeAmount.toString()} sompi</div>
+                <div>Fees: {result.feeKAS} KAS</div>
+                <button
+                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                >
+                  Open explorer
+                </button>
+              </div>
+            ),
+            duration: 5000
+          });
+        }
 
         // Call the callback to notify parent component
         if (onUnblock) {
@@ -120,22 +122,24 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
-        toast.success('Unfollow transaction successful!', {
-          description: (
-            <div className="space-y-2">
-              <div>Transaction ID: {result.id}</div>
-              <div>Fees: {result.feeAmount.toString()} sompi</div>
-              <div>Fees: {result.feeKAS} KAS</div>
-              <button
-                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open explorer
-              </button>
-            </div>
-          ),
-          duration: 5000
-        });
+        if (showSuccessNotifications) {
+          toast.success('Unfollow transaction successful!', {
+            description: (
+              <div className="space-y-2">
+                <div>Transaction ID: {result.id}</div>
+                <div>Fees: {result.feeAmount.toString()} sompi</div>
+                <div>Fees: {result.feeKAS} KAS</div>
+                <button
+                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                >
+                  Open explorer
+                </button>
+              </div>
+            ),
+            duration: 5000
+          });
+        }
 
         // Call the callback to notify parent component
         if (onUnfollow) {
@@ -170,22 +174,24 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
       } as any); // Cast as any to bypass TypeScript for now
 
       if (result) {
-        toast.success('Follow transaction successful!', {
-          description: (
-            <div className="space-y-2">
-              <div>Transaction ID: {result.id}</div>
-              <div>Fees: {result.feeAmount.toString()} sompi</div>
-              <div>Fees: {result.feeKAS} KAS</div>
-              <button
-                onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
-                className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
-              >
-                Open explorer
-              </button>
-            </div>
-          ),
-          duration: 5000
-        });
+        if (showSuccessNotifications) {
+          toast.success('Follow transaction successful!', {
+            description: (
+              <div className="space-y-2">
+                <div>Transaction ID: {result.id}</div>
+                <div>Fees: {result.feeAmount.toString()} sompi</div>
+                <div>Fees: {result.feeKAS} KAS</div>
+                <button
+                  onClick={() => window.open(getExplorerTransactionUrl(result.id, selectedNetwork), '_blank')}
+                  className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                >
+                  Open explorer
+                </button>
+              </div>
+            ),
+            duration: 5000
+          });
+        }
 
         // Call the callback to notify parent component
         if (onFollow) {

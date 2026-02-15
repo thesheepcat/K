@@ -6,6 +6,7 @@
 ### New features
 - **Most active users** - New "Most active users" card in the right sidebar showing the top 5 users by post count in the last week
 - **Official code repository** - New card in Settings with links to K and K-indexer GitHub repositories
+- **Transaction notifications setting** - New option in Settings > Appearance to show or hide success notifications on transactions. Error notifications are always shown. 
 
 ### Fixed bugs
 - Hashtags in user profile bios are now clickable
