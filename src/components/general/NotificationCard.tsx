@@ -218,7 +218,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
             {/* Content Preview */}
             {notification.contentType === 'vote' && decodedVotedContent ? (
               <div className="mt-2">
-                <div className="text-sm [&_.external-image-wrap]:max-w-[20%]">
+                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.external-image-wrap_p]:hidden">
                   <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1}>
                     {getDisplayContent(decodedVotedContent)}
                   </LinkifiedText>
@@ -233,7 +233,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
               </div>
             ) : decodedContent ? (
               <div className="mt-2">
-                <div className="text-sm [&_.external-image-wrap]:max-w-[20%]">
+                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.external-image-wrap_p]:hidden">
                   <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1}>
                     {getDisplayContent(decodedContent)}
                   </LinkifiedText>

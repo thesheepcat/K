@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Eye } from "lucide-react";
+import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { preloadImageDimensions, computeImageLayout } from "@/utils/mediaLayout";
 
 const MAX_RETRY_ATTEMPTS = 3;
@@ -18,11 +20,13 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   className = "",
   onLoad,
 }) => {
+  const { autoRenderImages } = useUserSettings();
   const [layout, setLayout] = useState<{ width: number; height: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [isRevealed, setIsRevealed] = useState(false);
   const containerRef = useRef<HTMLSpanElement>(null);
 
   // Measure container width
@@ -131,19 +135,35 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
           <span className="absolute inset-0 block animate-pulse rounded-lg bg-muted" />
         )}
 
-        {/* Image */}
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          className="h-full w-full object-contain"
-          onError={handleError}
-          onLoad={handleLoad}
-          onClick={() => window.open(src, "_blank")}
-          style={{ cursor: "pointer" }}
-        />
+        {/* Placeholder (when auto-render is disabled and not revealed) */}
+        {!autoRenderImages && !isRevealed && !loading && (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center bg-background cursor-pointer hover:bg-muted transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsRevealed(true);
+            }}
+          >
+            <Eye className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Click to reveal image</p>
+          </div>
+        )}
+
+        {/* Image (shown when auto-render is on OR manually revealed) */}
+        {(autoRenderImages || isRevealed) && (
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="h-full w-full object-contain"
+            onError={handleError}
+            onLoad={handleLoad}
+            onClick={() => window.open(src, "_blank")}
+            style={{ cursor: "pointer" }}
+          />
+        )}
       </span>
     </span>
   );

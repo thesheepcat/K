@@ -33,6 +33,8 @@ interface UserSettingsContextType {
   setTheme: (theme: Theme) => void;
   showSuccessNotifications: boolean;
   setShowSuccessNotifications: (show: boolean) => void;
+  autoRenderImages: boolean;
+  setAutoRenderImages: (autoRender: boolean) => void;
   isSettingsLoaded: boolean;
 }
 
@@ -60,6 +62,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [customKaspaNodeUrl, setCustomKaspaNodeUrlState] = useState<string>('');
   const [theme, setThemeState] = useState<Theme>('light');
   const [showSuccessNotifications, setShowSuccessNotificationsState] = useState<boolean>(true);
+  const [autoRenderImages, setAutoRenderImagesState] = useState<boolean>(false);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
@@ -128,6 +131,10 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         if (typeof settings.showSuccessNotifications === 'boolean') {
           setShowSuccessNotificationsState(settings.showSuccessNotifications);
         }
+
+        if (typeof settings.autoRenderImages === 'boolean') {
+          setAutoRenderImagesState(settings.autoRenderImages);
+        }
       }
     } catch (error) {
       console.error('Error loading user settings:', error);
@@ -157,7 +164,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       kaspaConnectionType,
       customKaspaNodeUrl,
       theme,
-      showSuccessNotifications
+      showSuccessNotifications,
+      autoRenderImages
     };
 
     try {
@@ -165,7 +173,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     } catch (error) {
       console.error('Error auto-saving settings:', error);
     }
-  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, showSuccessNotifications, isSettingsLoaded]);
+  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, showSuccessNotifications, autoRenderImages, isSettingsLoaded]);
 
   const setSelectedNetwork = (network: KaspaNetwork) => {
     setSelectedNetworkState(network);
@@ -213,6 +221,11 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     // Note: Settings are auto-saved via useEffect when state changes
   };
 
+  const setAutoRenderImages = (autoRender: boolean) => {
+    setAutoRenderImagesState(autoRender);
+    // Note: Settings are auto-saved via useEffect when state changes
+  };
+
   const getNetworkDisplayName = (network: KaspaNetwork): string => {
     return getNetworkDisplayNameUtil(network);
   };
@@ -241,6 +254,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     setTheme,
     showSuccessNotifications,
     setShowSuccessNotifications,
+    autoRenderImages,
+    setAutoRenderImages,
     isSettingsLoaded
   };
 
