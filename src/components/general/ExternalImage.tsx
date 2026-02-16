@@ -99,15 +99,13 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   // Failed state: collapse to bare link
   if (failed) {
     return (
-      <span
-        className="my-1 block"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <span className="my-1 block">
         <a
           href={src}
           target="_blank"
           rel="noopener noreferrer"
           className="text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all text-sm"
+          onClick={(e) => e.stopPropagation()}
         >
           [image]
         </a>
@@ -119,14 +117,13 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
     <span
       ref={containerRef}
       className={`external-image-wrap my-2 block ${className}`}
-      onClick={(e) => e.stopPropagation()}
     >
       {/* Sized container */}
       <span
         className="relative block overflow-hidden rounded-lg border border-border"
         style={
           layout
-            ? { width: `${layout.width}px`, height: `${layout.height}px` }
+            ? { width: `${layout.width}px`, height: `${layout.height}px`, margin: '0 auto' }
             : { width: "100%", aspectRatio: "16 / 9", maxHeight: `${maxHeight}px` }
         }
       >
@@ -160,7 +157,10 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
             className="h-full w-full object-contain"
             onError={handleError}
             onLoad={handleLoad}
-            onClick={() => window.open(src, "_blank")}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(src, "_blank");
+            }}
             style={{ cursor: "pointer" }}
           />
         )}
