@@ -32,7 +32,9 @@ const SettingsView: React.FC = () => {
     showSuccessNotifications,
     setShowSuccessNotifications,
     autoRenderImages,
-    setAutoRenderImages
+    setAutoRenderImages,
+    autoRenderVideos,
+    setAutoRenderVideos
   } = useUserSettings();
 
   const [localCustomIndexerUrl, setLocalCustomIndexerUrl] = useState<string>(customIndexerUrl);
@@ -338,6 +340,20 @@ const SettingsView: React.FC = () => {
                   <Select
                     value={autoRenderImages ? 'auto' : 'manual'}
                     onChange={(e) => setAutoRenderImages(e.target.value === 'auto')}
+                    className="w-full"
+                  >
+                    <SelectOption value="auto">Automatic</SelectOption>
+                    <SelectOption value="manual">Click to reveal</SelectOption>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">
+                    Videos rendering
+                  </label>
+                  <Select
+                    value={autoRenderVideos ? 'auto' : 'manual'}
+                    onChange={(e) => setAutoRenderVideos(e.target.value === 'auto')}
                     className="w-full"
                   >
                     <SelectOption value="auto">Automatic</SelectOption>

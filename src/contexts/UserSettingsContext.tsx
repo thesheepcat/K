@@ -35,6 +35,8 @@ interface UserSettingsContextType {
   setShowSuccessNotifications: (show: boolean) => void;
   autoRenderImages: boolean;
   setAutoRenderImages: (autoRender: boolean) => void;
+  autoRenderVideos: boolean;
+  setAutoRenderVideos: (autoRender: boolean) => void;
   isSettingsLoaded: boolean;
 }
 
@@ -63,6 +65,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
   const [theme, setThemeState] = useState<Theme>('light');
   const [showSuccessNotifications, setShowSuccessNotificationsState] = useState<boolean>(true);
   const [autoRenderImages, setAutoRenderImagesState] = useState<boolean>(false);
+  const [autoRenderVideos, setAutoRenderVideosState] = useState<boolean>(false);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState<boolean>(false);
 
   // Derive apiBaseUrl from indexerType and customIndexerUrl
@@ -135,6 +138,10 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
         if (typeof settings.autoRenderImages === 'boolean') {
           setAutoRenderImagesState(settings.autoRenderImages);
         }
+
+        if (typeof settings.autoRenderVideos === 'boolean') {
+          setAutoRenderVideosState(settings.autoRenderVideos);
+        }
       }
     } catch (error) {
       console.error('Error loading user settings:', error);
@@ -165,7 +172,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
       customKaspaNodeUrl,
       theme,
       showSuccessNotifications,
-      autoRenderImages
+      autoRenderImages,
+      autoRenderVideos
     };
 
     try {
@@ -173,7 +181,7 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     } catch (error) {
       console.error('Error auto-saving settings:', error);
     }
-  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, showSuccessNotifications, autoRenderImages, isSettingsLoaded]);
+  }, [selectedNetwork, indexerType, customIndexerUrl, kaspaConnectionType, customKaspaNodeUrl, theme, showSuccessNotifications, autoRenderImages, autoRenderVideos, isSettingsLoaded]);
 
   const setSelectedNetwork = (network: KaspaNetwork) => {
     setSelectedNetworkState(network);
@@ -226,6 +234,11 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     // Note: Settings are auto-saved via useEffect when state changes
   };
 
+  const setAutoRenderVideos = (autoRender: boolean) => {
+    setAutoRenderVideosState(autoRender);
+    // Note: Settings are auto-saved via useEffect when state changes
+  };
+
   const getNetworkDisplayName = (network: KaspaNetwork): string => {
     return getNetworkDisplayNameUtil(network);
   };
@@ -256,6 +269,8 @@ export const UserSettingsProvider: React.FC<UserSettingsProviderProps> = ({ chil
     setShowSuccessNotifications,
     autoRenderImages,
     setAutoRenderImages,
+    autoRenderVideos,
+    setAutoRenderVideos,
     isSettingsLoaded
   };
 

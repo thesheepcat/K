@@ -3,7 +3,9 @@ import Linkify from 'linkify-react';
 import { find } from 'linkifyjs';
 import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAddressUtils';
 import { isImageUrl } from '@/utils/mediaDetection';
+import { detectYouTubeUrl } from '@/utils/youtubeDetection';
 import ExternalImage from '@/components/general/ExternalImage';
+import YouTubeEmbed from '@/components/general/YouTubeEmbed';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -145,7 +147,20 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
               url: ({ attributes, content }: { attributes: Record<string, any>; content: string }) => {
                 const href: string = attributes.href || '';
 
-                // Handle image URLs
+                // Handle YouTube URLs (priority 1)
+                const youtubeParams = detectYouTubeUrl(href);
+                if (youtubeParams) {
+                  return (
+                    <YouTubeEmbed
+                      key={`yt-${youtubeParams.videoId}`}
+                      videoId={youtubeParams.videoId}
+                      startTime={youtubeParams.startTime}
+                      isShort={youtubeParams.isShort}
+                    />
+                  );
+                }
+
+                // Handle image URLs (priority 2)
                 if (isImageUrl(href)) {
                   // If no limit or within limit, render the image
                   if (allowedImageUrls === undefined || allowedImageUrls.has(href)) {
@@ -155,7 +170,7 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                   return <React.Fragment key={`hidden-img-${href}`} />;
                 }
 
-                // Regular URLs: render as links
+                // Regular URLs: render as links (priority 3)
                 return (
                   <a
                     key={`link-${href}`}
