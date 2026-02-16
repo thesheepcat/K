@@ -333,7 +333,7 @@ const UserPostCard: React.FC<UserPostCardProps> = ({
           </div>
           {post.content && (
             <div className={`mt-1 text-foreground ${contentTextSize} break-words`}>
-              <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>{post.content}</LinkifiedText>
+              <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={0}>{post.content}</LinkifiedText>
             </div>
           )}
           {/* No interaction buttons (likes, reposts, replies) for Users view */}

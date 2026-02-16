@@ -10,6 +10,7 @@ import { fetchPostDetails, convertServerPostToClientPost } from '@/services/post
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toSvg } from 'jdenticon';
 import { LinkifiedText } from '@/utils/linkUtils';
+import { countImageUrls } from '@/utils/mediaDetection';
 import { type Post } from '@/models/types';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
@@ -187,8 +188,15 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                   </span>                  
                 </div>
                 <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
-                  <LinkifiedText onMentionClick={() => {}}>{quotedPost.content}</LinkifiedText>
+                  <LinkifiedText onMentionClick={() => {}} maxImages={1}>{quotedPost.content}</LinkifiedText>
                 </div>
+                {countImageUrls(quotedPost.content) > 1 && (
+                  <div className="mt-2 p-1.5 bg-muted border-l-4 border-primary rounded-r">
+                    <p className="text-xs text-muted-foreground">
+                      Post contains more images...
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

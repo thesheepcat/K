@@ -528,7 +528,7 @@ const loadMorePosts = useCallback(async () => {
                   </h1>
                   {decodedPostContent && (
                     <div className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                      <LinkifiedText onHashtagClick={handleHashtagClick}>{decodedPostContent}</LinkifiedText>
+                      <LinkifiedText onHashtagClick={handleHashtagClick} maxImages={0}>{decodedPostContent}</LinkifiedText>
                     </div>
                   )}
                   {userDetails && (

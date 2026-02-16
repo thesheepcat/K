@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import UserDetailsDialog from "../dialogs/UserDetailsDialog";
 import { useJdenticonAvatar } from "@/hooks/useJdenticonAvatar";
 import { LinkifiedText } from '@/utils/linkUtils';
+import { countImageUrls } from '@/utils/mediaDetection';
 import { Base64 } from 'js-base64';
 import { formatAuthorDisplayName, pubkeyToKaspaAddress } from '@/utils/postUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
@@ -218,18 +219,32 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
             {notification.contentType === 'vote' && decodedVotedContent ? (
               <div className="mt-2">
                 <div className="text-sm [&_.external-image-wrap]:max-w-[20%]">
-                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1}>
                     {getDisplayContent(decodedVotedContent)}
                   </LinkifiedText>
                 </div>
+                {countImageUrls(decodedVotedContent) > 1 && (
+                  <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
+                    <p className="text-xs text-muted-foreground">
+                      Click to read more...
+                    </p>
+                  </div>
+                )}
               </div>
             ) : decodedContent ? (
               <div className="mt-2">
                 <div className="text-sm [&_.external-image-wrap]:max-w-[20%]">
-                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1}>
                     {getDisplayContent(decodedContent)}
                   </LinkifiedText>
                 </div>
+                {countImageUrls(decodedContent) > 1 && (
+                  <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
+                    <p className="text-xs text-muted-foreground">
+                      Click to read more...
+                    </p>
+                  </div>
+                )}
               </div>
             ) : null}
           </div>

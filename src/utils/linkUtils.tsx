@@ -1,5 +1,6 @@
 import React from 'react';
 import Linkify from 'linkify-react';
+import { find } from 'linkifyjs';
 import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAddressUtils';
 import { isImageUrl } from '@/utils/mediaDetection';
 import ExternalImage from '@/components/general/ExternalImage';
@@ -43,7 +44,17 @@ const detectHashtagsInText = (text: string): Array<{hashtag: string, startIndex:
   return hashtags;
 };
 
-export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void): React.ReactNode[] => {
+export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number): React.ReactNode[] => {
+  // Pre-scan: build a Set of allowed image URLs (idempotent, safe for React strict mode double-rendering)
+  let allowedImageUrls: Set<string> | undefined;
+  if (maxImages !== undefined) {
+    const links = find(text);
+    const imageUrls = links
+      .filter(link => link.type === 'url' && isImageUrl(link.href))
+      .map(link => link.href);
+    allowedImageUrls = new Set(imageUrls.slice(0, maxImages));
+  }
+
   // First, handle mentions and hashtags
   const mentions = detectMentionsInText(text);
   const hashtags = detectHashtagsInText(text);
@@ -133,7 +144,7 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
             render: {
               url: ({ attributes, content }: { attributes: Record<string, any>; content: string }) => {
                 const href: string = attributes.href || '';
-                if (isImageUrl(href)) {
+                if (isImageUrl(href) && (allowedImageUrls === undefined || allowedImageUrls.has(href))) {
                   return <ExternalImage key={`img-${href}`} src={href} />;
                 }
                 return (
@@ -169,10 +180,11 @@ interface LinkifiedTextProps {
   className?: string;
   onMentionClick?: (pubkey: string) => void;
   onHashtagClick?: (hashtag: string) => void;
+  maxImages?: number;
 }
 
-export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick }) => {
-  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick);
+export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages }) => {
+  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages);
 
   return (
     <span className={className}>
