@@ -4,6 +4,7 @@ import { type QuoteData } from "@/models/types";
 import { toSvg } from 'jdenticon';
 import { LinkifiedText } from '@/utils/linkUtils';
 import { countImageUrls } from '@/utils/mediaDetection';
+import { countYouTubeUrls } from '@/utils/youtubeDetection';
 import { useNavigate } from 'react-router-dom';
 
 interface SimplifiedPostCardProps {
@@ -45,6 +46,7 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
     : quote.referencedMessage;
 
   const hasHiddenImages = countImageUrls(quote.referencedMessage) > 1;
+  const hasHiddenVideos = countYouTubeUrls(quote.referencedMessage) > 1;
 
   return (
     <div
@@ -67,9 +69,9 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
             </span>
           </div>
           <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
-            <LinkifiedText onMentionClick={() => {}} onHashtagClick={handleHashtagClick} maxImages={1}>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={() => {}} onHashtagClick={handleHashtagClick} maxImages={1} maxVideos={1}>{displayContent}</LinkifiedText>
           </div>
-          {hasHiddenImages && (
+          {(hasHiddenImages || hasHiddenVideos) && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
               <p className="text-xs text-muted-foreground">
                 Click to read more...

@@ -15,6 +15,7 @@ import SimplifiedPostCard from "./SimplifiedPostCard";
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { countImageUrls } from '@/utils/mediaDetection';
+import { countYouTubeUrls } from '@/utils/youtubeDetection';
 
 interface PostCardProps {
   post: Post;
@@ -197,9 +198,11 @@ const PostCard: React.FC<PostCardProps> = ({
     ? post.content
     : post.content.substring(0, MAX_CHARS) + '.....';
 
-  // Image limiting: 1 in list view, unlimited in detail view
+  // Media limiting: 1 in list view, unlimited in detail view
   const maxImages = isDetailView ? undefined : 1;
+  const maxVideos = isDetailView ? undefined : 1;
   const hasHiddenImages = !isDetailView && countImageUrls(post.content) > 1;
+  const hasHiddenVideos = !isDetailView && countYouTubeUrls(post.content) > 1;
 
   return (
     <div
@@ -235,9 +238,9 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className={`text-muted-foreground ${timestampSize} flex-shrink-0 ml-2`}>{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
-            <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={maxImages}>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={maxImages} maxVideos={maxVideos}>{displayContent}</LinkifiedText>
           </div>
-          {(isLongMessage || hasHiddenImages) && !isDetailView && (
+          {(isLongMessage || hasHiddenImages || hasHiddenVideos) && !isDetailView && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
               <p className="text-sm text-muted-foreground">
                 Click to read more...

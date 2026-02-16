@@ -46,15 +46,27 @@ const detectHashtagsInText = (text: string): Array<{hashtag: string, startIndex:
   return hashtags;
 };
 
-export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number): React.ReactNode[] => {
-  // Pre-scan: build a Set of allowed image URLs (idempotent, safe for React strict mode double-rendering)
+export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number, maxVideos?: number): React.ReactNode[] => {
+  // Pre-scan: build Sets of allowed media URLs (idempotent, safe for React strict mode double-rendering)
   let allowedImageUrls: Set<string> | undefined;
-  if (maxImages !== undefined) {
+  let allowedVideoUrls: Set<string> | undefined;
+
+  if (maxImages !== undefined || maxVideos !== undefined) {
     const links = find(text);
-    const imageUrls = links
-      .filter(link => link.type === 'url' && isImageUrl(link.href))
-      .map(link => link.href);
-    allowedImageUrls = new Set(imageUrls.slice(0, maxImages));
+
+    if (maxImages !== undefined) {
+      const imageUrls = links
+        .filter(link => link.type === 'url' && isImageUrl(link.href))
+        .map(link => link.href);
+      allowedImageUrls = new Set(imageUrls.slice(0, maxImages));
+    }
+
+    if (maxVideos !== undefined) {
+      const videoUrls = links
+        .filter(link => link.type === 'url' && detectYouTubeUrl(link.href))
+        .map(link => link.href);
+      allowedVideoUrls = new Set(videoUrls.slice(0, maxVideos));
+    }
   }
 
   // First, handle mentions and hashtags
@@ -150,14 +162,19 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                 // Handle YouTube URLs (priority 1)
                 const youtubeParams = detectYouTubeUrl(href);
                 if (youtubeParams) {
-                  return (
-                    <YouTubeEmbed
-                      key={`yt-${youtubeParams.videoId}`}
-                      videoId={youtubeParams.videoId}
-                      startTime={youtubeParams.startTime}
-                      isShort={youtubeParams.isShort}
-                    />
-                  );
+                  // If no limit or within limit, render the video
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return (
+                      <YouTubeEmbed
+                        key={`yt-${youtubeParams.videoId}`}
+                        videoId={youtubeParams.videoId}
+                        startTime={youtubeParams.startTime}
+                        isShort={youtubeParams.isShort}
+                      />
+                    );
+                  }
+                  // If beyond maxVideos limit, hide it completely (return empty fragment)
+                  return <React.Fragment key={`hidden-yt-${youtubeParams.videoId}`} />;
                 }
 
                 // Handle image URLs (priority 2)
@@ -205,10 +222,11 @@ interface LinkifiedTextProps {
   onMentionClick?: (pubkey: string) => void;
   onHashtagClick?: (hashtag: string) => void;
   maxImages?: number;
+  maxVideos?: number;
 }
 
-export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages }) => {
-  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages);
+export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages, maxVideos }) => {
+  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages, maxVideos);
 
   return (
     <span className={className}>
