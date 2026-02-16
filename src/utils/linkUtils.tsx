@@ -144,9 +144,18 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
             render: {
               url: ({ attributes, content }: { attributes: Record<string, any>; content: string }) => {
                 const href: string = attributes.href || '';
-                if (isImageUrl(href) && (allowedImageUrls === undefined || allowedImageUrls.has(href))) {
-                  return <ExternalImage key={`img-${href}`} src={href} />;
+
+                // Handle image URLs
+                if (isImageUrl(href)) {
+                  // If no limit or within limit, render the image
+                  if (allowedImageUrls === undefined || allowedImageUrls.has(href)) {
+                    return <ExternalImage key={`img-${href}`} src={href} />;
+                  }
+                  // If beyond maxImages limit, hide it completely (return empty fragment)
+                  return <React.Fragment key={`hidden-img-${href}`} />;
                 }
+
+                // Regular URLs: render as links
                 return (
                   <a
                     key={`link-${href}`}
