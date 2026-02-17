@@ -4,8 +4,10 @@ import { find } from 'linkifyjs';
 import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAddressUtils';
 import { isImageUrl } from '@/utils/mediaDetection';
 import { detectYouTubeUrl } from '@/utils/youtubeDetection';
+import { detectVideoFile } from '@/utils/videoDetection';
 import ExternalImage from '@/components/general/ExternalImage';
 import YouTubeEmbed from '@/components/general/YouTubeEmbed';
+import ExternalVideo from '@/components/general/ExternalVideo';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -63,7 +65,7 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
 
     if (maxVideos !== undefined) {
       const videoUrls = links
-        .filter(link => link.type === 'url' && detectYouTubeUrl(link.href))
+        .filter(link => link.type === 'url' && (detectYouTubeUrl(link.href) || detectVideoFile(link.href)))
         .map(link => link.href);
       allowedVideoUrls = new Set(videoUrls.slice(0, maxVideos));
     }
@@ -177,7 +179,16 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                   return <React.Fragment key={`hidden-yt-${youtubeParams.videoId}`} />;
                 }
 
-                // Handle image URLs (priority 2)
+                // Handle external video files (priority 2)
+                const videoFile = detectVideoFile(href);
+                if (videoFile) {
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return <ExternalVideo key={`vid-${href}`} src={videoFile.src} mimeType={videoFile.mimeType} />;
+                  }
+                  return <React.Fragment key={`hidden-vid-${href}`} />;
+                }
+
+                // Handle image URLs (priority 3)
                 if (isImageUrl(href)) {
                   // If no limit or within limit, render the image
                   if (allowedImageUrls === undefined || allowedImageUrls.has(href)) {

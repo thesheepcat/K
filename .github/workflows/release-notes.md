@@ -4,9 +4,22 @@
 - This release requires K-indexer 0.1.18
 
 ### New features
-- **Most active users** - New "Most active users" card in the right sidebar showing the top 5 users by post count in the last week
-- **Official code repository** - New card in Settings with links to K and K-indexer GitHub repositories
-- **Transaction notifications setting** - New option in Settings > Appearance to show or hide success notifications on transactions. Error notifications are always shown. 
+- **Transaction notifications setting** - New option in Settings > Appearance to show or hide success notifications on transactions. Error notifications are always shown.
+- **External image rendering** - Posts now automatically display images from external URLs. 
+  - Supported formats: PNG, JPEG, JPG, GIF, WebP, BMP, SVG, ICO, and AVIF. 
+- **YouTube video embedding** - Full support for YouTube videos and Shorts with click-to-play interface. Compatible formats:
+  - Standard videos: `youtube.com/watch?v=VIDEO_ID`
+  - YouTube Shorts: `youtube.com/shorts/VIDEO_ID`
+  - Short links: `youtu.be/VIDEO_ID`
+  - Live streams: `youtube.com/live/VIDEO_ID`
+  - Embed links: `youtube.com/embed/VIDEO_ID`
+  - Timestamp support: `?t=` and `&t=` parameters preserved
+  - Music links: `music.youtube.com` URLs supported
+- **External video file rendering** - Posts now automatically display inline video players for direct video file URLs. 
+  - Supported formats: MP4, WebM, MOV, and OGG. Features include:
+- **Video rendering settings** - New option in Settings > Appearance to control video rendering behavior:
+  - **Automatic**: Videos show thumbnail with play button (default)
+  - **Click to reveal**: Videos initially show as placeholder requiring user action to reveal 
 
 ### Fixed bugs
-- Hashtags in user profile bios are now clickable
+- Ordering on "Most active users" card

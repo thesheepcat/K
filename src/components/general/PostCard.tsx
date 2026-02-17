@@ -16,6 +16,7 @@ import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { countImageUrls } from '@/utils/mediaDetection';
 import { countYouTubeUrls } from '@/utils/youtubeDetection';
+import { countVideoFileUrls } from '@/utils/videoDetection';
 
 interface PostCardProps {
   post: Post;
@@ -202,7 +203,7 @@ const PostCard: React.FC<PostCardProps> = ({
   const maxImages = isDetailView ? undefined : 1;
   const maxVideos = isDetailView ? undefined : 1;
   const hasHiddenImages = !isDetailView && countImageUrls(post.content) > 1;
-  const hasHiddenVideos = !isDetailView && countYouTubeUrls(post.content) > 1;
+  const hasHiddenVideos = !isDetailView && (countYouTubeUrls(post.content) + countVideoFileUrls(post.content)) > 1;
 
   return (
     <div
