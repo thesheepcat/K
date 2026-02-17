@@ -30,3 +30,4 @@
 
 ### Fixed bugs
 - Ordering on "Most active users" card
+- Long URLs/words no longer overflow the compose box horizontally
