@@ -6,6 +6,7 @@ import { LinkifiedText } from '@/utils/linkUtils';
 import { countImageUrls } from '@/utils/mediaDetection';
 import { countYouTubeUrls } from '@/utils/youtubeDetection';
 import { countVideoFileUrls } from '@/utils/videoDetection';
+import { countGifUrls } from '@/utils/gifDetection';
 import { useNavigate } from 'react-router-dom';
 
 interface SimplifiedPostCardProps {
@@ -47,7 +48,7 @@ const SimplifiedPostCard: React.FC<SimplifiedPostCardProps> = ({ quote, onClick 
     : quote.referencedMessage;
 
   const hasHiddenImages = countImageUrls(quote.referencedMessage) > 1;
-  const hasHiddenVideos = (countYouTubeUrls(quote.referencedMessage) + countVideoFileUrls(quote.referencedMessage)) > 1;
+  const hasHiddenVideos = (countYouTubeUrls(quote.referencedMessage) + countVideoFileUrls(quote.referencedMessage) + countGifUrls(quote.referencedMessage)) > 1;
 
   return (
     <div

@@ -13,6 +13,7 @@ import { LinkifiedText } from '@/utils/linkUtils';
 import { countImageUrls } from '@/utils/mediaDetection';
 import { countYouTubeUrls } from '@/utils/youtubeDetection';
 import { countVideoFileUrls } from '@/utils/videoDetection';
+import { countGifUrls } from '@/utils/gifDetection';
 import { type Post } from '@/models/types';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
@@ -192,7 +193,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = React.memo(({
                 <div className="mt-1 text-foreground text-sm break-words whitespace-pre-wrap">
                   <LinkifiedText onMentionClick={() => {}} maxImages={1} maxVideos={1}>{quotedPost.content}</LinkifiedText>
                 </div>
-                {(countImageUrls(quotedPost.content) > 1 || countYouTubeUrls(quotedPost.content) + countVideoFileUrls(quotedPost.content) > 1) && (
+                {(countImageUrls(quotedPost.content) > 1 || countYouTubeUrls(quotedPost.content) + countVideoFileUrls(quotedPost.content) + countGifUrls(quotedPost.content) > 1) && (
                   <div className="mt-2 p-1.5 bg-muted border-l-4 border-primary rounded-r">
                     <p className="text-xs text-muted-foreground">
                       Post contains more media...

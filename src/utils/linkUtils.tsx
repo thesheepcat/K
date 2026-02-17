@@ -5,9 +5,11 @@ import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAd
 import { isImageUrl } from '@/utils/mediaDetection';
 import { detectYouTubeUrl } from '@/utils/youtubeDetection';
 import { detectVideoFile } from '@/utils/videoDetection';
+import { detectGifPlatform } from '@/utils/gifDetection';
 import ExternalImage from '@/components/general/ExternalImage';
 import YouTubeEmbed from '@/components/general/YouTubeEmbed';
 import ExternalVideo from '@/components/general/ExternalVideo';
+import AnimatedGifEmbed from '@/components/general/AnimatedGifEmbed';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -65,7 +67,7 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
 
     if (maxVideos !== undefined) {
       const videoUrls = links
-        .filter(link => link.type === 'url' && (detectYouTubeUrl(link.href) || detectVideoFile(link.href)))
+        .filter(link => link.type === 'url' && (detectYouTubeUrl(link.href) || detectGifPlatform(link.href) || detectVideoFile(link.href)))
         .map(link => link.href);
       allowedVideoUrls = new Set(videoUrls.slice(0, maxVideos));
     }
@@ -179,7 +181,23 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                   return <React.Fragment key={`hidden-yt-${youtubeParams.videoId}`} />;
                 }
 
-                // Handle external video files (priority 2)
+                // Handle Giphy/Tenor GIFs (priority 2)
+                const gifResult = detectGifPlatform(href);
+                if (gifResult) {
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return (
+                      <AnimatedGifEmbed
+                        key={`gif-${href}`}
+                        mediaUrl={gifResult.mediaUrl}
+                        originalUrl={gifResult.originalUrl}
+                        platform={gifResult.platform}
+                      />
+                    );
+                  }
+                  return <React.Fragment key={`hidden-gif-${href}`} />;
+                }
+
+                // Handle external video files (priority 3)
                 const videoFile = detectVideoFile(href);
                 if (videoFile) {
                   if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {

@@ -39,7 +39,7 @@ const ExternalVideo: React.FC<ExternalVideoProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const maxHeight = 620;
+  const maxHeight = 540;
 
   // Measure container width
   useEffect(() => {

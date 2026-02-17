@@ -1,26 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Eye } from "lucide-react";
+import { Play } from "lucide-react";
 import { useUserSettings } from "@/contexts/UserSettingsContext";
 import { preloadImageDimensions, computeImageLayout } from "@/utils/mediaLayout";
 
 const MAX_RETRY_ATTEMPTS = 3;
 
-interface ExternalImageProps {
-  src: string;
-  alt?: string;
-  maxHeight?: number;
+interface AnimatedGifEmbedProps {
+  mediaUrl: string;
+  originalUrl: string;
+  platform: "giphy" | "tenor";
   className?: string;
-  onLoad?: () => void;
 }
 
-const ExternalImage: React.FC<ExternalImageProps> = ({
-  src,
-  alt = "External image",
-  maxHeight = 540,
+const AnimatedGifEmbed: React.FC<AnimatedGifEmbedProps> = ({
+  mediaUrl,
+  originalUrl,
+  platform: _platform,
   className = "",
-  onLoad,
 }) => {
-  const { autoRenderImages } = useUserSettings();
+  const { autoRenderVideos } = useUserSettings();
   const [layout, setLayout] = useState<{ width: number; height: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -29,17 +27,17 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   const [isRevealed, setIsRevealed] = useState(false);
   const containerRef = useRef<HTMLSpanElement>(null);
 
+  const maxHeight = 540;
+
   // Measure container width
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         setContainerWidth(entry.contentRect.width);
       }
     });
-
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -47,10 +45,9 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   // Preload dimensions and compute layout
   useEffect(() => {
     if (containerWidth === 0) return;
-
     let cancelled = false;
 
-    preloadImageDimensions(src)
+    preloadImageDimensions(mediaUrl)
       .then(({ width, height }) => {
         if (cancelled) return;
         setLayout(computeImageLayout(width, height, containerWidth, maxHeight));
@@ -58,21 +55,13 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
       })
       .catch(() => {
         if (cancelled) return;
-        // Fallback: 16:9 at container width
         const fallbackHeight = Math.min(Math.round(containerWidth * 9 / 16), maxHeight);
         setLayout({ width: containerWidth, height: fallbackHeight });
         setLoading(false);
       });
 
     return () => { cancelled = true; };
-  }, [src, containerWidth, maxHeight]);
-
-  // Recalculate layout when container resizes (if we already have natural dimensions)
-  useEffect(() => {
-    if (containerWidth === 0 || loading) return;
-    // Re-measure: we can't re-read natural dims from state, so just use CSS for resize handling.
-    // The initial layout is correct; CSS object-contain handles further resizing.
-  }, [containerWidth, loading]);
+  }, [mediaUrl, containerWidth]);
 
   const handleError = useCallback(
     (event: React.SyntheticEvent<HTMLImageElement>) => {
@@ -80,34 +69,31 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
         setFailed(true);
         return;
       }
-
-      const separator = src.includes("?") ? "&" : "?";
-      const retryUrl = `${src}${separator}_r=${attempt + 1}`;
-
+      const separator = mediaUrl.includes("?") ? "&" : "?";
+      const retryUrl = `${mediaUrl}${separator}_r=${attempt + 1}`;
       const img = event.currentTarget;
       img.src = retryUrl;
       setAttempt((a) => a + 1);
     },
-    [src, attempt]
+    [mediaUrl, attempt]
   );
 
   const handleLoad = useCallback(() => {
     setLoading(false);
-    onLoad?.();
-  }, [onLoad]);
+  }, []);
 
-  // Failed state: collapse to bare link
+  // Failed state: bare link
   if (failed) {
     return (
       <span className="my-1 block">
         <a
-          href={src}
+          href={originalUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all text-sm"
           onClick={(e) => e.stopPropagation()}
         >
-          [image]
+          [GIF]
         </a>
       </span>
     );
@@ -116,9 +102,8 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
   return (
     <span
       ref={containerRef}
-      className={`external-image-wrap my-2 block ${className}`}
+      className={`gif-embed-wrap my-2 block ${className}`}
     >
-      {/* Sized container */}
       <span
         className="relative block overflow-hidden rounded-lg border border-border"
         style={
@@ -133,7 +118,7 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
         )}
 
         {/* Placeholder (when auto-render is disabled and not revealed) */}
-        {!autoRenderImages && !isRevealed && !loading && (
+        {!autoRenderVideos && !isRevealed && !loading && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center bg-background cursor-pointer hover:bg-muted transition-colors"
             onClick={(e) => {
@@ -141,32 +126,43 @@ const ExternalImage: React.FC<ExternalImageProps> = ({
               setIsRevealed(true);
             }}
           >
-            <Eye className="h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Click to reveal image</p>
+            <Play className="h-12 w-12 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Click to reveal GIF</p>
           </div>
         )}
 
-        {/* Image (shown when auto-render is on OR manually revealed) */}
-        {(autoRenderImages || isRevealed) && (
-          <img
-            src={src}
-            alt={alt}
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            className="h-full w-full object-contain"
-            onError={handleError}
-            onLoad={handleLoad}
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(src, "_blank");
-            }}
-            style={{ cursor: "pointer" }}
-          />
+        {/* GIF (shown when auto-render is on OR manually revealed) */}
+        {(autoRenderVideos || isRevealed) && (
+          <a
+            href={originalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="block h-full w-full"
+          >
+            <img
+              src={mediaUrl}
+              alt="Animated GIF"
+              loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-contain"
+              onError={handleError}
+              onLoad={handleLoad}
+              style={{ cursor: "pointer" }}
+            />
+          </a>
+        )}
+
+        {/* GIF badge */}
+        {(autoRenderVideos || isRevealed) && !loading && (
+          <div className="absolute bottom-2 left-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white pointer-events-none">
+            GIF
+          </div>
         )}
       </span>
     </span>
   );
 };
 
-export default ExternalImage;
+export default AnimatedGifEmbed;

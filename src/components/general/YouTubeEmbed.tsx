@@ -71,7 +71,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
       >
         <div
           className="relative overflow-hidden rounded-lg border border-border bg-background cursor-pointer hover:bg-muted transition-colors"
-          style={{ aspectRatio, maxWidth: isShort ? "400px" : "100%", margin: "0 auto" }}
+          style={{ aspectRatio, maxWidth: isShort ? "400px" : "100%", maxHeight: "540px", margin: "0 auto" }}
           onClick={handleReveal}
         >
           <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -94,6 +94,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
         style={{
           aspectRatio,
           maxWidth: isShort ? "400px" : "100%",
+          maxHeight: "540px",
           margin: "0 auto"
         }}
       >
