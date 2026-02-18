@@ -9,6 +9,8 @@ import EmojiPickerButton from '@/components/ui/emoji-picker';
 import { detectMentionsInText, validateAndReturnPublicKey } from '@/utils/kaspaAddressUtils';
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
+import { useComposeMediaPreview } from '@/hooks/useComposeMediaPreview';
+import ComposeMediaPreview from '@/components/general/ComposeMediaPreview';
 
 interface ComposeReplyProps {
   onReply: (content: string) => void;
@@ -26,6 +28,7 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
   const { sendTransaction, networkId } = useKaspaTransactions();
   const { selectedNetwork, showSuccessNotifications } = useUserSettings();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { items: mediaItems, dismissItem: dismissMediaItem } = useComposeMediaPreview(content);
 
   // Validate mentions whenever content changes
   useEffect(() => {
@@ -159,6 +162,7 @@ const ComposeReply: React.FC<ComposeReplyProps> = ({ onReply, onCancel, postId, 
               />
               <EmojiPickerButton onEmojiSelect={handleEmojiSelect} className="mt-1" />
             </div>
+            <ComposeMediaPreview items={mediaItems} onDismiss={dismissMediaItem} />
             <div className="flex justify-end items-center mt-2">
               <div className="flex space-x-2">
                 <Button
