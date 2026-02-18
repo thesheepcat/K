@@ -1,6 +1,15 @@
 import React from 'react';
 import Linkify from 'linkify-react';
+import { find } from 'linkifyjs';
 import { detectMentionsInText, formatPublicKeyForDisplay } from '@/utils/kaspaAddressUtils';
+import { isImageUrl } from '@/utils/mediaDetection';
+import { detectYouTubeUrl } from '@/utils/youtubeDetection';
+import { detectVideoFile } from '@/utils/videoDetection';
+import { detectGifPlatform } from '@/utils/gifDetection';
+import ExternalImage from '@/components/general/ExternalImage';
+import YouTubeEmbed from '@/components/general/YouTubeEmbed';
+import ExternalVideo from '@/components/general/ExternalVideo';
+import AnimatedGifEmbed from '@/components/general/AnimatedGifEmbed';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -41,7 +50,29 @@ const detectHashtagsInText = (text: string): Array<{hashtag: string, startIndex:
   return hashtags;
 };
 
-export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void): React.ReactNode[] => {
+export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number, maxVideos?: number): React.ReactNode[] => {
+  // Pre-scan: build Sets of allowed media URLs (idempotent, safe for React strict mode double-rendering)
+  let allowedImageUrls: Set<string> | undefined;
+  let allowedVideoUrls: Set<string> | undefined;
+
+  if (maxImages !== undefined || maxVideos !== undefined) {
+    const links = find(text);
+
+    if (maxImages !== undefined) {
+      const imageUrls = links
+        .filter(link => link.type === 'url' && isImageUrl(link.href))
+        .map(link => link.href);
+      allowedImageUrls = new Set(imageUrls.slice(0, maxImages));
+    }
+
+    if (maxVideos !== undefined) {
+      const videoUrls = links
+        .filter(link => link.type === 'url' && (detectYouTubeUrl(link.href) || detectGifPlatform(link.href) || detectVideoFile(link.href)))
+        .map(link => link.href);
+      allowedVideoUrls = new Set(videoUrls.slice(0, maxVideos));
+    }
+  }
+
   // First, handle mentions and hashtags
   const mentions = detectMentionsInText(text);
   const hashtags = detectHashtagsInText(text);
@@ -128,10 +159,78 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
         <Linkify
           key={`text-${nodeIndex++}`}
           options={{
-            className: 'text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all',
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            onClick: (e: React.MouseEvent) => e.stopPropagation(), // Prevent card click when clicking link
+            render: {
+              url: ({ attributes, content }: { attributes: Record<string, any>; content: string }) => {
+                const href: string = attributes.href || '';
+
+                // Handle YouTube URLs (priority 1)
+                const youtubeParams = detectYouTubeUrl(href);
+                if (youtubeParams) {
+                  // If no limit or within limit, render the video
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return (
+                      <YouTubeEmbed
+                        key={`yt-${youtubeParams.videoId}`}
+                        videoId={youtubeParams.videoId}
+                        startTime={youtubeParams.startTime}
+                        isShort={youtubeParams.isShort}
+                      />
+                    );
+                  }
+                  // If beyond maxVideos limit, hide it completely (return empty fragment)
+                  return <React.Fragment key={`hidden-yt-${youtubeParams.videoId}`} />;
+                }
+
+                // Handle Giphy/Tenor GIFs (priority 2)
+                const gifResult = detectGifPlatform(href);
+                if (gifResult) {
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return (
+                      <AnimatedGifEmbed
+                        key={`gif-${href}`}
+                        mediaUrl={gifResult.mediaUrl}
+                        originalUrl={gifResult.originalUrl}
+                        platform={gifResult.platform}
+                      />
+                    );
+                  }
+                  return <React.Fragment key={`hidden-gif-${href}`} />;
+                }
+
+                // Handle external video files (priority 3)
+                const videoFile = detectVideoFile(href);
+                if (videoFile) {
+                  if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    return <ExternalVideo key={`vid-${href}`} src={videoFile.src} mimeType={videoFile.mimeType} />;
+                  }
+                  return <React.Fragment key={`hidden-vid-${href}`} />;
+                }
+
+                // Handle image URLs (priority 3)
+                if (isImageUrl(href)) {
+                  // If no limit or within limit, render the image
+                  if (allowedImageUrls === undefined || allowedImageUrls.has(href)) {
+                    return <ExternalImage key={`img-${href}`} src={href} />;
+                  }
+                  // If beyond maxImages limit, hide it completely (return empty fragment)
+                  return <React.Fragment key={`hidden-img-${href}`} />;
+                }
+
+                // Regular URLs: render as links (priority 3)
+                return (
+                  <a
+                    key={`link-${href}`}
+                    href={href}
+                    className="text-info hover:text-info/80 font-medium cursor-pointer hover:underline break-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  >
+                    {content}
+                  </a>
+                );
+              },
+            },
           }}
         >
           {segment.text}
@@ -151,10 +250,12 @@ interface LinkifiedTextProps {
   className?: string;
   onMentionClick?: (pubkey: string) => void;
   onHashtagClick?: (hashtag: string) => void;
+  maxImages?: number;
+  maxVideos?: number;
 }
 
-export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick }) => {
-  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick);
+export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages, maxVideos }) => {
+  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages, maxVideos);
 
   return (
     <span className={className}>

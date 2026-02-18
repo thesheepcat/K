@@ -118,7 +118,14 @@ const MostActiveUsersCard: React.FC = () => {
         throw new Error('Invalid response from server');
       }
 
-      setActiveUsers(response.posts || []);
+      // Sort by contentsCount in descending order (most active first)
+      const sortedUsers = (response.posts || []).sort((a, b) => {
+        const countA = a.contentsCount ?? 0;
+        const countB = b.contentsCount ?? 0;
+        return countB - countA;
+      });
+
+      setActiveUsers(sortedUsers);
     } catch (error) {
       console.error('Error loading most active users:', error);
       setError(error instanceof Error ? error.message : 'Failed to load active users');
@@ -148,7 +155,15 @@ const MostActiveUsersCard: React.FC = () => {
           }
 
           setError(null);
-          setActiveUsers(response.posts || []);
+
+          // Sort by contentsCount in descending order (most active first)
+          const sortedUsers = (response.posts || []).sort((a, b) => {
+            const countA = a.contentsCount ?? 0;
+            const countB = b.contentsCount ?? 0;
+            return countB - countA;
+          });
+
+          setActiveUsers(sortedUsers);
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to fetch active users';
           setError(errorMessage);
