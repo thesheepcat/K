@@ -17,13 +17,13 @@
     - Timestamp support: `?t=` and `&t=` parameters preserved
     - Music links: `music.youtube.com` URLs supported
 - **External video file rendering** - Posts now automatically display inline video players for direct video file URLs. 
-  - Supported formats: MP4, WebM, MOV, and OGG. Features include:
+  - Supported formats: MP4, WebM, MOV, and OGG.
 - **Animated GIF embeds (Giphy & Tenor)** - Posts containing Giphy or Tenor URLs now render animated GIFs inline. 
   - Supported URL formats:
     - Giphy page links: `giphy.com/gifs/{slug}-{id}`
-    - Giphy direct media: `media.giphy.com/media/{id}/...`, `i.giphy.com/...`
-    - Tenor direct media: `media.tenor.com/...`
-    - Other general GIF direct links
+    - Giphy direct media: `media.giphy.com/media/{id}/video.gif`, `i.giphy.com/...`
+    - Tenor direct media: `media.tenor.com/video.gif`
+    - Other general GIF direct links `media.mywebsite.com/video.gif`
 - **Video rendering settings** - New option in Settings > Appearance to control video rendering behavior:
   - **Click to reveal**: Videos initially show as placeholder requiring user action to reveal
   - **Automatic**: Videos are automatically shown to the user  
