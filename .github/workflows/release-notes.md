@@ -25,8 +25,8 @@
     - Tenor direct media: `media.tenor.com/...`
     - Other general GIF direct links
 - **Video rendering settings** - New option in Settings > Appearance to control video rendering behavior:
-  - **Automatic**: Videos show thumbnail with play button (default)
-  - **Click to reveal**: Videos initially show as placeholder requiring user action to reveal 
+  - **Click to reveal**: Videos initially show as placeholder requiring user action to reveal
+  - **Automatic**: Videos are automatically shown to the user  
 
 ### Fixed bugs
 - Ordering on "Most active users" card
