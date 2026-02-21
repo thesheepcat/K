@@ -221,8 +221,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
             {/* Content Preview */}
             {notification.contentType === 'vote' && decodedVotedContent ? (
               <div className="mt-2">
-                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.external-image-wrap_p]:hidden [&_.youtube-embed-wrap]:max-w-[20%] [&_.external-video-wrap]:max-w-[20%] [&_.gif-embed-wrap]:max-w-[20%]">
-                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1} maxVideos={1}>
+                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.youtube-embed-wrap]:max-w-[20%] [&_.external-video-wrap]:max-w-[20%] [&_.gif-embed-wrap]:max-w-[20%]">
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1} maxVideos={1} staticPreview>
                     {getDisplayContent(decodedVotedContent)}
                   </LinkifiedText>
                 </div>
@@ -236,8 +236,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({ notification }) => 
               </div>
             ) : decodedContent ? (
               <div className="mt-2">
-                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.external-image-wrap_p]:hidden [&_.youtube-embed-wrap]:max-w-[20%] [&_.external-video-wrap]:max-w-[20%] [&_.gif-embed-wrap]:max-w-[20%]">
-                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1} maxVideos={1}>
+                <div className="text-sm [&_.external-image-wrap]:max-w-[20%] [&_.youtube-embed-wrap]:max-w-[20%] [&_.external-video-wrap]:max-w-[20%] [&_.gif-embed-wrap]:max-w-[20%]">
+                  <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={1} maxVideos={1} staticPreview>
                     {getDisplayContent(decodedContent)}
                   </LinkifiedText>
                 </div>

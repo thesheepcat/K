@@ -10,6 +10,7 @@ import ExternalImage from '@/components/general/ExternalImage';
 import YouTubeEmbed from '@/components/general/YouTubeEmbed';
 import ExternalVideo from '@/components/general/ExternalVideo';
 import AnimatedGifEmbed from '@/components/general/AnimatedGifEmbed';
+import { Play } from 'lucide-react';
 
 /**
  * Utility function to detect URLs in text and convert them to clickable links using linkify-react
@@ -50,7 +51,7 @@ const detectHashtagsInText = (text: string): Array<{hashtag: string, startIndex:
   return hashtags;
 };
 
-export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number, maxVideos?: number): React.ReactNode[] => {
+export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => void, onHashtagClick?: (hashtag: string) => void, maxImages?: number, maxVideos?: number, staticPreview?: boolean): React.ReactNode[] => {
   // Pre-scan: build Sets of allowed media URLs (idempotent, safe for React strict mode double-rendering)
   let allowedImageUrls: Set<string> | undefined;
   let allowedVideoUrls: Set<string> | undefined;
@@ -168,6 +169,20 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                 if (youtubeParams) {
                   // If no limit or within limit, render the video
                   if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    if (staticPreview) {
+                      return (
+                        <span key={`yt-static-${youtubeParams.videoId}`} className="youtube-embed-wrap my-2 block">
+                          <div className="relative overflow-hidden rounded-lg bg-black" style={{ aspectRatio: youtubeParams.isShort ? "9 / 14" : "16 / 9" }}>
+                            <img src={`https://img.youtube.com/vi/${youtubeParams.videoId}/hqdefault.jpg`} alt="YouTube video" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 shadow-lg">
+                                <svg className="h-5 w-5 translate-x-0.5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                              </div>
+                            </div>
+                          </div>
+                        </span>
+                      );
+                    }
                     return (
                       <YouTubeEmbed
                         key={`yt-${youtubeParams.videoId}`}
@@ -185,6 +200,16 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                 const gifResult = detectGifPlatform(href);
                 if (gifResult) {
                   if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    if (staticPreview) {
+                      return (
+                        <span key={`gif-static-${href}`} className="gif-embed-wrap my-2 block">
+                          <div className="relative overflow-hidden rounded-lg">
+                            <img src={gifResult.mediaUrl} alt="GIF" referrerPolicy="no-referrer" className="h-full w-full object-contain" />
+                            <div className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white pointer-events-none">GIF</div>
+                          </div>
+                        </span>
+                      );
+                    }
                     return (
                       <AnimatedGifEmbed
                         key={`gif-${href}`}
@@ -201,15 +226,41 @@ export const linkifyText = (text: string, onMentionClick?: (pubkey: string) => v
                 const videoFile = detectVideoFile(href);
                 if (videoFile) {
                   if (allowedVideoUrls === undefined || allowedVideoUrls.has(href)) {
+                    if (staticPreview) {
+                      return (
+                        <span key={`vid-static-${href}`} className="external-video-wrap my-2 block pointer-events-none">
+                          <div className="relative overflow-hidden rounded-lg bg-black">
+                            <video
+                              muted
+                              playsInline
+                              preload="metadata"
+                              className="w-full object-contain rounded-lg"
+                            >
+                              <source src={videoFile.src} type={videoFile.mimeType} />
+                            </video>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Play className="h-10 w-10 text-white drop-shadow-lg" />
+                            </div>
+                          </div>
+                        </span>
+                      );
+                    }
                     return <ExternalVideo key={`vid-${href}`} src={videoFile.src} mimeType={videoFile.mimeType} />;
                   }
                   return <React.Fragment key={`hidden-vid-${href}`} />;
                 }
 
-                // Handle image URLs (priority 3)
+                // Handle image URLs (priority 4)
                 if (isImageUrl(href)) {
                   // If no limit or within limit, render the image
                   if (allowedImageUrls === undefined || allowedImageUrls.has(href)) {
+                    if (staticPreview) {
+                      return (
+                        <span key={`img-static-${href}`} className="external-image-wrap my-2 block">
+                          <img src={href} alt="Image" referrerPolicy="no-referrer" loading="lazy" className="h-full w-full object-contain rounded-lg" />
+                        </span>
+                      );
+                    }
                     return <ExternalImage key={`img-${href}`} src={href} />;
                   }
                   // If beyond maxImages limit, hide it completely (return empty fragment)
@@ -252,10 +303,11 @@ interface LinkifiedTextProps {
   onHashtagClick?: (hashtag: string) => void;
   maxImages?: number;
   maxVideos?: number;
+  staticPreview?: boolean;
 }
 
-export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages, maxVideos }) => {
-  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages, maxVideos);
+export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ children, className, onMentionClick, onHashtagClick, maxImages, maxVideos, staticPreview }) => {
+  const linkedContent = linkifyText(children, onMentionClick, onHashtagClick, maxImages, maxVideos, staticPreview);
 
   return (
     <span className={className}>
