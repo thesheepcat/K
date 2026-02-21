@@ -14,6 +14,10 @@ import QuoteDialog from "../dialogs/QuoteDialog";
 import SimplifiedPostCard from "./SimplifiedPostCard";
 import { getExplorerTransactionUrl } from '@/utils/explorerUtils';
 import { useUserSettings } from '@/contexts/UserSettingsContext';
+import { countImageUrls } from '@/utils/mediaDetection';
+import { countYouTubeUrls } from '@/utils/youtubeDetection';
+import { countVideoFileUrls } from '@/utils/videoDetection';
+import { countGifUrls } from '@/utils/gifDetection';
 
 interface PostCardProps {
   post: Post;
@@ -196,6 +200,12 @@ const PostCard: React.FC<PostCardProps> = ({
     ? post.content
     : post.content.substring(0, MAX_CHARS) + '.....';
 
+  // Media limiting: 1 in list view, unlimited in detail view
+  const maxImages = isDetailView ? undefined : 1;
+  const maxVideos = isDetailView ? undefined : 1;
+  const hasHiddenImages = !isDetailView && countImageUrls(post.content) > 1;
+  const hasHiddenVideos = !isDetailView && (countYouTubeUrls(post.content) + countVideoFileUrls(post.content) + countGifUrls(post.content)) > 1;
+
   return (
     <div
       className={`border-b border-border sm:border-l sm:border-r p-3 sm:p-4 hover:bg-accent hover:bg-opacity-50 cursor-pointer transition-colors duration-200 bg-card`}
@@ -230,9 +240,9 @@ const PostCard: React.FC<PostCardProps> = ({
             <span className={`text-muted-foreground ${timestampSize} flex-shrink-0 ml-2`}>{post.timestamp}</span>
           </div>
           <div className={`mt-1 text-foreground ${contentTextSize} break-words whitespace-pre-wrap`}>
-            <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick}>{displayContent}</LinkifiedText>
+            <LinkifiedText onMentionClick={handleMentionClick} onHashtagClick={handleHashtagClick} maxImages={maxImages} maxVideos={maxVideos}>{displayContent}</LinkifiedText>
           </div>
-          {isLongMessage && !isDetailView && (
+          {(isLongMessage || hasHiddenImages || hasHiddenVideos) && !isDetailView && (
             <div className="mt-2 p-2 bg-muted border-l-4 border-primary rounded-r">
               <p className="text-sm text-muted-foreground">
                 Click to read more...
