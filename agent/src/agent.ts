@@ -130,18 +130,35 @@ export async function ensureProfile(
       return;
     }
 
-    // Check if profile already exists
+    // Check if profile already exists and matches personality config
     const userResult = await mcpClient.callTool({ name: 'k_get_user_details', arguments: { user: pubkey } });
     const userText = (userResult.content as Array<{ type: string; text: string }>)[0]?.text ?? '{}';
-    const userData = JSON.parse(userText) as { nickname?: string };
+    const userData = JSON.parse(userText) as { post?: { userNickname?: string; postContent?: string } };
+    const existingNickname = userData.post?.userNickname;
+    const existingBio = userData.post?.postContent;
 
-    if (userData.nickname) {
-      logger.info('Profile already exists', { event: 'profile_check', nickname: userData.nickname });
-      return;
+    const desiredName = personality.identity.name;
+    const desiredBio = personality.identity.bio.slice(0, 100);
+
+    if (existingNickname) {
+      const nameMatch = existingNickname === desiredName;
+      const bioMatch = existingBio === desiredBio;
+
+      if (nameMatch && bioMatch) {
+        logger.info('Profile already exists and is up to date', { event: 'profile_check', nickname: existingNickname });
+        return;
+      }
+
+      logger.info('Profile exists but differs from personality config — updating', {
+        event: 'profile_update',
+        existingNickname,
+        desiredName,
+        nameMatch,
+        bioMatch,
+      });
+    } else {
+      logger.info('No profile found — broadcasting from personality config', { event: 'profile_broadcast' });
     }
-
-    // Broadcast profile from personality config
-    logger.info('No profile found — broadcasting from personality config', { event: 'profile_broadcast' });
     const broadcastResult = await mcpClient.callTool({
       name: 'k_broadcast_profile',
       arguments: {

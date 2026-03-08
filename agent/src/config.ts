@@ -13,9 +13,10 @@ const envSchema = z.object({
   MCP_SERVER_PATH: z.string().min(1, 'MCP_SERVER_PATH is required'),
   K_MCP_CONFIG: z.string().min(1, 'K_MCP_CONFIG is required'),
   POLL_INTERVAL_MINUTES: z.coerce.number().min(1).max(1440).default(60),
-  CLAUDE_MODEL: z.string().default('claude-sonnet-4-5-20250514'),
+  CLAUDE_MODEL: z.string().default('claude-sonnet-4-6'),
   CLAUDE_MAX_TOKENS: z.coerce.number().min(256).max(8192).default(2048),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  PERSONALITY_PATH: z.string().optional(),
 });
 
 // --- Personality schema ---
@@ -82,7 +83,10 @@ export function loadAgentConfig(): AgentConfig {
 }
 
 export function loadPersonalityConfig(): PersonalityConfig {
-  const personalityPath = resolve(__dirname, '../config/personality.json');
+  const envPath = process.env.PERSONALITY_PATH;
+  const personalityPath = envPath
+    ? resolve(process.cwd(), envPath)
+    : resolve(__dirname, '../config/personality.json');
   let raw: string;
   try {
     raw = readFileSync(personalityPath, 'utf-8');
