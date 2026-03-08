@@ -279,18 +279,53 @@ export async function runAgentCycle(
     let loopCount = 0;
     const MAX_LOOPS = 20; // safety limit
     const maxActions = personality.engagement.maxActionsPerCycle;
-    const MAX_TOOL_RESULT_CHARS = 4000;
+    const MAX_TOOL_RESULT_CHARS = 1500;
 
     while (loopCount < MAX_LOOPS) {
       loopCount++;
 
-      const response = await anthropic.messages.create({
-        model: config.claudeModel,
-        max_tokens: config.claudeMaxTokens,
-        system: systemPrompt,
-        tools: anthropicTools,
-        messages,
-      });
+      let response: Anthropic.Message;
+      try {
+        response = await anthropic.messages.create({
+          model: config.claudeModel,
+          max_tokens: config.claudeMaxTokens,
+          system: systemPrompt,
+          tools: anthropicTools,
+          messages,
+        });
+      } catch (err: any) {
+        // Handle prompt-too-long by trimming older tool results and retrying once
+        if (err.status === 400 && err.message?.includes('prompt is too long') && messages.length > 3) {
+          logger.warn('Prompt too long — trimming conversation history and retrying', {
+            event: 'prompt_trimmed',
+            cycle: cycleNumber,
+            messagesBefore: messages.length,
+          });
+          // Keep first user message and last 2 message pairs (assistant + tool_results)
+          const firstMessage = messages[0];
+          const recentMessages = messages.slice(-4);
+          messages.length = 0;
+          messages.push(firstMessage, ...recentMessages);
+          try {
+            response = await anthropic.messages.create({
+              model: config.claudeModel,
+              max_tokens: config.claudeMaxTokens,
+              system: systemPrompt,
+              tools: anthropicTools,
+              messages,
+            });
+          } catch (retryErr: any) {
+            logger.error('Retry after trim also failed — ending cycle', {
+              event: 'cycle_error',
+              cycle: cycleNumber,
+              error: retryErr.message,
+            });
+            break;
+          }
+        } else {
+          throw err;
+        }
+      }
 
       const callInput = response.usage.input_tokens;
       const callOutput = response.usage.output_tokens;
