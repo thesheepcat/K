@@ -1,0 +1,17 @@
+{
+  "_network_options": "mainnet | testnet-10",
+  "network": "mainnet",
+  "indexer": {
+    "_type_options": "public | custom (set customUrl when using custom)",
+    "type": "public",
+    "customUrl": ""
+  },
+  "kaspaNode": {
+    "_connectionType_options": "public-node | resolver | custom-node (set customUrl when using custom-node)",
+    "connectionType": "public-node",
+    "customUrl": ""
+  },
+  "wallet": {
+    "privateKey": ""
+  }
+}

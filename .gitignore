@@ -41,3 +41,5 @@ android/*.keystore
 android/capacitor-cordova-android-plugins/build/
 
 nginx_example.conf
+K-MCP.md
+agent
