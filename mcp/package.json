@@ -1,0 +1,25 @@
+{
+  "name": "k-mcp-server",
+  "version": "0.0.1",
+  "description": "MCP server for K social network",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "js-base64": "^3.7.8",
+    "websocket": "^1.0.35"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20.13.1"
+  }
+}

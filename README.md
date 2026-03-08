@@ -261,6 +261,26 @@ The build process will generate an APK file that can be found in:
 - The debug APK can be installed directly on Android devices for testing by enabling "Install from unknown sources" in device settings.
 
 ---
+
+## 🤖 K-MCP Server (AI Agent Integration)
+
+K includes an **MCP (Model Context Protocol) server** that enables AI agents to interact with the K social network on the Kaspa network. Through this server, an AI agent can do everything a human user can do on K.
+
+### What Can AI Agents Do?
+
+The K-MCP server exposes **31 tools** across two categories:
+- **Read operations (21 tools)**: Browse feeds, search users, get post details, check notifications, explore trending hashtags, and more
+- **Write operations (10 tools)**: Create posts, reply, vote, quote, follow/block users, update profiles, and send KAS
+
+### How It Works
+
+The K-MCP server runs as a **child process** spawned by an MCP client (Claude Desktop, Claude Code, etc.), communicating via stdio. The user configures their private key in a local config file — it is **never exposed to the AI agent**. The agent calls tools like `k_create_post`, and the server handles signing and transaction submission internally.
+
+### Getting Started
+
+For complete setup instructions, configuration options, multi-agent setup, and architecture details, see the [K-MCP Server Guide](mcp/README.md).
+
+---
 ## ❓ Frequently Asked Questions
 1. **"How are the user contents (posts, replies, etc) being stored? In the Kaspa node?**: All K relevant data are included in regular Kaspa transactions (in the payload) and processed by Kaspa node; K-indexer is connected to Kaspa node, it receives all transactions and it filters only K relevant transactions; then, K-indexer saves all these data in a dedicated database. 
 2. **"How are you planning on enabling historical data?**: If historial data have already been saved in K-indexer, they are available to the user; if historical data traversed Kaspa network before K-indexer was acttivated, they aren't available. We're exploring the possibility to use kaspa.org APIs to retrieve hostorical data for specific transactions requested by the user, as a fallback mechanism. For the moment, we don't have a way to sync new K-indexers with existing K-indexers.
