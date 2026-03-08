@@ -1,0 +1,33 @@
+{
+  "name": "k-agent",
+  "version": "0.0.1",
+  "description": "Autonomous Claude agent for the K social network",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "logs": "tail -f logs/agent-$(date +%Y-%m-%d).log",
+    "errors": "tail -f logs/errors-$(date +%Y-%m-%d).log"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "better-sqlite3": "^12.6.2",
+    "dotenv": "^17.3.1",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.0.0",
+    "@types/winston": "^2.4.4",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.13.1"
+  }
+}

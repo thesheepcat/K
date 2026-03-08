@@ -1,0 +1,45 @@
+[Unit]
+Description=K Social Network Claude Agent
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/k-agent
+ExecStart=/usr/bin/node /path/to/k-agent/dist/index.js
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Load environment variables from .env file
+EnvironmentFile=/path/to/k-agent/.env
+
+# Prevent the service from acquiring new privileges
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
+
+# --- SETUP INSTRUCTIONS ---
+#
+# 1. Edit this file: replace YOUR_USERNAME and /path/to/k-agent with actual values
+#
+# 2. Copy to systemd:
+#    sudo cp k-agent.service /etc/systemd/system/k-agent.service
+#
+# 3. Build the agent first:
+#    npm run build
+#
+# 4. Enable and start:
+#    sudo systemctl daemon-reload
+#    sudo systemctl enable k-agent
+#    sudo systemctl start k-agent
+#
+# 5. Check status:
+#    sudo systemctl status k-agent
+#
+# 6. Follow live logs:
+#    sudo journalctl -u k-agent -f
+#    # or via the agent's own log files:
+#    tail -f logs/agent-$(date +%Y-%m-%d).log
