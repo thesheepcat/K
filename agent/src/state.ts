@@ -39,6 +39,11 @@ export class StateManager {
         voted_at INTEGER NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS last_proactive_post (
+        id INTEGER PRIMARY KEY,
+        created_at INTEGER NOT NULL
+      );
+
       CREATE TABLE IF NOT EXISTS cycle_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         timestamp TEXT NOT NULL,
@@ -114,6 +119,21 @@ export class StateManager {
   getAllVotedPostIds(): string[] {
     const rows = this.db.prepare('SELECT post_id FROM voted_posts').all() as { post_id: string }[];
     return rows.map(r => r.post_id);
+  }
+
+  // --- Proactive posts ---
+
+  markPostCreated(): void {
+    this.db.prepare(
+      'INSERT OR REPLACE INTO last_proactive_post (id, created_at) VALUES (1, ?)'
+    ).run(Date.now());
+  }
+
+  getLastPostTimestamp(): number | null {
+    const row = this.db.prepare(
+      'SELECT created_at FROM last_proactive_post WHERE id = 1'
+    ).get() as { created_at: number } | undefined;
+    return row?.created_at ?? null;
   }
 
   // --- Cycle log ---

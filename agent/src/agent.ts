@@ -35,7 +35,7 @@ function formatEngagementRule(label: string, toggle: EngagementToggle): string {
     : `- ${label}: disabled`;
 }
 
-function buildSystemPrompt(personality: PersonalityConfig, followedPubkeys: string[], votedPostIds: string[]): string {
+function buildSystemPrompt(personality: PersonalityConfig, followedPubkeys: string[], votedPostIds: string[], canPost: boolean): string {
   const p = personality;
   return `You are ${p.identity.name}, an autonomous social agent on the K network (a decentralised social platform built on Kaspa).
 
@@ -69,7 +69,7 @@ GLOBAL LIMIT: Max ${p.engagement.maxActionsPerCycle} total actions per cycle (ac
  8. ${formatEngagementRule('Engage with posts from watching feed (PROACTIVE)', p.engagement.engageWithWatchingFeed)}
  9. ${formatEngagementRule('Browse and engage with trending hashtags (PROACTIVE)', p.engagement.engageWithTrendingHashtags)}
 10. ${formatEngagementRule('Unfollow inactive/irrelevant users (PROACTIVE)', p.engagement.unfollowInactiveUsers)}
-11. ${formatEngagementRule('Proactive posting — create original posts (PROACTIVE, lowest priority)', p.engagement.proactivePosting)}${p.engagement.proactivePosting.onlyIfNothingElseToDo ? ' — only if nothing else to do' : ''}
+11. ${formatEngagementRule('Proactive posting — create original posts (PROACTIVE, lowest priority)', p.engagement.proactivePosting)}${p.engagement.proactivePosting.onlyIfNothingElseToDo ? ' — only if nothing else to do' : ''}${!canPost ? ' — BLOCKED: last post was less than 24 hours ago, do NOT create a new post this cycle' : ''}
 
 For proactive engagement (rules 7-11), use the read tools (k_get_trending_hashtags, k_get_hashtag_content, k_get_contents_following, k_get_posts_watching) to discover content, then react to what you find interesting.
 
@@ -96,7 +96,7 @@ IMPORTANT — efficiency rules (violations will be blocked automatically):
 - Act decisively: after 1-2 read calls, start taking actions. Do not spend multiple rounds just browsing.
 - If there is nothing interesting to engage with, say so and finish — do not keep searching.
 
-After completing all actions, write a brief summary of what you did and why (2-4 sentences).`;
+After completing all actions, write a plain-text summary of what you did (2-3 sentences max). No reasoning, no bullet points, no internal thoughts — just state the actions taken and why.`;
 }
 
 function formatNotificationsForPrompt(notifications: KNotification[]): string {
@@ -293,7 +293,9 @@ export async function runAgentCycle(
     // --- Build prompts ---
     const followedPubkeys = state.getAllFollowedPubkeys();
     const votedPostIds = state.getAllVotedPostIds();
-    const systemPrompt = buildSystemPrompt(personality, followedPubkeys, votedPostIds);
+    const lastPostTs = state.getLastPostTimestamp();
+    const canPost = !lastPostTs || (Date.now() - lastPostTs) >= 24 * 60 * 60 * 1000;
+    const systemPrompt = buildSystemPrompt(personality, followedPubkeys, votedPostIds, canPost);
 
     let userMessage: string;
     if (notificationsNew > 0) {
@@ -417,6 +419,13 @@ export async function runAgentCycle(
             cycle: cycleNumber,
             tool: toolCall.name,
           });
+        } else if (toolCall.name === 'k_create_post' && !canPost) {
+          resultText = 'Blocked: last proactive post was less than 24 hours ago. Try again later.';
+          logger.warn('Proactive post blocked — 24h cooldown', {
+            event: 'post_cooldown',
+            cycle: cycleNumber,
+            lastPostAt: lastPostTs ? new Date(lastPostTs).toISOString() : null,
+          });
         } else if (ACTION_TOOLS.has(toolCall.name) && actions.length >= maxActions) {
           resultText = `Action limit reached (${maxActions} per cycle). No more write actions allowed this cycle.`;
           logger.warn('Action limit reached — skipping tool call', {
@@ -486,6 +495,8 @@ export async function runAgentCycle(
                   state.markUserFollowed(input.userPubkey as string);
                 } else if (toolCall.name === 'k_vote') {
                   state.markPostVoted(input.postId as string, input.vote as string);
+                } else if (toolCall.name === 'k_create_post') {
+                  state.markPostCreated();
                 }
 
                 logger.info('Action performed', { event: 'action_performed', cycle: cycleNumber, action });
