@@ -87,6 +87,13 @@ ${votedPostIds.length > 0 ? votedPostIds.join('\n') : '(none yet)'}
 Review the new interactions provided and take appropriate actions using the available tools.
 Be selective — only engage with content that is relevant and worth responding to.
 Respect the limits above strictly.
+
+IMPORTANT — efficiency rules:
+- Do NOT re-fetch the same feed or hashtag with a different limit. One fetch per source is enough.
+- Use only the provided tools — do not invent tool names (e.g. there is no "k_upvote", use "k_vote" with vote:"upvote").
+- Act decisively: after 1-2 read calls, start taking actions. Do not spend multiple rounds just browsing.
+- If there is nothing interesting to engage with, say so and finish — do not keep searching.
+
 After completing all actions, write a brief summary of what you did and why (2-4 sentences).`;
 }
 
@@ -133,9 +140,15 @@ export async function ensureProfile(
     // Check if profile already exists and matches personality config
     const userResult = await mcpClient.callTool({ name: 'k_get_user_details', arguments: { user: pubkey } });
     const userText = (userResult.content as Array<{ type: string; text: string }>)[0]?.text ?? '{}';
-    const userData = JSON.parse(userText) as { post?: { userNickname?: string; postContent?: string } };
-    const existingNickname = userData.post?.userNickname;
-    const existingBio = userData.post?.postContent;
+    const userData = JSON.parse(userText) as { userNickname?: string; postContent?: string };
+
+    // API returns Base64-encoded fields — decode them
+    const existingNickname = userData.userNickname
+      ? Buffer.from(userData.userNickname, 'base64').toString('utf-8')
+      : undefined;
+    const existingBio = userData.postContent
+      ? Buffer.from(userData.postContent, 'base64').toString('utf-8')
+      : undefined;
 
     const desiredName = personality.identity.name;
     const desiredBio = personality.identity.bio.slice(0, 100);
@@ -297,6 +310,7 @@ export async function runAgentCycle(
     const MAX_LOOPS = 20; // safety limit
     const maxActions = personality.engagement.maxActionsPerCycle;
     const MAX_TOOL_RESULT_CHARS = 1500;
+    const loopTokenLog: Array<{ loop: number; tools: string[]; inputTokens: number; outputTokens: number }> = [];
 
     while (loopCount < MAX_LOOPS) {
       loopCount++;
@@ -360,6 +374,9 @@ export async function runAgentCycle(
 
       // Collect tool calls from this response
       const toolUseBlocks = response.content.filter(b => b.type === 'tool_use') as Anthropic.ToolUseBlock[];
+      const toolNames = toolUseBlocks.map(b => b.name);
+
+      loopTokenLog.push({ loop: loopCount, tools: toolNames, inputTokens: callInput, outputTokens: callOutput });
 
       // If no tool calls or done, extract summary text and break
       if (response.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
@@ -476,6 +493,12 @@ export async function runAgentCycle(
     }
 
     // --- Cycle report ---
+    // Build top-5 token-consuming operations
+    const topLoops = [...loopTokenLog]
+      .sort((a, b) => (b.inputTokens + b.outputTokens) - (a.inputTokens + a.outputTokens))
+      .slice(0, 5)
+      .map(l => `loop ${l.loop}: ${l.inputTokens + l.outputTokens} tokens (in:${l.inputTokens} out:${l.outputTokens}) → ${l.tools.length > 0 ? l.tools.join(', ') : 'summary'}`);
+
     logger.info('Cycle report', {
       event: 'cycle_report',
       cycle: cycleNumber,
@@ -485,6 +508,14 @@ export async function runAgentCycle(
       totalOutputTokens: totalUsage.outputTokens,
       actionsCount: actions.length,
       summary: claudeSummary.slice(0, 200),
+    });
+    logger.info('Token breakdown — top 5 operations by token usage', {
+      event: 'token_breakdown',
+      cycle: cycleNumber,
+      totalTokens: totalUsage.inputTokens + totalUsage.outputTokens,
+      totalInputTokens: totalUsage.inputTokens,
+      totalOutputTokens: totalUsage.outputTokens,
+      top5: topLoops,
     });
 
     // --- Mark all new notifications as processed ---
