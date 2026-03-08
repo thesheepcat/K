@@ -35,12 +35,13 @@ function formatEngagementRule(label: string, toggle: EngagementToggle): string {
     : `- ${label}: disabled`;
 }
 
-function buildSystemPrompt(personality: PersonalityConfig, followedPubkeys: string[], votedPostIds: string[], canPost: boolean): string {
+function buildSystemPrompt(personality: PersonalityConfig, followedPubkeys: string[], votedPostIds: string[], canPost: boolean, ownPubkey: string): string {
   const p = personality;
   return `You are ${p.identity.name}, an autonomous social agent on the K network (a decentralised social platform built on Kaspa).
 
 IDENTITY:
 ${p.identity.bio}
+Your public key: ${ownPubkey}
 Default language: ${p.identity.language}
 Multilingual replies: ${p.identity.multilingualReply ? 'yes — match the language of the person you are replying to' : 'no — always reply in ' + p.identity.language}
 
@@ -92,8 +93,10 @@ IMPORTANT — efficiency rules (violations will be blocked automatically):
 - NEVER call the same tool twice in a cycle, even with different parameters. Each tool name may only appear ONCE across all your responses. If you already called k_get_contents_following, do NOT call it again with a different limit — use the data you already have.
 - Do NOT fetch posts for individual users one-by-one (k_get_posts per user). Use the feed and hashtag results you already have.
 - Use only the provided tools — do not invent tool names (e.g. there is no "k_upvote", use "k_vote" with vote:"upvote").
+- NEVER quote, reply to, or upvote your own posts (where userPublicKey matches your public key). Skip them entirely.
 - Call only ONE write tool per response to avoid UTXO conflicts. Never batch multiple write tools in a single response.
 - Act decisively: after 1-2 read calls, start taking actions. Do not spend multiple rounds just browsing.
+- Once you have completed your actions, STOP. Do not browse for more content after acting — write your summary and end the turn.
 - If there is nothing interesting to engage with, say so and finish — do not keep searching.
 
 After completing all actions, write a plain-text summary of what you did (2-3 sentences max). No reasoning, no bullet points, no internal thoughts — just state the actions taken and why.`;
@@ -220,6 +223,17 @@ export async function runAgentCycle(
   }
 
   try {
+    // --- Get own public key ---
+    let ownPubkey = '';
+    try {
+      const walletResult = await mcpClient.callTool({ name: 'k_get_wallet_info', arguments: {} });
+      const walletText = (walletResult.content as Array<{ type: string; text: string }>)[0]?.text ?? '{}';
+      const walletData = JSON.parse(walletText) as { publicKey?: string };
+      ownPubkey = walletData.publicKey ?? '';
+    } catch (err: any) {
+      logger.warn('Could not retrieve own public key', { event: 'mcp_error', cycle: cycleNumber, error: err.message });
+    }
+
     // --- Fetch notifications ---
     logger.info('Fetching notifications', { event: 'notifications_fetch', cycle: cycleNumber });
     let rawNotifications: KNotification[] = [];
@@ -295,7 +309,7 @@ export async function runAgentCycle(
     const votedPostIds = state.getAllVotedPostIds();
     const lastPostTs = state.getLastPostTimestamp();
     const canPost = !lastPostTs || (Date.now() - lastPostTs) >= 24 * 60 * 60 * 1000;
-    const systemPrompt = buildSystemPrompt(personality, followedPubkeys, votedPostIds, canPost);
+    const systemPrompt = buildSystemPrompt(personality, followedPubkeys, votedPostIds, canPost, ownPubkey);
 
     let userMessage: string;
     if (notificationsNew > 0) {
@@ -418,6 +432,15 @@ export async function runAgentCycle(
             event: 'duplicate_tool_blocked',
             cycle: cycleNumber,
             tool: toolCall.name,
+          });
+        } else if (ownPubkey && ['k_quote', 'k_create_reply', 'k_vote'].includes(toolCall.name) &&
+          (toolCall.input as Record<string, unknown>).authorPubkey === ownPubkey) {
+          resultText = 'Blocked: you cannot quote, reply to, or vote on your own posts.';
+          logger.warn('Self-interaction blocked', {
+            event: 'self_interaction_blocked',
+            cycle: cycleNumber,
+            tool: toolCall.name,
+            targetId: (toolCall.input as Record<string, unknown>).contentId ?? (toolCall.input as Record<string, unknown>).postId,
           });
         } else if (toolCall.name === 'k_create_post' && !canPost) {
           resultText = 'Blocked: last proactive post was less than 24 hours ago. Try again later.';
@@ -562,6 +585,21 @@ export async function runAgentCycle(
       totalInputTokens: totalUsage.inputTokens,
       totalOutputTokens: totalUsage.outputTokens,
       top5: topLoops,
+    });
+
+    // --- Cost estimate ---
+    const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+      'claude-sonnet-4-6':         { input: 3,  output: 15 },
+      'claude-opus-4-6':           { input: 15, output: 75 },
+      'claude-haiku-4-5-20251001': { input: 0.8, output: 4 },
+    };
+    const pricing = MODEL_PRICING[config.claudeModel] ?? { input: 3, output: 15 };
+    const costUsd = (totalUsage.inputTokens * pricing.input + totalUsage.outputTokens * pricing.output) / 1_000_000;
+    logger.info(`Cycle cost: ${costUsd.toFixed(4)} USD`, {
+      event: 'cycle_cost',
+      cycle: cycleNumber,
+      costUsd: costUsd.toFixed(4),
+      model: config.claudeModel,
     });
 
     // --- Mark all new notifications as processed ---
