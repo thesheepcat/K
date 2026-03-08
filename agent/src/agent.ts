@@ -88,11 +88,11 @@ Review the new interactions provided and take appropriate actions using the avai
 Be selective — only engage with content that is relevant and worth responding to.
 Respect the limits above strictly.
 
-IMPORTANT — efficiency rules:
-- Do NOT re-fetch the same feed or hashtag with a different limit. One fetch per source is enough.
-- Do NOT fetch posts for individual users one-by-one (k_get_posts per user). Use the feed and hashtag results you already have to decide what to engage with.
+IMPORTANT — efficiency rules (violations will be blocked automatically):
+- NEVER call the same tool twice in a cycle, even with different parameters. Each tool name may only appear ONCE across all your responses. If you already called k_get_contents_following, do NOT call it again with a different limit — use the data you already have.
+- Do NOT fetch posts for individual users one-by-one (k_get_posts per user). Use the feed and hashtag results you already have.
 - Use only the provided tools — do not invent tool names (e.g. there is no "k_upvote", use "k_vote" with vote:"upvote").
-- Call only ONE write tool per response (k_vote, k_follow, k_create_reply, k_quote, k_create_post, etc.) to avoid UTXO conflicts. Never batch multiple write tools in a single response.
+- Call only ONE write tool per response to avoid UTXO conflicts. Never batch multiple write tools in a single response.
 - Act decisively: after 1-2 read calls, start taking actions. Do not spend multiple rounds just browsing.
 - If there is nothing interesting to engage with, say so and finish — do not keep searching.
 
@@ -313,6 +313,14 @@ export async function runAgentCycle(
     const maxActions = personality.engagement.maxActionsPerCycle;
     const MAX_TOOL_RESULT_CHARS = 1500;
     const loopTokenLog: Array<{ loop: number; tools: string[]; inputTokens: number; outputTokens: number }> = [];
+    // Feed tools that return bulk data — block duplicate calls (re-fetching with different limit is waste)
+    const FEED_TOOLS = new Set([
+      'k_get_contents_following',
+      'k_get_posts_watching',
+      'k_get_trending_hashtags',
+      'k_get_most_active_users',
+    ]);
+    const calledFeedTools = new Set<string>();
 
     while (loopCount < MAX_LOOPS) {
       loopCount++;
@@ -400,8 +408,16 @@ export async function runAgentCycle(
 
         let resultText = '';
 
-        // Enforce action limit: reject write tools once limit is reached
-        if (ACTION_TOOLS.has(toolCall.name) && actions.length >= maxActions) {
+        // Enforce no-duplicate-feed-tool rule: block repeated calls to bulk feed tools
+        const isFeedTool = FEED_TOOLS.has(toolCall.name);
+        if (isFeedTool && calledFeedTools.has(toolCall.name)) {
+          resultText = `Blocked: you already called ${toolCall.name} this cycle. Use the data from the first call.`;
+          logger.warn('Duplicate feed tool blocked', {
+            event: 'duplicate_tool_blocked',
+            cycle: cycleNumber,
+            tool: toolCall.name,
+          });
+        } else if (ACTION_TOOLS.has(toolCall.name) && actions.length >= maxActions) {
           resultText = `Action limit reached (${maxActions} per cycle). No more write actions allowed this cycle.`;
           logger.warn('Action limit reached — skipping tool call', {
             event: 'action_limit',
@@ -436,6 +452,11 @@ export async function runAgentCycle(
               tool: toolCall.name,
               result: resultText.slice(0, 300),
             });
+
+            // Track feed tool calls to prevent duplicates
+            if (isFeedTool) {
+              calledFeedTools.add(toolCall.name);
+            }
 
             // Track action and update state if this is a writing action
             if (ACTION_TOOLS.has(toolCall.name)) {
