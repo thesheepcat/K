@@ -278,6 +278,8 @@ export async function runAgentCycle(
 
     let loopCount = 0;
     const MAX_LOOPS = 20; // safety limit
+    const maxActions = personality.engagement.maxActionsPerCycle;
+    const MAX_TOOL_RESULT_CHARS = 4000;
 
     while (loopCount < MAX_LOOPS) {
       loopCount++;
@@ -326,55 +328,83 @@ export async function runAgentCycle(
         });
 
         let resultText = '';
-        try {
-          const mcpResult = await mcpClient.callTool({
-            name: toolCall.name,
-            arguments: toolCall.input as Record<string, unknown>,
-          });
-          resultText = (mcpResult.content as Array<{ type: string; text: string }>)[0]?.text ?? '';
 
-          logger.info('Tool result', {
-            event: 'tool_result',
+        // Enforce action limit: reject write tools once limit is reached
+        if (ACTION_TOOLS.has(toolCall.name) && actions.length >= maxActions) {
+          resultText = `Action limit reached (${maxActions} per cycle). No more write actions allowed this cycle.`;
+          logger.warn('Action limit reached — skipping tool call', {
+            event: 'action_limit',
             cycle: cycleNumber,
             tool: toolCall.name,
-            result: resultText.slice(0, 300),
+            actionsCount: actions.length,
+            maxActions,
           });
+        } else {
+          try {
+            const mcpResult = await mcpClient.callTool({
+              name: toolCall.name,
+              arguments: toolCall.input as Record<string, unknown>,
+            });
+            resultText = (mcpResult.content as Array<{ type: string; text: string }>)[0]?.text ?? '';
 
-          // Track action and update state if this is a writing action
-          if (ACTION_TOOLS.has(toolCall.name)) {
-            const input = toolCall.input as Record<string, unknown>;
-            let transactionId: string | undefined;
+            logger.info('Tool result', {
+              event: 'tool_result',
+              cycle: cycleNumber,
+              tool: toolCall.name,
+              result: resultText.slice(0, 300),
+            });
 
-            try {
-              const parsed = JSON.parse(resultText) as Record<string, unknown>;
-              transactionId = parsed.transactionId as string | undefined;
-            } catch { /* result is not JSON */ }
+            // Track action and update state if this is a writing action
+            if (ACTION_TOOLS.has(toolCall.name)) {
+              const input = toolCall.input as Record<string, unknown>;
+              let transactionId: string | undefined;
 
-            const action: Action = {
-              type: mapToolToActionType(toolCall.name),
-              toolName: toolCall.name,
-              targetId: (input.postId ?? input.contentId ?? input.id) as string | undefined,
-              targetUser: (input.userPubkey ?? input.authorPubkey) as string | undefined,
-              content: (input.content) as string | undefined,
-              transactionId,
-              rawInput: input,
-            };
-            actions.push(action);
+              try {
+                const parsed = JSON.parse(resultText) as Record<string, unknown>;
+                transactionId = parsed.transactionId as string | undefined;
+              } catch { /* result is not JSON */ }
 
-            // Update state
-            if (toolCall.name === 'k_follow') {
-              state.markUserFollowed(input.userPubkey as string);
-            } else if (toolCall.name === 'k_vote') {
-              state.markPostVoted(input.postId as string, input.vote as string);
+              // Only count as successful action if transaction was confirmed
+              if (transactionId) {
+                const action: Action = {
+                  type: mapToolToActionType(toolCall.name),
+                  toolName: toolCall.name,
+                  targetId: (input.postId ?? input.contentId ?? input.id) as string | undefined,
+                  targetUser: (input.userPubkey ?? input.authorPubkey) as string | undefined,
+                  content: (input.content) as string | undefined,
+                  transactionId,
+                  rawInput: input,
+                };
+                actions.push(action);
+
+                // Update state
+                if (toolCall.name === 'k_follow') {
+                  state.markUserFollowed(input.userPubkey as string);
+                } else if (toolCall.name === 'k_vote') {
+                  state.markPostVoted(input.postId as string, input.vote as string);
+                }
+
+                logger.info('Action performed', { event: 'action_performed', cycle: cycleNumber, action });
+              } else {
+                logger.warn('Action failed — no transactionId in result', {
+                  event: 'action_failed',
+                  cycle: cycleNumber,
+                  tool: toolCall.name,
+                  result: resultText.slice(0, 200),
+                });
+              }
             }
-
-            logger.info('Action performed', { event: 'action_performed', cycle: cycleNumber, action });
+          } catch (err: any) {
+            resultText = `Error: ${err.message}`;
+            const errMsg = `Tool ${toolCall.name} failed: ${err.message}`;
+            errors.push(errMsg);
+            logger.error(errMsg, { event: 'mcp_error', cycle: cycleNumber, tool: toolCall.name, error: err.message });
           }
-        } catch (err: any) {
-          resultText = `Error: ${err.message}`;
-          const errMsg = `Tool ${toolCall.name} failed: ${err.message}`;
-          errors.push(errMsg);
-          logger.error(errMsg, { event: 'mcp_error', cycle: cycleNumber, tool: toolCall.name, error: err.message });
+        }
+
+        // Truncate large tool results to prevent token overflow
+        if (resultText.length > MAX_TOOL_RESULT_CHARS) {
+          resultText = resultText.slice(0, MAX_TOOL_RESULT_CHARS) + '\n... (truncated)';
         }
 
         toolResults.push({

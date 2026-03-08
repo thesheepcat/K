@@ -82,7 +82,7 @@ export function loadAgentConfig(): AgentConfig {
 }
 
 export function loadPersonalityConfig(): PersonalityConfig {
-  const personalityPath = resolve(__dirname, '../../config/personality.json');
+  const personalityPath = resolve(__dirname, '../config/personality.json');
   let raw: string;
   try {
     raw = readFileSync(personalityPath, 'utf-8');
