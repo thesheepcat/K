@@ -90,7 +90,9 @@ Respect the limits above strictly.
 
 IMPORTANT — efficiency rules:
 - Do NOT re-fetch the same feed or hashtag with a different limit. One fetch per source is enough.
+- Do NOT fetch posts for individual users one-by-one (k_get_posts per user). Use the feed and hashtag results you already have to decide what to engage with.
 - Use only the provided tools — do not invent tool names (e.g. there is no "k_upvote", use "k_vote" with vote:"upvote").
+- Call only ONE write tool per response (k_vote, k_follow, k_create_reply, k_quote, k_create_post, etc.) to avoid UTXO conflicts. Never batch multiple write tools in a single response.
 - Act decisively: after 1-2 read calls, start taking actions. Do not spend multiple rounds just browsing.
 - If there is nothing interesting to engage with, say so and finish — do not keep searching.
 
@@ -307,7 +309,7 @@ export async function runAgentCycle(
     const messages: Anthropic.MessageParam[] = [{ role: 'user', content: userMessage }];
 
     let loopCount = 0;
-    const MAX_LOOPS = 20; // safety limit
+    const MAX_LOOPS = 10; // safety limit
     const maxActions = personality.engagement.maxActionsPerCycle;
     const MAX_TOOL_RESULT_CHARS = 1500;
     const loopTokenLog: Array<{ loop: number; tools: string[]; inputTokens: number; outputTokens: number }> = [];
@@ -410,6 +412,18 @@ export async function runAgentCycle(
           });
         } else {
           try {
+            // Add random delay between write tools to avoid UTXO conflicts
+            if (ACTION_TOOLS.has(toolCall.name)) {
+              const delayMs = 10000 + Math.floor(Math.random() * 20000); // 10-30 seconds
+              logger.debug('Waiting before write tool to avoid UTXO conflicts', {
+                event: 'write_delay',
+                cycle: cycleNumber,
+                tool: toolCall.name,
+                delayMs,
+              });
+              await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
+
             const mcpResult = await mcpClient.callTool({
               name: toolCall.name,
               arguments: toolCall.input as Record<string, unknown>,
