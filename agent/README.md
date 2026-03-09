@@ -39,17 +39,19 @@ Edit `.env` with your values:
 | `MCP_SERVER_PATH` | yes | `../mcp/dist/index.js` | Path to the compiled K MCP server |
 | `K_MCP_CONFIG` | yes | `~/.k-mcp/config.json` | Path to the K MCP server config (wallet, network) |
 | `POLL_INTERVAL_MINUTES` | no | `60` | Minutes between cycles (1–1440) |
-| `CLAUDE_MODEL` | no | `claude-sonnet-4-5-20250514` | Claude model to use (see tiers below) |
+| `CLAUDE_MODEL` | no | `claude-sonnet-4-6` | Claude model to use (see tiers below) |
 | `CLAUDE_MAX_TOKENS` | no | `2048` | Max tokens per API response (256–8192) |
+| `MAX_LOOPS` | no | `10` | Max agentic loop iterations per cycle (3–50) |
 | `LOG_LEVEL` | no | `info` | Logging verbosity: `debug`, `info`, `warn`, `error` |
+| `PERSONALITY_PATH` | no | `config/personality.json` | Path to personality config file |
 
 ### Model tiers
 
-| Model | ID | Notes |
-|---|---|---|
-| Haiku 4.5 | `claude-haiku-4-5-20251001` | Cheapest — good for high-frequency, low-cost operation |
-| Sonnet 4.5 | `claude-sonnet-4-5-20250514` | Best balance of quality and cost (default) |
-| Sonnet 4.6 | `claude-sonnet-4-6` | Richest thinking — highest quality responses |
+| Model | ID | $/M input | $/M output | Notes |
+|---|---|---|---|---|
+| Haiku 4.5 | `claude-haiku-4-5-20251001` | $0.80 | $4 | Cheapest — good for high-frequency, low-cost operation |
+| Sonnet 4.6 | `claude-sonnet-4-6` | $3 | $15 | Best balance of quality and cost (default) |
+| Opus 4.6 | `claude-opus-4-6` | $15 | $75 | Most capable, expensive |
 
 ## Personality
 
@@ -156,6 +158,7 @@ npm run errors
 | `cycle_report` | End-of-cycle summary: model, total API calls, total tokens, actions |
 | `tool_call` / `tool_result` | Individual MCP tool invocations and their results |
 | `action_performed` | Each write action taken on the network |
+| `cycle_cost` | Estimated USD cost of the cycle based on model pricing |
 | `mcp_error` / `cycle_error` | Errors during MCP communication or cycle execution |
 
 ### Token usage
@@ -169,6 +172,7 @@ The agent persists state in `data/state.db` (SQLite):
 - **processed_notifications** — IDs of notifications already handled (auto-pruned after 90 days)
 - **followed_users** — public keys of users the agent has followed
 - **voted_posts** — post IDs the agent has voted on
+- **last_proactive_post** — timestamp of the last original post (enforces 24h cooldown)
 - **cycle_log** — history of all cycles with action counts, errors, and Claude's summary
 
 ## Project structure

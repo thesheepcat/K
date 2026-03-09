@@ -5,6 +5,7 @@ export interface AgentConfig {
   pollIntervalMinutes: number;
   claudeModel: string;
   claudeMaxTokens: number;
+  maxLoops: number;
   logLevel: string;
 }
 

@@ -15,6 +15,7 @@ const envSchema = z.object({
   POLL_INTERVAL_MINUTES: z.coerce.number().min(1).max(1440).default(60),
   CLAUDE_MODEL: z.string().default('claude-sonnet-4-6'),
   CLAUDE_MAX_TOKENS: z.coerce.number().min(256).max(8192).default(2048),
+  MAX_LOOPS: z.coerce.number().min(3).max(50).default(10),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   PERSONALITY_PATH: z.string().optional(),
 });
@@ -78,6 +79,7 @@ export function loadAgentConfig(): AgentConfig {
     pollIntervalMinutes: env.POLL_INTERVAL_MINUTES,
     claudeModel: env.CLAUDE_MODEL,
     claudeMaxTokens: env.CLAUDE_MAX_TOKENS,
+    maxLoops: env.MAX_LOOPS,
     logLevel: env.LOG_LEVEL,
   };
 }

@@ -112,6 +112,9 @@ function formatNotificationsForPrompt(notifications: KNotification[]): string {
       `    From: ${n.userNickname ?? 'unknown'} (${n.userPublicKey})`,
       `    Time: ${new Date(n.timestamp).toISOString()}`,
     ];
+    if (n.id) {
+      parts.push(`    Post ID: ${n.id}`);
+    }
     if (n.contentType === 'vote' && n.voteType) {
       parts.push(`    Vote: ${n.voteType} on post ${n.contentId}`);
       if (n.votedContent) parts.push(`    Content: "${n.votedContent.slice(0, 120)}${n.votedContent.length > 120 ? '...' : ''}"`);
@@ -325,7 +328,7 @@ export async function runAgentCycle(
     const messages: Anthropic.MessageParam[] = [{ role: 'user', content: userMessage }];
 
     let loopCount = 0;
-    const MAX_LOOPS = 10; // safety limit
+    const MAX_LOOPS = config.maxLoops;
     const maxActions = personality.engagement.maxActionsPerCycle;
     const MAX_TOOL_RESULT_CHARS = 1500;
     const loopTokenLog: Array<{ loop: number; tools: string[]; inputTokens: number; outputTokens: number }> = [];
@@ -559,6 +562,9 @@ export async function runAgentCycle(
 
     if (loopCount >= MAX_LOOPS) {
       logger.warn('Agent loop hit safety limit', { event: 'cycle_error', cycle: cycleNumber, maxLoops: MAX_LOOPS });
+      if (!claudeSummary) {
+        claudeSummary = `Cycle ended at loop limit (${MAX_LOOPS}). Actions taken: ${actions.length}.`;
+      }
     }
 
     // --- Cycle report ---
