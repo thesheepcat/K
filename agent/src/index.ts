@@ -4,8 +4,14 @@ import { createAgentLogger } from './logger.js';
 import { StateManager } from './state.js';
 import { ensureProfile, runAgentCycle } from './agent.js';
 
-function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+function cancellableSleep(ms: number): { promise: Promise<void>; cancel: () => void } {
+  let timer: NodeJS.Timeout;
+  let resolveFn: () => void;
+  const promise = new Promise<void>(resolve => {
+    resolveFn = resolve;
+    timer = setTimeout(resolve, ms);
+  });
+  return { promise, cancel: () => { clearTimeout(timer); resolveFn(); } };
 }
 
 async function main(): Promise<void> {
@@ -51,9 +57,11 @@ async function main(): Promise<void> {
 
   // --- Graceful shutdown ---
   let running = true;
+  let cancelSleep: (() => void) | null = null;
   const shutdown = () => {
-    logger.info('Shutdown signal received — stopping after current cycle', { event: 'agent_stop' });
+    logger.info('Shutdown signal received — stopping', { event: 'agent_stop' });
     running = false;
+    cancelSleep?.();
   };
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
@@ -96,7 +104,10 @@ async function main(): Promise<void> {
 
     const sleepMs = config.pollIntervalMinutes * 60 * 1000;
     logger.info(`Sleeping ${config.pollIntervalMinutes}m until next cycle`, { event: 'agent_sleep', cycle: cycleNumber, nextCycle: cycleNumber + 1 });
-    await sleep(sleepMs);
+    const sleeper = cancellableSleep(sleepMs);
+    cancelSleep = sleeper.cancel;
+    await sleeper.promise;
+    cancelSleep = null;
   }
 
   state.close();
