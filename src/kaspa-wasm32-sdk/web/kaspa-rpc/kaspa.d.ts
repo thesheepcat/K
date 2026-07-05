@@ -1,23 +1,22 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Returns true if the script passed is a pay-to-script-hash (P2SH) format, false otherwise.
- * @param script - The script ({@link HexString} or Uint8Array).
- * @category Wallet SDK
- */
-export function isScriptPayToScriptHash(script: HexString | Uint8Array): boolean;
-/**
  * Returns returns true if the script passed is an ECDSA pay-to-pubkey.
  * @param script - The script ({@link HexString} or Uint8Array).
  * @category Wallet SDK
  */
 export function isScriptPayToPubkeyECDSA(script: HexString | Uint8Array): boolean;
 /**
- * Returns true if the script passed is a pay-to-pubkey.
+ * Creates a new script to pay a transaction output to the specified address.
+ * @category Wallet SDK
+ */
+export function payToAddressScript(address: Address | string): ScriptPublicKey;
+/**
+ * Returns true if the script passed is a pay-to-script-hash (P2SH) format, false otherwise.
  * @param script - The script ({@link HexString} or Uint8Array).
  * @category Wallet SDK
  */
-export function isScriptPayToPubkey(script: HexString | Uint8Array): boolean;
+export function isScriptPayToScriptHash(script: HexString | Uint8Array): boolean;
 /**
  * Returns the address encoded in a script public key.
  * @param script_public_key - The script public key ({@link ScriptPublicKey}).
@@ -39,10 +38,24 @@ export function payToScriptHashSignatureScript(redeem_script: HexString | Uint8A
  */
 export function payToScriptHashScript(redeem_script: HexString | Uint8Array): ScriptPublicKey;
 /**
- * Creates a new script to pay a transaction output to the specified address.
+ * Returns true if the script passed is a pay-to-pubkey.
+ * @param script - The script ({@link HexString} or Uint8Array).
  * @category Wallet SDK
  */
-export function payToAddressScript(address: Address | string): ScriptPublicKey;
+export function isScriptPayToPubkey(script: HexString | Uint8Array): boolean;
+/**
+ * Computes the covenant ID from the genesis outpoint and its authorized outputs.
+ *
+ * `genesis_outpoint` may be a [`TransactionOutpoint`] instance or a
+ * compatible plain object: `{ transactionId: HexString, index: number }`.
+ *
+ * `auth_outputs` is a JS array of objects, each with:
+ * - `index: number` — position of this output in the transaction's output array
+ * - `output: TransactionOutput | ITransactionOutput` — the authorized output
+ *
+ * @category Consensus
+ */
+export function covenantId(genesis_outpoint: ITransactionOutpoint | TransactionOutpoint, auth_outputs: ICovenantAuthorizedOutput[]): Hash;
 /**
  * Returns the version of the Rusty Kaspa framework.
  * @category General
@@ -61,14 +74,6 @@ export function setLogLevel(level: "off" | "error" | "warn" | "info" | "debug" |
  */
 export function initWASM32Bindings(config: IWASM32BindingsConfig): void;
 /**
- * Initialize Rust panic handler in console mode.
- *
- * This will output additional debug information during a panic to the console.
- * This function should be called right after loading WASM libraries.
- * @category General
- */
-export function initConsolePanicHook(): void;
-/**
  * Initialize Rust panic handler in browser mode.
  *
  * This will output additional debug information during a panic in the browser
@@ -80,6 +85,14 @@ export function initConsolePanicHook(): void;
  * @category General
  */
 export function initBrowserPanicHook(): void;
+/**
+ * Initialize Rust panic handler in console mode.
+ *
+ * This will output additional debug information during a panic to the console.
+ * This function should be called right after loading WASM libraries.
+ * @category General
+ */
+export function initConsolePanicHook(): void;
 /**
  * Present panic logs to the user in the browser.
  *
@@ -167,20 +180,8 @@ export enum SighashType {
 }
 
 /**
- * Interface defines the structure of a transaction outpoint (used by transaction input).
- * 
- * @category Consensus
- */
-export interface ITransactionOutpoint {
-    transactionId: HexString;
-    index: number;
-}
-
-
-
-/**
  * Interface defining the structure of a transaction.
- * 
+ *
  * @category Consensus
  */
 export interface ITransaction {
@@ -191,8 +192,14 @@ export interface ITransaction {
     subnetworkId: HexString;
     gas: bigint;
     payload: HexString;
-    /** The mass of the transaction (the mass is undefined or zero unless explicitly set or obtained from the node) */
+
+    /**
+     * @deprecated since version 1.3.0, use `storageMass`
+    */
     mass?: bigint;
+
+    /** The mass of the transaction (the mass is undefined or zero unless explicitly set or obtained from the node) */
+    storageMass?: bigint;
 
     /** Optional verbose data provided by RPC */
     verboseData?: ITransactionVerboseData;
@@ -200,7 +207,7 @@ export interface ITransaction {
 
 /**
  * Optional transaction verbose data.
- * 
+ *
  * @category Node RPC
  */
 export interface ITransactionVerboseData {
@@ -214,48 +221,77 @@ export interface ITransactionVerboseData {
 
 
 /**
- * Interface defining the structure of a block header.
+ * Interface defining the structure of a transaction output.
  * 
  * @category Consensus
  */
-export interface IHeader {
-    hash: HexString;
-    version: number;
-    parentsByLevel: Array<Array<HexString>>;
-    hashMerkleRoot: HexString;
-    acceptedIdMerkleRoot: HexString;
-    utxoCommitment: HexString;
-    timestamp: bigint;
-    bits: number;
-    nonce: bigint;
-    daaScore: bigint;
-    blueWork: bigint | HexString;
-    blueScore: bigint;
-    pruningPoint: HexString;
+export interface ITransactionOutput {
+    value: bigint;
+    scriptPublicKey: IScriptPublicKey | HexString;
+
+    /** Optional verbose data provided by RPC */
+    verboseData?: ITransactionOutputVerboseData;
 }
 
 /**
- * Interface defining the structure of a raw block header.
+ * TransactionOutput verbose data.
  * 
- * This interface is explicitly used by GetBlockTemplate and SubmitBlock RPCs
- * and unlike `IHeader`, does not include a hash.
+ * @category Node RPC
+ */
+export interface ITransactionOutputVerboseData {
+    scriptPublicKeyType : string;
+    scriptPublicKeyAddress : string;
+}
+
+
+
+/**
+ * Interface defines the structure of a UTXO entry.
  * 
  * @category Consensus
  */
-export interface IRawHeader {
-    version: number;
-    parentsByLevel: Array<Array<HexString>>;
-    hashMerkleRoot: HexString;
-    acceptedIdMerkleRoot: HexString;
-    utxoCommitment: HexString;
-    timestamp: bigint;
-    bits: number;
-    nonce: bigint;
-    daaScore: bigint;
-    blueWork: bigint | HexString;
-    blueScore: bigint;
-    pruningPoint: HexString;
+export interface IUtxoEntry {
+    /** @readonly */
+    address?: Address;
+    /** @readonly */
+    outpoint: ITransactionOutpoint;
+    /** @readonly */
+    amount : bigint;
+    /** @readonly */
+    scriptPublicKey : IScriptPublicKey;
+    /** @readonly */
+    blockDaaScore: bigint;
+    /** @readonly */
+    isCoinbase: boolean;
 }
+
+
+
+
+/**
+ * Interface defines the structure of a transaction input.
+ * 
+ * @category Consensus
+ */
+export interface ITransactionInput {
+    previousOutpoint: ITransactionOutpoint;
+    signatureScript?: HexString;
+    sequence: bigint;
+    sigOpCount: number;
+    computeBudget?: number;
+    utxo?: UtxoEntryReference;
+
+    /** Optional verbose data provided by RPC */
+    verboseData?: ITransactionInputVerboseData;
+}
+
+/**
+ * Option transaction input verbose data.
+ * 
+ * @category Node RPC
+ */
+export interface ITransactionInputVerboseData { }
+
 
 
 
@@ -285,6 +321,7 @@ export interface ISerializableTransactionInput {
     index: number;
     sequence: bigint;
     sigOpCount: number;
+    computeBudget?: number;
     signatureScript?: HexString;
     utxo: ISerializableUtxoEntry;
 }
@@ -335,77 +372,129 @@ export interface ISerializableTransaction {
 
 
 /**
- * Interface defines the structure of a UTXO entry.
+ * Interface defining the structure of a block header.
+ *
+ * @category Consensus
+ */
+export interface IHeader {
+    hash: HexString;
+    version: number;
+    parentsByLevel: Array<Array<HexString>>;
+    hashMerkleRoot: HexString;
+    acceptedIdMerkleRoot: HexString;
+    utxoCommitment: HexString;
+    timestamp: bigint;
+    bits: number;
+    nonce: bigint;
+    daaScore: bigint;
+    blueWork: bigint | HexString;
+    blueScore: bigint;
+    pruningPoint: HexString;
+}
+
+/**
+ * Interface defining the structure of a raw block header.
+ *
+ * This interface is explicitly used by GetBlockTemplate and SubmitBlock RPCs
+ * and unlike `IHeader`, does not include a hash.
+ *
+ * @category Consensus
+ */
+export interface IRawHeader {
+    version: number;
+    parentsByLevel: Array<Array<HexString>>;
+    hashMerkleRoot: HexString;
+    acceptedIdMerkleRoot: HexString;
+    utxoCommitment: HexString;
+    timestamp: bigint;
+    bits: number;
+    nonce: bigint;
+    daaScore: bigint;
+    blueWork: bigint | HexString;
+    blueScore: bigint;
+    pruningPoint: HexString;
+}
+
+
+
+/**
+ * A covenant binding binds a transaction output to the covenant and input authorizing its creation.
+ *
+ * @category Consensus
+ */
+export interface ICovenantBinding {
+    authorizingInput: number;
+    covenantId: HexString;
+}
+
+
+
+/**
+ * A genesis covenant group for bulk covenant binding population.
+ *
+ * @category Consensus
+ */
+export interface IGenesisCovenantGroup {
+    authorizingInput: number;
+    outputs: number[];
+}
+
+
+
+/**
+ * Represents a block header where all fields are optional.
+ *
+ * @category Consensus
+ */
+export interface IOptionalHeader {
+    hash?: HexString;
+    version?: number;
+    parentsByLevel?: CompressedParents;
+    hashMerkleRoot?: HexString;
+    acceptedIdMerkleRoot?: HexString;
+    utxoCommitment?: HexString;
+    timestamp?: bigint;
+    bits?: number;
+    nonce?: bigint;
+    daaScore?: bigint;
+    blueWork?: bigint | HexString;
+    blueScore?: bigint;
+    pruningPoint?: HexString;
+}
+
+
+
+/**
+ * An output authorized by the genesis outpoint for covenant ID derivation.
+ *
+ * @category Consensus
+ */
+export interface ICovenantAuthorizedOutput {
+    index: number;
+    output: ITransactionOutput | TransactionOutput;
+}
+
+
+
+/**
+ * Interface defines the structure of a transaction outpoint (used by transaction input).
  * 
  * @category Consensus
  */
-export interface IUtxoEntry {
-    /** @readonly */
-    address?: Address;
-    /** @readonly */
-    outpoint: ITransactionOutpoint;
-    /** @readonly */
-    amount : bigint;
-    /** @readonly */
-    scriptPublicKey : IScriptPublicKey;
-    /** @readonly */
-    blockDaaScore: bigint;
-    /** @readonly */
-    isCoinbase: boolean;
+export interface ITransactionOutpoint {
+    transactionId: HexString;
+    index: number;
 }
 
 
 
-
 /**
- * Interface defining the structure of a transaction output.
- * 
+ * Block Color
+ *
  * @category Consensus
  */
-export interface ITransactionOutput {
-    value: bigint;
-    scriptPublicKey: IScriptPublicKey | HexString;
-
-    /** Optional verbose data provided by RPC */
-    verboseData?: ITransactionOutputVerboseData;
-}
-
-/**
- * TransactionOutput verbose data.
- * 
- * @category Node RPC
- */
-export interface ITransactionOutputVerboseData {
-    scriptPublicKeyType : string;
-    scriptPublicKeyAddress : string;
-}
-
-
-
-/**
- * Interface defines the structure of a transaction input.
- * 
- * @category Consensus
- */
-export interface ITransactionInput {
-    previousOutpoint: ITransactionOutpoint;
-    signatureScript?: HexString;
-    sequence: bigint;
-    sigOpCount: number;
-    utxo?: UtxoEntryReference;
-
-    /** Optional verbose data provided by RPC */
-    verboseData?: ITransactionInputVerboseData;
-}
-
-/**
- * Option transaction input verbose data.
- * 
- * @category Node RPC
- */
-export interface ITransactionInputVerboseData { }
-
-
+ export type BlockColor = "blue" | "red" | "unknown";
+ 
 
 
 /**
@@ -420,41 +509,84 @@ export interface IScriptPublicKey {
 
 
 
+        /**
+         * Interface defining the structure of a block.
+         *
+         * @category Consensus
+         */
+        export interface IBlock {
+            header: IHeader;
+            transactions: ITransaction[];
+            verboseData?: IBlockVerboseData;
+        }
+
+        /**
+         * Interface defining the structure of a block verbose data.
+         *
+         * @category Node RPC
+         */
+        export interface IBlockVerboseData {
+            hash: HexString;
+            difficulty: number;
+            selectedParentHash: HexString;
+            transactionIds: HexString[];
+            isHeaderOnly: boolean;
+            blueScore: number;
+            childrenHashes: HexString[];
+            mergeSetBluesHashes: HexString[];
+            mergeSetRedsHashes: HexString[];
+            isChainBlock: boolean;
+        }
+
+        /**
+         * Interface defining the structure of a raw block.
+         *
+         * Raw block is a structure used by GetBlockTemplate and SubmitBlock RPCs
+         * and differs from `IBlock` in that it does not include verbose data and carries
+         * `IRawHeader` that does not include a cached block hash.
+         *
+         * @category Consensus
+         */
+        export interface IRawBlock {
+            header: IRawHeader;
+            transactions: ITransaction[];
+        }
+
+        
+
+
+            /**
+             * Mempool entry.
+             * 
+             * @category Node RPC
+             */
+            export interface IMempoolEntry {
+                fee : bigint;
+                transaction : ITransaction;
+                isOrphan : boolean;
+            }
+        
+
+
 /**
-* Return interface for the {@link RpcClient.getFeeEstimateExperimental} RPC method.
+* Return interface for the {@link RpcClient.submitTransactionReplacement} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetFeeEstimateExperimentalResponse {
-        estimate : IFeeEstimate;
-        verbose? : IFeeEstimateVerboseExperimentalData
+    export interface ISubmitTransactionReplacementResponse {
+        transactionId : HexString;
+        replacedTransaction: Transaction;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getFeeEstimateExperimental} RPC method.
-* Get fee estimate from the node.
-*
+* Return interface for the {@link RpcClient.ping} RPC method.
 * @category Node RPC
 */
-    export interface IGetFeeEstimateExperimentalRequest { }
-    
-
-
-    /**
-     * 
-     * 
-     * @category Node RPC
-     */
-    export interface IFeeEstimateVerboseExperimentalData {
-        mempoolReadyTransactionsCount : bigint;
-        mempoolReadyTransactionsTotalMass : bigint;
-        networkMassPerSecond : bigint;
-        nextBlockTemplateFeerateMin : number;
-        nextBlockTemplateFeerateMedian : number;
-        nextBlockTemplateFeerateMax : number;
+    export interface IPingResponse {
+        message?: string;
     }
     
 
@@ -472,51 +604,24 @@ export interface IScriptPublicKey {
 
 
 /**
-* Argument interface for the {@link RpcClient.getFeeEstimate} RPC method.
-* Get fee estimate from the node.
-*
+* Argument interface for the {@link RpcClient.getSink} RPC method.
 * @category Node RPC
 */
-    export interface IGetFeeEstimateRequest { }
+    export interface IGetSinkRequest { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetInfoRequest { }
     
 
 
     /**
-     * 
-     * 
-     * @category Node RPC
-     */
-    export interface IFeeEstimate {
-        /**
-         * *Top-priority* feerate bucket. Provides an estimation of the feerate required for sub-second DAG inclusion.
-         *
-         * Note: for all buckets, feerate values represent fee/mass of a transaction in `sompi/gram` units.
-         * Given a feerate value recommendation, calculate the required fee by
-         * taking the transaction mass and multiplying it by feerate: `fee = feerate * mass(tx)`
-         */
-
-        priorityBucket : IFeerateBucket;
-        /**
-         * A vector of *normal* priority feerate values. The first value of this vector is guaranteed to exist and
-         * provide an estimation for sub-*minute* DAG inclusion. All other values will have shorter estimation
-         * times than all `low_bucket` values. Therefor by chaining `[priority] | normal | low` and interpolating
-         * between them, one can compose a complete feerate function on the client side. The API makes an effort
-         * to sample enough "interesting" points on the feerate-to-time curve, so that the interpolation is meaningful.
-         */
-
-        normalBuckets : IFeerateBucket[];
-        /**
-        * An array of *low* priority feerate values. The first value of this vector is guaranteed to
-        * exist and provide an estimation for sub-*hour* DAG inclusion.
-        */
-        lowBuckets : IFeerateBucket[];
-    }
-    
-
-
-    /**
-     * 
-     * 
+     *
+     *
      * @category Node RPC
      */
     export interface IFeerateBucket {
@@ -533,305 +638,100 @@ export interface IScriptPublicKey {
 
 
 /**
-* Return interface for the {@link RpcClient.unban} RPC method.
+* Argument interface for the {@link RpcClient.getVirtualChainFromBlockV2} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IUnbanResponse { }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.unban} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IUnbanRequest {
-/**
-* IPv4 or IPv6 address to unban.
-*/
-        ip : string;
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.submitTransaction} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface ISubmitTransactionResponse {
-        transactionId : HexString;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.submitTransaction} RPC method.
-* Submit transaction to the node.
-*
-* @category Node RPC
-*/
-    export interface ISubmitTransactionRequest {
-        transaction : Transaction,
-        allowOrphan? : boolean
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.submitTransactionReplacement} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface ISubmitTransactionReplacementResponse {
-        transactionId : HexString;
-        replacedTransaction: Transaction;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.submitTransactionReplacement} RPC method.
-* Submit transaction replacement to the node.
-*
-* @category Node RPC
-*/
-    export interface ISubmitTransactionReplacementRequest {
-        transaction : Transaction,
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.submitBlock} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface ISubmitBlockResponse {
-        report : ISubmitBlockReport;
-    }
-    
-
-
-    /**
-     * 
-     * @category Node RPC
-     */
-    export enum SubmitBlockRejectReason {
-        /**
-         * The block is invalid.
-         */
-        BlockInvalid = "BlockInvalid",
-        /**
-         * The node is not synced.
-         */
-        IsInIBD = "IsInIBD",
-        /**
-         * Route is full.
-         */
-        RouteIsFull = "RouteIsFull",
-    }
-
-    /**
-     * 
-     * @category Node RPC
-     */
-    export interface ISubmitBlockReport {
-        type : "success" | "reject";
-        reason? : SubmitBlockRejectReason;
-    }
-
-
-
-/**
-* Argument interface for the {@link RpcClient.submitBlock} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface ISubmitBlockRequest {
-        block : IRawBlock;
-        allowNonDAABlocks: boolean;
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.resolveFinalityConflict} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IResolveFinalityConflictResponse { }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.resolveFinalityConflict} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IResolveFinalityConflictRequest {
-        finalityBlockHash: HexString;
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getVirtualChainFromBlock} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetVirtualChainFromBlockResponse {
-        removedChainBlockHashes : HexString[];
-        addedChainBlockHashes : HexString[];
-        acceptedTransactionIds : IAcceptedTransactionIds[];
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getVirtualChainFromBlock} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetVirtualChainFromBlockRequest {
+    export interface IGetVirtualChainFromBlockV2Request {
         startHash : HexString;
-        includeAcceptedTransactionIds: boolean;
+        dataVerbosityLevel?: DataVerbosityLevel;
+/**
+* If passed, this request will only return blocks that have at least minConfirmationCount number of confirmations. Confirmation is counted through the distance from virtual chain tip.
+* If not passed, it will be interpreted as 0.
+*/
+        minConfirmationCount?: number;
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getUtxosByAddresses} RPC method.
+* Argument interface for the {@link RpcClient.getBlock} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetUtxosByAddressesResponse {
-        entries : UtxoEntryReference[];
+    export interface IGetBlockRequest {
+        hash : HexString;
+        includeTransactions : boolean;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getUtxosByAddresses} RPC method.
+* Return interface for the {@link RpcClient.getBlocks} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetUtxosByAddressesRequest { 
-        addresses : Address[] | string[]
+    export interface IGetBlocksResponse {
+        blockHashes : HexString[];
+        blocks : IBlock[];
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getSubnetwork} RPC method.
-*
-*
+* Argument interface for the {@link RpcClient.getBlockCount} RPC method.
 * @category Node RPC
 */
-    export interface IGetSubnetworkResponse {
-        gasLimit : bigint;
+    export interface IGetBlockCountRequest { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.estimateNetworkHashesPerSecond} RPC method.
+* @category Node RPC
+*/
+    export interface IEstimateNetworkHashesPerSecondResponse {
+        networkHashesPerSecond : bigint;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getSubnetwork} RPC method.
+* Argument interface for the {@link RpcClient.getBlockTemplate} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetSubnetworkRequest {
-        subnetworkId : HexString;
+    export interface IGetBlockTemplateRequest {
+        payAddress : Address | string;
+/**
+* `extraData` can contain a user-supplied plain text or a byte array represented by `Uint8array`.
+*/
+        extraData? : string | Uint8Array;
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getMempoolEntry} RPC method.
-*
-*
+* Argument interface for the {@link RpcClient.getSinkBlueScore} RPC method.
 * @category Node RPC
 */
-    export interface IGetMempoolEntryResponse {
-        mempoolEntry : IMempoolEntry;
-    }
+    export interface IGetSinkBlueScoreRequest { }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getMempoolEntry} RPC method.
+* Argument interface for the {@link RpcClient.getUtxoReturnAddress} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetMempoolEntryRequest {
-        transactionId : HexString;
-        includeOrphanPool? : boolean;
-        filterTransactionPool? : boolean;
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getMempoolEntriesByAddresses} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetMempoolEntriesByAddressesResponse {
-        entries : IMempoolEntry[];
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getMempoolEntriesByAddresses} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetMempoolEntriesByAddressesRequest {
-        addresses : Address[] | string[];
-        includeOrphanPool? : boolean;
-        filterTransactionPool? : boolean;
-    }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getMempoolEntries} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetMempoolEntriesResponse {
-        mempoolEntries : IMempoolEntry[];
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getMempoolEntries} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetMempoolEntriesRequest {
-        includeOrphanPool? : boolean;
-        filterTransactionPool? : boolean;
+    export interface IGetUtxoReturnAddressRequest {
+        txid: HexString;
+        acceptingBlockDaaScore: bigint;
     }
     
 
@@ -863,13 +763,14 @@ export interface IScriptPublicKey {
 
 
 /**
-* Return interface for the {@link RpcClient.getCurrentNetwork} RPC method.
+* Argument interface for the {@link RpcClient.addPeer} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetCurrentNetworkResponse {
-        network : string;
+    export interface IAddPeerRequest {
+        peerAddress : INetworkAddress;
+        isPermanent : boolean;
     }
     
 
@@ -884,38 +785,108 @@ export interface IScriptPublicKey {
     
 
 
-/**
-* Return interface for the {@link RpcClient.getDaaScoreTimestampEstimate} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IGetDaaScoreTimestampEstimateResponse {
-        timestamps : bigint[];
+    /**
+     *
+     *
+     * @category Node RPC
+     */
+    export interface IFeeEstimateVerboseExperimentalData {
+        mempoolReadyTransactionsCount : bigint;
+        mempoolReadyTransactionsTotalMass : bigint;
+        networkMassPerSecond : bigint;
+        nextBlockTemplateFeerateMin : number;
+        nextBlockTemplateFeerateMedian : number;
+        nextBlockTemplateFeerateMax : number;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getDaaScoreTimestampEstimate} RPC method.
-*
+* Argument interface for the {@link RpcClient.submitTransaction} RPC method.
+* Submit transaction to the node.
 *
 * @category Node RPC
 */
-    export interface IGetDaaScoreTimestampEstimateRequest {
-        daaScores : bigint[];
+    export interface ISubmitTransactionRequest {
+        transaction : Transaction,
+        allowOrphan? : boolean
+    }
+    
+
+
+    /**
+     *
+     *
+     * @category Node RPC
+     */
+    export interface IFeeEstimate {
+        /**
+         * *Top-priority* feerate bucket. Provides an estimation of the feerate required for sub-second DAG inclusion.
+         *
+         * Note: for all buckets, feerate values represent fee/mass of a transaction in `sompi/gram` units.
+         * Given a feerate value recommendation, calculate the required fee by
+         * taking the transaction mass and multiplying it by feerate: `fee = feerate * mass(tx)`
+         */
+
+        priorityBucket : IFeerateBucket;
+        /**
+         * A vector of *normal* priority feerate values. The first value of this vector is guaranteed to exist and
+         * provide an estimation for sub-*minute* DAG inclusion. All other values will have shorter estimation
+         * times than all `low_bucket` values. Therefor by chaining `[priority] | normal | low` and interpolating
+         * between them, one can compose a complete feerate function on the client side. The API makes an effort
+         * to sample enough "interesting" points on the feerate-to-time curve, so that the interpolation is meaningful.
+         */
+
+        normalBuckets : IFeerateBucket[];
+        /**
+        * An array of *low* priority feerate values. The first value of this vector is guaranteed to
+        * exist and provide an estimation for sub-*hour* DAG inclusion.
+        */
+        lowBuckets : IFeerateBucket[];
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getCurrentBlockColor} RPC method.
+* Argument interface for the {@link RpcClient.getMempoolEntries} RPC method.
+* @category Node RPC
+*/
+    export interface IGetMempoolEntriesRequest {
+/** Whether or not to include the orphan pool (transactions which inputs are not known at this time) */
+        includeOrphanPool: boolean;
+/** Whether or not to filter out the transaction pool */
+        filterTransactionPool: boolean;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.unban} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetCurrentBlockColorResponse {
-        blue: boolean;
+    export interface IUnbanResponse { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.ping} RPC method.
+* @category Node RPC
+*/
+    export interface IPingRequest {
+        message?: string;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getCoinSupply} RPC method.
+* @category Node RPC
+*/
+    export interface IGetCoinSupplyResponse {
+        maxSompi: bigint;
+        circulatingSompi: bigint;
     }
     
 
@@ -933,43 +904,242 @@ export interface IScriptPublicKey {
 
 
 /**
-* Return interface for the {@link RpcClient.getBlockTemplate} RPC method.
+* Argument interface for the {@link RpcClient.getFeeEstimate} RPC method.
+* Get fee estimate from the node.
+*
+* @category Node RPC
+*/
+    export interface IGetFeeEstimateRequest { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getBlockDagInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetBlockDagInfoRequest { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getSyncStatus} RPC method.
+* @category Node RPC
+*/
+    export interface IGetSyncStatusRequest { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.resolveFinalityConflict} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetBlockTemplateResponse {
-        block : IRawBlock;
+    export interface IResolveFinalityConflictResponse { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getMetrics} RPC method.
+* @category Node RPC
+*/
+    export interface IGetMetricsRequest { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getBalanceByAddress} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetBalanceByAddressResponse {
+        balance : bigint;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getBlockTemplate} RPC method.
-*
-*
+* Argument interface for the {@link RpcClient.getConnections} RPC method.
 * @category Node RPC
 */
-    export interface IGetBlockTemplateRequest {
-        payAddress : Address | string;
+    export interface IGetConnectionsRequest { }
+    
+
+
 /**
-* `extraData` can contain a user-supplied plain text or a byte array represented by `Uint8array`.
+* Return interface for the {@link RpcClient.getPeerAddresses} RPC method.
+* @category Node RPC
 */
-        extraData? : string | Uint8Array;
+    export interface IGetPeerAddressesResponse {
+        [key: string]: any
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getBlocks} RPC method.
+* Argument interface for the {@link RpcClient.getUtxosByAddresses} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetBlocksResponse {
-        blockHashes : HexString[];
-        blocks : IBlock[];
+    export interface IGetUtxosByAddressesRequest {
+        addresses : Address[] | string[]
     }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getMempoolEntries} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetMempoolEntriesResponse {
+        mempoolEntries : IMempoolEntry[];
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getUtxoReturnAddress} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetUtxoReturnAddressResponse {
+        returnAddress: Address;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getConnectedPeerInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetConnectedPeerInfoResponse {
+        [key: string]: any
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getPeerAddresses} RPC method.
+* @category Node RPC
+*/
+    export interface IGetPeerAddressesRequest { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getVirtualChainFromBlock} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetVirtualChainFromBlockResponse {
+        removedChainBlockHashes : HexString[];
+        addedChainBlockHashes : HexString[];
+        acceptedTransactionIds : IAcceptedTransactionIds[];
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getBlock} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetBlockResponse {
+        block : IBlock;
+    }
+    
+
+
+    /**
+     * Accepted Acceptance Data
+     *
+     * @category Node RPC
+     */
+    export interface IChainBlockAddedTransactions {
+        chainBlockHeader: IOptionalHeader;
+        // small hack because wasm doesn't define OptionalTransaction utility
+        acceptedTransactions: Partial<ITransaction>[];
+    }
+
+
+
+/**
+* Return interface for the {@link RpcClient.getBlockDagInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetBlockDagInfoResponse {
+        network: string;
+        blockCount: bigint;
+        headerCount: bigint;
+        tipHashes: HexString[];
+        difficulty: number;
+        pastMedianTime: bigint;
+        virtualParentHashes: HexString[];
+        pruningPointHash: HexString;
+        virtualDaaScore: bigint;
+        sink: HexString;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getSink} RPC method.
+* @category Node RPC
+*/
+    export interface IGetSinkResponse {
+        sink : HexString;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.addPeer} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IAddPeerResponse { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.submitBlock} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface ISubmitBlockResponse {
+        report : ISubmitBlockReport;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.submitTransactionReplacement} RPC method.
+* Submit transaction replacement to the node.
+*
+* @category Node RPC
+*/
+    export interface ISubmitTransactionReplacementRequest {
+        transaction : Transaction,
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getFeeEstimateExperimental} RPC method.
+* Get fee estimate from the node.
+*
+* @category Node RPC
+*/
+    export interface IGetFeeEstimateExperimentalRequest { }
     
 
 
@@ -988,27 +1158,182 @@ export interface IScriptPublicKey {
 
 
 /**
-* Return interface for the {@link RpcClient.getBlock} RPC method.
+* Return interface for the {@link RpcClient.getUtxosByAddresses} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetBlockResponse {
-        block : IBlock;
+    export interface IGetUtxosByAddressesResponse {
+        entries : UtxoEntryReference[];
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getBlock} RPC method.
+* Argument interface for the {@link RpcClient.submitBlock} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetBlockRequest {
-        hash : HexString;
-        includeTransactions : boolean;
+    export interface ISubmitBlockRequest {
+        block : IRawBlock;
+        allowNonDAABlocks: boolean;
     }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getVirtualChainFromBlockV2} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetVirtualChainFromBlockV2Response {
+        removedChainBlockHashes : HexString[];
+        addedChainBlockHashes : HexString[];
+        chainBlockAcceptedTransactions : IChainBlockAddedTransactions[];
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getBlockCount} RPC method.
+* @category Node RPC
+*/
+    export interface IGetBlockCountResponse {
+        headerCount : bigint;
+        blockCount : bigint;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.submitTransaction} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface ISubmitTransactionResponse {
+        transactionId : HexString;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getSubnetwork} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetSubnetworkRequest {
+        subnetworkId : HexString;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getSubnetwork} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetSubnetworkResponse {
+        gasLimit : bigint;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getMempoolEntriesByAddresses} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetMempoolEntriesByAddressesRequest {
+        addresses : Address[] | string[];
+/** Whether or not to include the orphan pool (transactions which inputs are not known at this time) */
+        includeOrphanPool: boolean;
+/** Whether or not to filter out the transaction pool */
+        filterTransactionPool: boolean;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.unban} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IUnbanRequest {
+/**
+* IPv4 or IPv6 address to unban.
+*/
+        ip : string;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getDaaScoreTimestampEstimate} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetDaaScoreTimestampEstimateRequest {
+        daaScores : bigint[];
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getMetrics} RPC method.
+* @category Node RPC
+*/
+    export interface IGetMetricsResponse {
+        [key: string]: any
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.shutdown} RPC method.
+* @category Node RPC
+*/
+    export interface IShutdownRequest { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.ban} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IBanRequest {
+/**
+* IPv4 or IPv6 address to ban.
+*/
+        ip : string;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getBlockRewardInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetBlockRewardInfoRequest {
+        hash: HexString;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getCoinSupply} RPC method.
+* @category Node RPC
+*/
+    export interface IGetCoinSupplyRequest { }
     
 
 
@@ -1034,25 +1359,119 @@ export interface IScriptPublicKey {
 
 
 /**
-* Argument interface for the {@link RpcClient.getBalancesByAddresses} RPC method.
-*
-*
+* Return interface for the {@link RpcClient.getBlockRewardInfo} RPC method.
 * @category Node RPC
 */
-    export interface IGetBalancesByAddressesRequest {
-        addresses : Address[] | string[];
+    export interface IGetBlockRewardInfoResponse {
+        header: IHeader;
+        blockColor: BlockColor;
+        confirmationCount?: bigint;
+        mergingChainBlockHash?: HexString;
+        rewardAmount?: bigint;
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.getBalanceByAddress} RPC method.
+* Argument interface for the {@link RpcClient.getConnectedPeerInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetConnectedPeerInfoRequest { }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getBlockTemplate} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IGetBalanceByAddressResponse {
-        balance : bigint;
+    export interface IGetBlockTemplateResponse {
+        block : IRawBlock;
+    }
+    
+
+
+    /**
+     *
+     * @category Node RPC
+     */
+    export enum SubmitBlockRejectReason {
+        /**
+         * The block is invalid.
+         */
+        BlockInvalid = "BlockInvalid",
+        /**
+         * The node is not synced.
+         */
+        IsInIBD = "IsInIBD",
+        /**
+         * Route is full.
+         */
+        RouteIsFull = "RouteIsFull",
+    }
+
+    /**
+     *
+     * @category Node RPC
+     */
+    export interface ISubmitBlockReport {
+        type : "success" | "reject";
+        reason? : SubmitBlockRejectReason;
+    }
+
+
+
+/**
+* Return interface for the {@link RpcClient.getMempoolEntry} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetMempoolEntryResponse {
+        mempoolEntry : IMempoolEntry;
+    }
+    
+
+
+    /**
+     * Accepted transaction IDs.
+     *
+     * @category Node RPC
+     */
+    export interface IAcceptedTransactionIds {
+        acceptingBlockHash : HexString;
+        acceptedTransactionIds : HexString[];
+    }
+
+
+
+/**
+* Return interface for the {@link RpcClient.shutdown} RPC method.
+* @category Node RPC
+*/
+    export interface IShutdownResponse { }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.resolveFinalityConflict} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IResolveFinalityConflictRequest {
+        finalityBlockHash: HexString;
+    }
+    
+
+
+/**
+* Return interface for the {@link RpcClient.getConnections} RPC method.
+* @category Node RPC
+*/
+    export interface IGetConnectionsResponse {
+        [key: string]: any
     }
     
 
@@ -1068,11 +1487,14 @@ export interface IScriptPublicKey {
 
 
 /**
-* Return interface for the {@link RpcClient.estimateNetworkHashesPerSecond} RPC method.
+* Return interface for the {@link RpcClient.getFeeEstimateExperimental} RPC method.
+*
+*
 * @category Node RPC
 */
-    export interface IEstimateNetworkHashesPerSecondResponse {
-        networkHashesPerSecond : bigint;
+    export interface IGetFeeEstimateExperimentalResponse {
+        estimate : IFeeEstimate;
+        verbose? : IFeeEstimateVerboseExperimentalData
     }
     
 
@@ -1088,51 +1510,56 @@ export interface IScriptPublicKey {
     
 
 
+    /**
+     * Data Verbosity level
+     *
+     * @category Node RPC
+     */
+    export type DataVerbosityLevel = "None" | "Low" | "High" | "Full";
+
+
+
 /**
-* Return interface for the {@link RpcClient.ban} RPC method.
+* Argument interface for the {@link RpcClient.getBalancesByAddresses} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IBanResponse { }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.ban} RPC method.
-*
-*
-* @category Node RPC
-*/
-    export interface IBanRequest {
-/**
-* IPv4 or IPv6 address to ban.
-*/
-        ip : string;
+    export interface IGetBalancesByAddressesRequest {
+        addresses : Address[] | string[];
     }
     
 
 
 /**
-* Return interface for the {@link RpcClient.addPeer} RPC method.
+* Return interface for the {@link RpcClient.getCurrentBlockColor} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IAddPeerResponse { }
+    export interface IGetCurrentBlockColorResponse {
+        blue: boolean;
+    }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.addPeer} RPC method.
+* Return interface for the {@link RpcClient.getDaaScoreTimestampEstimate} RPC method.
 *
 *
 * @category Node RPC
 */
-    export interface IAddPeerRequest {
-        peerAddress : INetworkAddress;
-        isPermanent : boolean;
+    export interface IGetDaaScoreTimestampEstimateResponse {
+        timestamps : bigint[];
     }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getServerInfo} RPC method.
+* @category Node RPC
+*/
+    export interface IGetServerInfoRequest { }
     
 
 
@@ -1147,10 +1574,32 @@ export interface IScriptPublicKey {
 
 
 /**
-* Argument interface for the {@link RpcClient.getSyncStatus} RPC method.
+* Return interface for the {@link RpcClient.getCurrentNetwork} RPC method.
+*
+*
 * @category Node RPC
 */
-    export interface IGetSyncStatusRequest { }
+    export interface IGetCurrentNetworkResponse {
+        network : string;
+    }
+    
+
+
+/**
+* Argument interface for the {@link RpcClient.getVirtualChainFromBlock} RPC method.
+*
+*
+* @category Node RPC
+*/
+    export interface IGetVirtualChainFromBlockRequest {
+        startHash : HexString;
+        includeAcceptedTransactionIds: boolean;
+/**
+* If passed, this request will only return blocks that have at least minConfirmationCount number of confirmations. Confirmation is counted through the distance from virtual chain tip.
+* If not passed, it will be interpreted as 0.
+*/
+        minConfirmationCount?: number;
+    }
     
 
 
@@ -1170,30 +1619,6 @@ export interface IScriptPublicKey {
 
 
 /**
-* Argument interface for the {@link RpcClient.getServerInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetServerInfoRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.shutdown} RPC method.
-* @category Node RPC
-*/
-    export interface IShutdownResponse { }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.shutdown} RPC method.
-* @category Node RPC
-*/
-    export interface IShutdownRequest { }
-    
-
-
-/**
 * Return interface for the {@link RpcClient.getSinkBlueScore} RPC method.
 * @category Node RPC
 */
@@ -1204,82 +1629,38 @@ export interface IScriptPublicKey {
 
 
 /**
-* Argument interface for the {@link RpcClient.getSinkBlueScore} RPC method.
+* Return interface for the {@link RpcClient.getMempoolEntriesByAddresses} RPC method.
+*
+*
 * @category Node RPC
 */
-    export interface IGetSinkBlueScoreRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getSink} RPC method.
-* @category Node RPC
-*/
-    export interface IGetSinkResponse {
-        sink : HexString;
+    export interface IGetMempoolEntriesByAddressesResponse {
+        entries : IMempoolEntry[];
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getSink} RPC method.
+* Argument interface for the {@link RpcClient.getMempoolEntry} RPC method.
+*
+*
 * @category Node RPC
 */
-    export interface IGetSinkRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getConnections} RPC method.
-* @category Node RPC
-*/
-    export interface IGetConnectionsResponse {
-        [key: string]: any
+    export interface IGetMempoolEntryRequest {
+        transactionId : HexString;
+        includeOrphanPool? : boolean;
+        filterTransactionPool? : boolean;
     }
     
 
 
 /**
-* Argument interface for the {@link RpcClient.getConnections} RPC method.
+* Return interface for the {@link RpcClient.ban} RPC method.
+*
+*
 * @category Node RPC
 */
-    export interface IGetConnectionsRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getMetrics} RPC method.
-* @category Node RPC
-*/
-    export interface IGetMetricsResponse {
-        [key: string]: any
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getMetrics} RPC method.
-* @category Node RPC
-*/
-    export interface IGetMetricsRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getPeerAddresses} RPC method.
-* @category Node RPC
-*/
-    export interface IGetPeerAddressesResponse {
-        [key: string]: any
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getPeerAddresses} RPC method.
-* @category Node RPC
-*/
-    export interface IGetPeerAddressesRequest { }
+    export interface IBanResponse { }
     
 
 
@@ -1301,188 +1682,6 @@ export interface IScriptPublicKey {
     
 
 
-/**
-* Argument interface for the {@link RpcClient.getInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetInfoRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getConnectedPeerInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetConnectedPeerInfoResponse {
-        [key: string]: any
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getConnectedPeerInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetConnectedPeerInfoRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getCoinSupply} RPC method.
-* @category Node RPC
-*/
-    export interface IGetCoinSupplyResponse {
-        maxSompi: bigint;
-        circulatingSompi: bigint;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getCoinSupply} RPC method.
-* @category Node RPC
-*/
-    export interface IGetCoinSupplyRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getBlockDagInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetBlockDagInfoResponse {
-        network: string;
-        blockCount: bigint;
-        headerCount: bigint;
-        tipHashes: HexString[];
-        difficulty: number;
-        pastMedianTime: bigint;
-        virtualParentHashes: HexString[];
-        pruningPointHash: HexString;
-        virtualDaaScore: bigint;
-        sink: HexString;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getBlockDagInfo} RPC method.
-* @category Node RPC
-*/
-    export interface IGetBlockDagInfoRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.getBlockCount} RPC method.
-* @category Node RPC
-*/
-    export interface IGetBlockCountResponse {
-        headerCount : bigint;
-        blockCount : bigint;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.getBlockCount} RPC method.
-* @category Node RPC
-*/
-    export interface IGetBlockCountRequest { }
-    
-
-
-/**
-* Return interface for the {@link RpcClient.ping} RPC method.
-* @category Node RPC
-*/
-    export interface IPingResponse {
-        message?: string;
-    }
-    
-
-
-/**
-* Argument interface for the {@link RpcClient.ping} RPC method.
-* @category Node RPC
-*/
-    export interface IPingRequest {
-        message?: string;
-    }
-    
-
-
-    /**
-     * Accepted transaction IDs.
-     * 
-     * @category Node RPC
-     */
-    export interface IAcceptedTransactionIds {
-        acceptingBlockHash : HexString;
-        acceptedTransactionIds : HexString[];
-    }
-
-
-
-            /**
-             * Mempool entry.
-             * 
-             * @category Node RPC
-             */
-            export interface IMempoolEntry {
-                fee : bigint;
-                transaction : ITransaction;
-                isOrphan : boolean;
-            }
-        
-
-
-        /**
-         * Interface defining the structure of a block.
-         * 
-         * @category Consensus
-         */
-        export interface IBlock {
-            header: IHeader;
-            transactions: ITransaction[];
-            verboseData?: IBlockVerboseData;
-        }
-
-        /**
-         * Interface defining the structure of a block verbose data.
-         * 
-         * @category Node RPC
-         */
-        export interface IBlockVerboseData {
-            hash: HexString;
-            difficulty: number;
-            selectedParentHash: HexString;
-            transactionIds: HexString[];
-            isHeaderOnly: boolean;
-            blueScore: number;
-            childrenHashes: HexString[];
-            mergeSetBluesHashes: HexString[];
-            mergeSetRedsHashes: HexString[];
-            isChainBlock: boolean;
-        }
-
-        /**
-         * Interface defining the structure of a raw block.
-         * 
-         * Raw block is a structure used by GetBlockTemplate and SubmitBlock RPCs
-         * and differs from `IBlock` in that it does not include verbose data and carries
-         * `IRawHeader` that does not include a cached block hash.
-         * 
-         * @category Consensus
-         */
-        export interface IRawBlock {
-            header: IRawHeader;
-            transactions: ITransaction[];
-        }
-
-        
-
-
     /**
      * Generic network address representation.
      * 
@@ -1498,15 +1697,6 @@ export interface IScriptPublicKey {
          */
         port?: number;
     }
-
-
-
-/**
- * A string containing a hexadecimal representation of the data (typically representing for IDs or Hashes).
- * 
- * @category General
- */ 
-export type HexString = string;
 
 
 
@@ -1536,44 +1726,55 @@ export interface IHexViewConfig {
 
 
 
-        interface RpcClient {
-            /**
-            * @param {RpcEventCallback} callback
-            */
-            addEventListener(callback:RpcEventCallback): void;
-            /**
-            * @param {RpcEventType} event
-            * @param {RpcEventCallback} [callback]
-            */
-            addEventListener<M extends keyof RpcEventMap>(
-                event: M,
-                callback: (eventData: RpcEventMap[M]) => void
-            )
-        }
+/**
+ * A string containing a hexadecimal representation of the data (typically representing for IDs or Hashes).
+ * 
+ * @category General
+ */ 
+export type HexString = string;
+
 
 
     /**
-     * RPC client configuration options
+     * RPC Resolver configuration options
      * 
      * @category Node RPC
      */
-    export interface IRpcConfig {
+    export interface IResolverConfig {
         /**
-         * An instance of the {@link Resolver} class to use for an automatic public node lookup.
-         * If supplying a resolver, the `url` property is ignored.
+         * Optional URLs for one or multiple resolvers.
          */
-        resolver? : Resolver,
+        urls?: string[];
         /**
-         * URL for wRPC node endpoint
+         * Use strict TLS for RPC connections.
+         * If not set or `false` (default), the resolver will
+         * provide the best available connection regardless of
+         * whether this connection supports TLS or not.
+         * If set to `true`, the resolver will only provide
+         * TLS-enabled connections.
+         * 
+         * This setting is ignored in the browser environment
+         * when the browser navigator location is `https`.
+         * In which case the resolver will always use TLS-enabled
+         * connections.
          */
-        url?: string;
+        tls?: boolean;
+    }
+    
+
+
+    /**
+     * RPC Resolver connection options
+     * 
+     * @category Node RPC
+     */
+    export interface IResolverConnect {
         /**
-         * RPC encoding: `borsh` or `json` (default is `borsh`)
+         * RPC encoding: `borsh` (default) or `json`
          */
-        encoding?: Encoding;
+        encoding?: Encoding | string;
         /**
-         * Network identifier: `mainnet`, `testnet-10` etc.
-         * `networkId` is required when using a resolver.
+         * Network identifier: `mainnet` or `testnet-11` etc.
          */
         networkId?: NetworkId | string;
     }
@@ -1581,48 +1782,12 @@ export interface IHexViewConfig {
 
 
     /**
-     * New block template notification event is produced when a new block
-     * template is generated for mining in the Kaspa BlockDAG.
+     * Block added notification event is produced when a new
+     * block is added to the Kaspa BlockDAG.
      * 
      * @category Node RPC
      */
-    export interface INewBlockTemplate {
-        [key: string]: any;
-    }
-    
-
-
-    /**
-     * Pruning point UTXO set override notification event is produced when the
-     * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
-     * 
-     * @category Node RPC
-     */
-    export interface IPruningPointUtxoSetOverride {
-        [key: string]: any;
-    }
-    
-
-
-    /**
-     * Virtual DAA score changed notification event is produced when the virtual
-     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
-     * 
-     * @category Node RPC
-     */
-    export interface IVirtualDaaScoreChanged {
-        [key: string]: any;
-    }
-    
-
-
-    /**
-     * Sink blue score changed notification event is produced when the blue
-     * score of the sink block changes in the Kaspa BlockDAG.
-     * 
-     * @category Node RPC
-     */
-    export interface ISinkBlueScoreChanged {
+    export interface IBlockAdded {
         [key: string]: any;
     }
     
@@ -1643,24 +1808,24 @@ export interface IHexViewConfig {
 
 
     /**
-     * Finality conflict resolved notification event is produced when a finality
-     * conflict in the Kaspa BlockDAG is resolved.
+     * Virtual DAA score changed notification event is produced when the virtual
+     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
      * 
      * @category Node RPC
      */
-    export interface IFinalityConflictResolved {
+    export interface IVirtualDaaScoreChanged {
         [key: string]: any;
     }
     
 
 
     /**
-     * Finality conflict notification event is produced when a finality
-     * conflict occurs in the Kaspa BlockDAG.
+     * Pruning point UTXO set override notification event is produced when the
+     * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
      * 
      * @category Node RPC
      */
-    export interface IFinalityConflict {
+    export interface IPruningPointUtxoSetOverride {
         [key: string]: any;
     }
     
@@ -1673,18 +1838,6 @@ export interface IHexViewConfig {
      * @category Node RPC
      */
     export interface IVirtualChainChanged {
-        [key: string]: any;
-    }
-    
-
-
-    /**
-     * Block added notification event is produced when a new
-     * block is added to the Kaspa BlockDAG.
-     * 
-     * @category Node RPC
-     */
-    export interface IBlockAdded {
         [key: string]: any;
     }
     
@@ -1776,49 +1929,95 @@ export type RpcEventCallback = (event: RpcEvent) => void;
 
 
     /**
-     * RPC Resolver connection options
+     * Finality conflict resolved notification event is produced when a finality
+     * conflict in the Kaspa BlockDAG is resolved.
      * 
      * @category Node RPC
      */
-    export interface IResolverConnect {
+    export interface IFinalityConflictResolved {
+        [key: string]: any;
+    }
+    
+
+
+    /**
+     * Finality conflict notification event is produced when a finality
+     * conflict occurs in the Kaspa BlockDAG.
+     * 
+     * @category Node RPC
+     */
+    export interface IFinalityConflict {
+        [key: string]: any;
+    }
+    
+
+
+    /**
+     * Sink blue score changed notification event is produced when the blue
+     * score of the sink block changes in the Kaspa BlockDAG.
+     * 
+     * @category Node RPC
+     */
+    export interface ISinkBlueScoreChanged {
+        [key: string]: any;
+    }
+    
+
+
+    /**
+     * New block template notification event is produced when a new block
+     * template is generated for mining in the Kaspa BlockDAG.
+     * 
+     * @category Node RPC
+     */
+    export interface INewBlockTemplate {
+        [key: string]: any;
+    }
+    
+
+
+    /**
+     * RPC client configuration options
+     *
+     * @category Node RPC
+     */
+    export interface IRpcConfig {
         /**
-         * RPC encoding: `borsh` (default) or `json`
+         * An instance of the {@link Resolver} class to use for an automatic public node lookup.
+         * If supplying a resolver, the `url` property is ignored.
          */
-        encoding?: Encoding | string;
+        resolver? : Resolver,
         /**
-         * Network identifier: `mainnet` or `testnet-11` etc.
+         * URL for wRPC node endpoint
+         */
+        url?: string;
+        /**
+         * RPC encoding: `borsh` or `json` (default is `borsh`)
+         */
+        encoding?: Encoding;
+        /**
+         * Network identifier: `mainnet`, `testnet-10` etc.
+         * `networkId` is required when using a resolver.
          */
         networkId?: NetworkId | string;
     }
     
 
 
-    /**
-     * RPC Resolver configuration options
-     * 
-     * @category Node RPC
-     */
-    export interface IResolverConfig {
-        /**
-         * Optional URLs for one or multiple resolvers.
-         */
-        urls?: string[];
-        /**
-         * Use strict TLS for RPC connections.
-         * If not set or `false` (default), the resolver will
-         * provide the best available connection regardless of
-         * whether this connection supports TLS or not.
-         * If set to `true`, the resolver will only provide
-         * TLS-enabled connections.
-         * 
-         * This setting is ignored in the browser environment
-         * when the browser navigator location is `https`.
-         * In which case the resolver will always use TLS-enabled
-         * connections.
-         */
-        tls?: boolean;
-    }
-    
+        interface RpcClient {
+            /**
+            * @param {RpcEventCallback} callback
+            */
+            addEventListener(callback:RpcEventCallback): void;
+            /**
+            * @param {RpcEventType} event
+            * @param {RpcEventCallback} [callback]
+            */
+            addEventListener<M extends keyof RpcEventMap>(
+                event: M,
+                callback: (eventData: RpcEventMap[M]) => void
+            )
+        }
 
 
 /**
@@ -1906,8 +2105,8 @@ export interface IWASM32BindingsConfig {
  */
 export class Abortable {
   free(): void;
-  constructor();
   isAborted(): boolean;
+  constructor();
   abort(): void;
   check(): void;
   reset(): void;
@@ -1936,16 +2135,82 @@ export class Address {
   toString(): string;
   free(): void;
   constructor(address: string);
-  static validate(address: string): boolean;
   /**
    * Convert an address to a string.
    */
   toString(): string;
-  short(n: number): string;
-  readonly version: string;
+  static validate(address: string): boolean;
   readonly prefix: string;
-  set setPrefix(value: string);
   readonly payload: string;
+  readonly version: string;
+  set setPrefix(value: string);
+}
+/**
+ * An efficient cumulative-sum run-length encoding for the parents-by-level vector in the block header.
+ * @category Consensus
+ */
+export class CompressedParents {
+/**
+** Return copy of self without private attributes.
+*/
+  toJSON(): Object;
+/**
+* Return stringified version of self.
+*/
+  toString(): string;
+  free(): void;
+  /**
+   * Converts the compressed parents to an expanded `JsValue` of `Array<Array<HexString>>`.
+   */
+  toExpanded(): any;
+  /**
+   * The number of levels in the expanded representation.
+   */
+  expandedLen(): number;
+  /**
+   * Get the parent hashes at a specific level.
+   * Returns an array of `HexString`s.
+   */
+  get(index: number): any;
+  constructor(js_value: any);
+}
+export class CovenantBinding {
+/**
+** Return copy of self without private attributes.
+*/
+  toJSON(): Object;
+/**
+* Return stringified version of self.
+*/
+  toString(): string;
+  free(): void;
+  toJSON(): object;
+  constructor(authorizing_input: number, covenant_id: Hash);
+  covenantId: Hash;
+  authorizingInput: number;
+}
+/**
+ * A genesis covenant group for bulk covenant binding population.
+ *
+ * All listed outputs are bound to the same covenant id, derived from the
+ * authorizing input outpoint and this exact ordered output list.
+ * @category Consensus
+ */
+export class GenesisCovenantGroup {
+/**
+** Return copy of self without private attributes.
+*/
+  toJSON(): Object;
+/**
+* Return stringified version of self.
+*/
+  toString(): string;
+  free(): void;
+  toString(): string;
+  toJSON(): object;
+  constructor(authorizing_input: number, outputs: Array<number>);
+  outputs: Array<number>;
+  authorizingInput: number;
 }
 /**
  * @category General
@@ -1976,31 +2241,31 @@ export class Header {
    * @return { String } header hash
    */
   finalize(): string;
+  getBlueWorkAsHex(): string;
   /**
    * Obtain `JSON` representation of the header. JSON representation
    * should be obtained using WASM, to ensure proper serialization of
    * big integers.
    */
   asJSON(): string;
-  getBlueWorkAsHex(): string;
+  blueScore: bigint;
   version: number;
   timestamp: bigint;
-  bits: number;
-  nonce: bigint;
   daaScore: bigint;
-  blueScore: bigint;
   readonly hash: string;
-  get hashMerkleRoot(): string;
-  set hashMerkleRoot(value: any);
-  get acceptedIdMerkleRoot(): string;
-  set acceptedIdMerkleRoot(value: any);
-  get utxoCommitment(): string;
-  set utxoCommitment(value: any);
   get pruningPoint(): string;
   set pruningPoint(value: any);
-  parentsByLevel: any;
+  get utxoCommitment(): string;
+  set utxoCommitment(value: any);
+  get hashMerkleRoot(): string;
+  set hashMerkleRoot(value: any);
   get blueWork(): bigint;
   set blueWork(value: any);
+  parentsByLevel: any;
+  get acceptedIdMerkleRoot(): string;
+  set acceptedIdMerkleRoot(value: any);
+  bits: number;
+  nonce: bigint;
 }
 /**
  *
@@ -2019,9 +2284,9 @@ export class NetworkId {
 */
   toString(): string;
   free(): void;
-  constructor(value: any);
   toString(): string;
   addressPrefix(): string;
+  constructor(value: any);
   type: NetworkType;
   get suffix(): number | undefined;
   set suffix(value: number | null | undefined);
@@ -2053,6 +2318,31 @@ export class NodeDescriptor {
    * The URL of the node WebSocket (wRPC URL).
    */
   url: string;
+}
+export class OptionalHeader {
+/**
+** Return copy of self without private attributes.
+*/
+  toJSON(): Object;
+/**
+* Return stringified version of self.
+*/
+  toString(): string;
+  free(): void;
+  constructor(js_value: OptionalHeader | IOptionalHeader);
+  readonly blueScore: bigint | undefined;
+  readonly blueWork: any;
+  readonly pruningPoint: string | undefined;
+  readonly utxoCommitment: string | undefined;
+  readonly hashMerkleRoot: string | undefined;
+  readonly parentsByLevel: CompressedParents | undefined;
+  readonly acceptedIdMerkleRoot: string | undefined;
+  readonly bits: number | undefined;
+  readonly hash: string | undefined;
+  readonly nonce: bigint | undefined;
+  readonly version: number | undefined;
+  readonly daaScore: bigint | undefined;
+  readonly timestamp: bigint | undefined;
 }
 /**
  *
@@ -2093,22 +2383,6 @@ export class Resolver {
   toString(): string;
   free(): void;
   /**
-   * Fetches a public Kaspa wRPC endpoint for the given encoding and network identifier.
-   * @see {@link Encoding}, {@link NetworkId}, {@link Node}
-   */
-  getNode(encoding: Encoding, network_id: NetworkId | string): Promise<NodeDescriptor>;
-  /**
-   * Fetches a public Kaspa wRPC endpoint URL for the given encoding and network identifier.
-   * @see {@link Encoding}, {@link NetworkId}
-   */
-  getUrl(encoding: Encoding, network_id: NetworkId | string): Promise<string>;
-  /**
-   * Connect to a public Kaspa wRPC endpoint for the given encoding and network identifier
-   * supplied via {@link IResolverConnect} interface.
-   * @see {@link IResolverConnect}, {@link RpcClient}
-   */
-  connect(options: IResolverConnect | NetworkId | string): Promise<RpcClient>;
-  /**
    * Creates a new Resolver client with the given
    * configuration supplied as {@link IResolverConfig}
    * interface. If not supplied, the default configuration
@@ -2116,6 +2390,22 @@ export class Resolver {
    * will be used.
    */
   constructor(args?: IResolverConfig | string[] | null);
+  /**
+   * Connect to a public Kaspa wRPC endpoint for the given encoding and network identifier
+   * supplied via {@link IResolverConnect} interface.
+   * @see {@link IResolverConnect}, {@link RpcClient}
+   */
+  connect(options: IResolverConnect | NetworkId | string): Promise<RpcClient>;
+  /**
+   * Fetches a public Kaspa wRPC endpoint URL for the given encoding and network identifier.
+   * @see {@link Encoding}, {@link NetworkId}
+   */
+  getUrl(encoding: Encoding, network_id: NetworkId | string): Promise<string>;
+  /**
+   * Fetches a public Kaspa wRPC endpoint for the given encoding and network identifier.
+   * @see {@link Encoding}, {@link NetworkId}, {@link Node}
+   */
+  getNode(encoding: Encoding, network_id: NetworkId | string): Promise<NodeDescriptor>;
   /**
    * List of public Kaspa Resolver URLs.
    */
@@ -2218,6 +2508,64 @@ export class RpcClient {
   toString(): string;
   free(): void;
   /**
+   * Disconnect from the Kaspa RPC server.
+   */
+  disconnect(): Promise<void>;
+  /**
+   * Retrieves multiple blocks from the Kaspa BlockDAG.
+   * Returned information: List of block information.
+   * @see {@link IGetBlocksRequest}, {@link IGetBlocksResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getBlocks(request: IGetBlocksRequest): Promise<IGetBlocksResponse>;
+  /**
+   * Retrieves block headers from the Kaspa BlockDAG.
+   * Returned information: List of block headers.
+   * @see {@link IGetHeadersRequest}, {@link IGetHeadersResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getHeaders(request: IGetHeadersRequest): Promise<IGetHeadersResponse>;
+  /**
+   * Retrieves various metrics and statistics related to the
+   * performance and status of the Kaspa node.
+   * Returned information: Memory usage, CPU usage, network activity.
+   * @see {@link IGetMetricsRequest}, {@link IGetMetricsResponse}
+   * @throws `string` on an RPC error or a server-side error.
+   */
+  getMetrics(request?: IGetMetricsRequest | null): Promise<IGetMetricsResponse>;
+  static defaultPort(encoding: Encoding, network: NetworkType | NetworkId | string): number;
+  /**
+   * Set the resolver for the RPC client.
+   * This setting will take effect on the next connection.
+   */
+  setResolver(resolver: Resolver): void;
+  /**
+   * Submits a block to the Kaspa network.
+   * Returned information: None.
+   * @see {@link ISubmitBlockRequest}, {@link ISubmitBlockResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  submitBlock(request: ISubmitBlockRequest): Promise<ISubmitBlockResponse>;
+  /**
+   * Triggers a disconnection on the underlying WebSocket
+   * if the WebSocket is in connected state.
+   * This is intended for debug purposes only.
+   * Can be used to test application reconnection logic.
+   */
+  triggerAbort(): void;
+  /**
+   * Retrieves information about a subnetwork in the Kaspa BlockDAG.
+   * Returned information: Subnetwork information.
+   * @see {@link IGetSubnetworkRequest}, {@link IGetSubnetworkResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getSubnetwork(request: IGetSubnetworkRequest): Promise<IGetSubnetworkResponse>;
+  /**
+   * Set the network id for the RPC client.
+   * This setting will take effect on the next connection.
+   */
+  setNetworkId(network_id: NetworkId | string): void;
+  /**
    * Retrieves the current number of blocks in the Kaspa BlockDAG.
    * This is not a block count, not a "block height" and can not be
    * used for transaction validation.
@@ -2227,17 +2575,6 @@ export class RpcClient {
    */
   getBlockCount(request?: IGetBlockCountRequest | null): Promise<IGetBlockCountResponse>;
   /**
-   * Provides information about the Directed Acyclic Graph (DAG)
-   * structure of the Kaspa BlockDAG.
-   * Returned information: Number of blocks in the DAG,
-   * number of tips in the DAG, hash of the selected parent block,
-   * difficulty of the selected parent block, selected parent block
-   * blue score, selected parent block time.
-   * @see {@link IGetBlockDagInfoRequest}, {@link IGetBlockDagInfoResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getBlockDagInfo(request?: IGetBlockDagInfoRequest | null): Promise<IGetBlockDagInfoResponse>;
-  /**
    * Returns the total current coin supply of Kaspa network.
    * Returned information: Total coin supply.
    * @see {@link IGetCoinSupplyRequest}, {@link IGetCoinSupplyResponse}
@@ -2245,76 +2582,11 @@ export class RpcClient {
    */
   getCoinSupply(request?: IGetCoinSupplyRequest | null): Promise<IGetCoinSupplyResponse>;
   /**
-   * Retrieves information about the peers connected to the Kaspa node.
-   * Returned information: Peer ID, IP address and port, connection
-   * status, protocol version.
-   * @see {@link IGetConnectedPeerInfoRequest}, {@link IGetConnectedPeerInfoResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getConnectedPeerInfo(request?: IGetConnectedPeerInfoRequest | null): Promise<IGetConnectedPeerInfoResponse>;
-  /**
-   * Retrieves general information about the Kaspa node.
-   * Returned information: Version of the Kaspa node, protocol
-   * version, network identifier.
-   * This call is primarily used by gRPC clients.
-   * For wRPC clients, use {@link RpcClient.getServerInfo}.
-   * @see {@link IGetInfoRequest}, {@link IGetInfoResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getInfo(request?: IGetInfoRequest | null): Promise<IGetInfoResponse>;
-  /**
-   * Provides a list of addresses of known peers in the Kaspa
-   * network that the node can potentially connect to.
-   * Returned information: List of peer addresses.
-   * @see {@link IGetPeerAddressesRequest}, {@link IGetPeerAddressesResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getPeerAddresses(request?: IGetPeerAddressesRequest | null): Promise<IGetPeerAddressesResponse>;
-  /**
-   * Retrieves various metrics and statistics related to the
-   * performance and status of the Kaspa node.
-   * Returned information: Memory usage, CPU usage, network activity.
-   * @see {@link IGetMetricsRequest}, {@link IGetMetricsResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getMetrics(request?: IGetMetricsRequest | null): Promise<IGetMetricsResponse>;
-  /**
    * Retrieves current number of network connections
    * @see {@link IGetConnectionsRequest}, {@link IGetConnectionsResponse}
    * @throws `string` on an RPC error or a server-side error.
    */
   getConnections(request?: IGetConnectionsRequest | null): Promise<IGetConnectionsResponse>;
-  /**
-   * Retrieves the current sink block, which is the block with
-   * the highest cumulative difficulty in the Kaspa BlockDAG.
-   * Returned information: Sink block hash, sink block height.
-   * @see {@link IGetSinkRequest}, {@link IGetSinkResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getSink(request?: IGetSinkRequest | null): Promise<IGetSinkResponse>;
-  /**
-   * Returns the blue score of the current sink block, indicating
-   * the total amount of work that has been done on the main chain
-   * leading up to that block.
-   * Returned information: Blue score of the sink block.
-   * @see {@link IGetSinkBlueScoreRequest}, {@link IGetSinkBlueScoreResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  getSinkBlueScore(request?: IGetSinkBlueScoreRequest | null): Promise<IGetSinkBlueScoreResponse>;
-  /**
-   * Tests the connection and responsiveness of a Kaspa node.
-   * Returned information: None.
-   * @see {@link IPingRequest}, {@link IPingResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  ping(request?: IPingRequest | null): Promise<IPingResponse>;
-  /**
-   * Gracefully shuts down the Kaspa node.
-   * Returned information: None.
-   * @see {@link IShutdownRequest}, {@link IShutdownResponse}
-   * @throws `string` on an RPC error or a server-side error.
-   */
-  shutdown(request?: IShutdownRequest | null): Promise<IShutdownResponse>;
   /**
    * Retrieves information about the Kaspa server.
    * Returned information: Version of the Kaspa server, protocol
@@ -2337,61 +2609,23 @@ export class RpcClient {
    */
   getFeeEstimate(request?: IGetFeeEstimateRequest | null): Promise<IGetFeeEstimateResponse>;
   /**
-   * Retrieves the current network configuration.
-   * Returned information: Current network configuration.
-   * @see {@link IGetCurrentNetworkRequest}, {@link IGetCurrentNetworkResponse}
+   * Retrieves a specific mempool entry by transaction ID.
+   * Returned information: Mempool entry information.
+   * @see {@link IGetMempoolEntryRequest}, {@link IGetMempoolEntryResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getMempoolEntry(request: IGetMempoolEntryRequest): Promise<IGetMempoolEntryResponse>;
+  /**
+   * Provides information about the Directed Acyclic Graph (DAG)
+   * structure of the Kaspa BlockDAG.
+   * Returned information: Number of blocks in the DAG,
+   * number of tips in the DAG, hash of the selected parent block,
+   * difficulty of the selected parent block, selected parent block
+   * blue score, selected parent block time.
+   * @see {@link IGetBlockDagInfoRequest}, {@link IGetBlockDagInfoResponse}
    * @throws `string` on an RPC error or a server-side error.
    */
-  getCurrentNetwork(request?: IGetCurrentNetworkRequest | null): Promise<IGetCurrentNetworkResponse>;
-  /**
-   * Adds a peer to the Kaspa node's list of known peers.
-   * Returned information: None.
-   * @see {@link IAddPeerRequest}, {@link IAddPeerResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  addPeer(request: IAddPeerRequest): Promise<IAddPeerResponse>;
-  /**
-   * Bans a peer from connecting to the Kaspa node for a specified duration.
-   * Returned information: None.
-   * @see {@link IBanRequest}, {@link IBanResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  ban(request: IBanRequest): Promise<IBanResponse>;
-  /**
-   * Estimates the network's current hash rate in hashes per second.
-   * Returned information: Estimated network hashes per second.
-   * @see {@link IEstimateNetworkHashesPerSecondRequest}, {@link IEstimateNetworkHashesPerSecondResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  estimateNetworkHashesPerSecond(request: IEstimateNetworkHashesPerSecondRequest): Promise<IEstimateNetworkHashesPerSecondResponse>;
-  /**
-   * Retrieves the balance of a specific address in the Kaspa BlockDAG.
-   * Returned information: Balance of the address.
-   * @see {@link IGetBalanceByAddressRequest}, {@link IGetBalanceByAddressResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  getBalanceByAddress(request: IGetBalanceByAddressRequest): Promise<IGetBalanceByAddressResponse>;
-  /**
-   * Retrieves balances for multiple addresses in the Kaspa BlockDAG.
-   * Returned information: Balances of the addresses.
-   * @see {@link IGetBalancesByAddressesRequest}, {@link IGetBalancesByAddressesResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  getBalancesByAddresses(request: IGetBalancesByAddressesRequest | Address[] | string[]): Promise<IGetBalancesByAddressesResponse>;
-  /**
-   * Retrieves a specific block from the Kaspa BlockDAG.
-   * Returned information: Block information.
-   * @see {@link IGetBlockRequest}, {@link IGetBlockResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  getBlock(request: IGetBlockRequest): Promise<IGetBlockResponse>;
-  /**
-   * Retrieves multiple blocks from the Kaspa BlockDAG.
-   * Returned information: List of block information.
-   * @see {@link IGetBlocksRequest}, {@link IGetBlocksResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  getBlocks(request: IGetBlocksRequest): Promise<IGetBlocksResponse>;
+  getBlockDagInfo(request?: IGetBlockDagInfoRequest | null): Promise<IGetBlockDagInfoResponse>;
   /**
    * Generates a new block template for mining.
    * Returned information: Block template information.
@@ -2400,33 +2634,27 @@ export class RpcClient {
    */
   getBlockTemplate(request: IGetBlockTemplateRequest): Promise<IGetBlockTemplateResponse>;
   /**
-   * Checks if block is blue or not.
-   * Returned information: Block blueness.
-   * @see {@link IGetCurrentBlockColorRequest}, {@link IGetCurrentBlockColorResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   * Provides a list of addresses of known peers in the Kaspa
+   * network that the node can potentially connect to.
+   * Returned information: List of peer addresses.
+   * @see {@link IGetPeerAddressesRequest}, {@link IGetPeerAddressesResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  getCurrentBlockColor(request: IGetCurrentBlockColorRequest): Promise<IGetCurrentBlockColorResponse>;
+  getPeerAddresses(request?: IGetPeerAddressesRequest | null): Promise<IGetPeerAddressesResponse>;
   /**
-   * Retrieves the estimated DAA (Difficulty Adjustment Algorithm)
-   * score timestamp estimate.
-   * Returned information: DAA score timestamp estimate.
-   * @see {@link IGetDaaScoreTimestampEstimateRequest}, {@link IGetDaaScoreTimestampEstimateResponse}
+   * Submits a transaction to the Kaspa network.
+   * Returned information: Submitted Transaction Id.
+   * @see {@link ISubmitTransactionRequest}, {@link ISubmitTransactionResponse}
    * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  getDaaScoreTimestampEstimate(request: IGetDaaScoreTimestampEstimateRequest): Promise<IGetDaaScoreTimestampEstimateResponse>;
+  submitTransaction(request: ISubmitTransactionRequest): Promise<ISubmitTransactionResponse>;
   /**
-   * Feerate estimates (experimental)
-   * @see {@link IGetFeeEstimateExperimentalRequest}, {@link IGetFeeEstimateExperimentalResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   * Retrieves the current network configuration.
+   * Returned information: Current network configuration.
+   * @see {@link IGetCurrentNetworkRequest}, {@link IGetCurrentNetworkResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  getFeeEstimateExperimental(request: IGetFeeEstimateExperimentalRequest): Promise<IGetFeeEstimateExperimentalResponse>;
-  /**
-   * Retrieves block headers from the Kaspa BlockDAG.
-   * Returned information: List of block headers.
-   * @see {@link IGetHeadersRequest}, {@link IGetHeadersResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-   */
-  getHeaders(request: IGetHeadersRequest): Promise<IGetHeadersResponse>;
+  getCurrentNetwork(request?: IGetCurrentNetworkRequest | null): Promise<IGetCurrentNetworkResponse>;
   /**
    * Retrieves mempool entries from the Kaspa node's mempool.
    * Returned information: List of mempool entries.
@@ -2435,26 +2663,63 @@ export class RpcClient {
    */
   getMempoolEntries(request: IGetMempoolEntriesRequest): Promise<IGetMempoolEntriesResponse>;
   /**
-   * Retrieves mempool entries associated with specific addresses.
-   * Returned information: List of mempool entries.
-   * @see {@link IGetMempoolEntriesByAddressesRequest}, {@link IGetMempoolEntriesByAddressesResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   * Returns the blue score of the current sink block, indicating
+   * the total amount of work that has been done on the main chain
+   * leading up to that block.
+   * Returned information: Blue score of the sink block.
+   * @see {@link IGetSinkBlueScoreRequest}, {@link IGetSinkBlueScoreResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  getMempoolEntriesByAddresses(request: IGetMempoolEntriesByAddressesRequest): Promise<IGetMempoolEntriesByAddressesResponse>;
+  getSinkBlueScore(request?: IGetSinkBlueScoreRequest | null): Promise<IGetSinkBlueScoreResponse>;
   /**
-   * Retrieves a specific mempool entry by transaction ID.
-   * Returned information: Mempool entry information.
-   * @see {@link IGetMempoolEntryRequest}, {@link IGetMempoolEntryResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   * Manage subscription for a virtual DAA score changed notification event.
+   * Virtual DAA score changed notification event is produced when the virtual
+   * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
    */
-  getMempoolEntry(request: IGetMempoolEntryRequest): Promise<IGetMempoolEntryResponse>;
+  subscribeVirtualDaaScoreChanged(): Promise<void>;
   /**
-   * Retrieves information about a subnetwork in the Kaspa BlockDAG.
-   * Returned information: Subnetwork information.
-   * @see {@link IGetSubnetworkRequest}, {@link IGetSubnetworkResponse}
+   *
+   * Unregister a single event listener callback from all events.
+   *
+   *
+   */
+  clearEventListener(callback: RpcEventCallback): void;
+  /**
+   * Retrieves reward information for a block.
+   * Returned information: block color, confirmation count, reward, merging chain block, and header.
+   * @see {@link IGetBlockRewardInfoRequest}, {@link IGetBlockRewardInfoResponse}
    * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  getSubnetwork(request: IGetSubnetworkRequest): Promise<IGetSubnetworkResponse>;
+  getBlockRewardInfo(request: IGetBlockRewardInfoRequest): Promise<IGetBlockRewardInfoResponse>;
+  /**
+   *
+   * Unregister an event listener.
+   * This function will remove the callback for the specified event.
+   * If the `callback` is not supplied, all callbacks will be
+   * removed for the specified event.
+   *
+   * @see {@link RpcClient.addEventListener}
+   */
+  removeEventListener(event: RpcEventType | string, callback?: RpcEventCallback | null): void;
+  /**
+   * Manage subscription for a block added notification event.
+   * Block added notification event is produced when a new
+   * block is added to the Kaspa BlockDAG.
+   */
+  subscribeBlockAdded(): Promise<void>;
+  /**
+   * Manage subscription for a virtual DAA score changed notification event.
+   * Virtual DAA score changed notification event is produced when the virtual
+   * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
+   */
+  unsubscribeVirtualDaaScoreChanged(): Promise<void>;
+  /**
+   * Retrieves the balance of a specific address in the Kaspa BlockDAG.
+   * Returned information: Balance of the address.
+   * @see {@link IGetBalanceByAddressRequest}, {@link IGetBalanceByAddressResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getBalanceByAddress(request: IGetBalanceByAddressRequest): Promise<IGetBalanceByAddressResponse>;
   /**
    * Retrieves unspent transaction outputs (UTXOs) associated with
    * specific addresses.
@@ -2464,12 +2729,42 @@ export class RpcClient {
    */
   getUtxosByAddresses(request: IGetUtxosByAddressesRequest | Address[] | string[]): Promise<IGetUtxosByAddressesResponse>;
   /**
-   * Retrieves the virtual chain corresponding to a specified block hash.
-   * Returned information: Virtual chain information.
-   * @see {@link IGetVirtualChainFromBlockRequest}, {@link IGetVirtualChainFromBlockResponse}
+   * Retrieves information about the peers connected to the Kaspa node.
+   * Returned information: Peer ID, IP address and port, connection
+   * status, protocol version.
+   * @see {@link IGetConnectedPeerInfoRequest}, {@link IGetConnectedPeerInfoResponse}
+   * @throws `string` on an RPC error or a server-side error.
+   */
+  getConnectedPeerInfo(request?: IGetConnectedPeerInfoRequest | null): Promise<IGetConnectedPeerInfoResponse>;
+  /**
+   * Checks if block is blue or not.
+   * Returned information: Block blueness.
+   * @see {@link IGetCurrentBlockColorRequest}, {@link IGetCurrentBlockColorResponse}
    * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  getVirtualChainFromBlock(request: IGetVirtualChainFromBlockRequest): Promise<IGetVirtualChainFromBlockResponse>;
+  getCurrentBlockColor(request: IGetCurrentBlockColorRequest): Promise<IGetCurrentBlockColorResponse>;
+  /**
+   * Get UTXO Return Addresses.
+   * @see {@link IGetUtxoReturnAddressRequest}, {@link IGetUtxoReturnAddressResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getUtxoReturnAddress(request: IGetUtxoReturnAddressRequest): Promise<IGetUtxoReturnAddressResponse>;
+  /**
+   * Subscribe for a UTXOs changed notification event.
+   * UTXOs changed notification event is produced when the set
+   * of unspent transaction outputs (UTXOs) changes in the
+   * Kaspa BlockDAG. The event notification will be scoped to the
+   * provided list of addresses.
+   */
+  subscribeUtxosChanged(addresses: (Address | string)[]): Promise<void>;
+  unsubscribeBlockAdded(): Promise<void>;
+  /**
+   * Retrieves balances for multiple addresses in the Kaspa BlockDAG.
+   * Returned information: Balances of the addresses.
+   * @see {@link IGetBalancesByAddressesRequest}, {@link IGetBalancesByAddressesResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getBalancesByAddresses(request: IGetBalancesByAddressesRequest | Address[] | string[]): Promise<IGetBalancesByAddressesResponse>;
   /**
    * Resolves a finality conflict in the Kaspa BlockDAG.
    * Returned information: None.
@@ -2478,19 +2773,41 @@ export class RpcClient {
    */
   resolveFinalityConflict(request: IResolveFinalityConflictRequest): Promise<IResolveFinalityConflictResponse>;
   /**
-   * Submits a block to the Kaspa network.
-   * Returned information: None.
-   * @see {@link ISubmitBlockRequest}, {@link ISubmitBlockResponse}
-   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   * Unsubscribe from UTXOs changed notification event
+   * for a specific set of addresses.
    */
-  submitBlock(request: ISubmitBlockRequest): Promise<ISubmitBlockResponse>;
+  unsubscribeUtxosChanged(addresses: (Address | string)[]): Promise<void>;
   /**
-   * Submits a transaction to the Kaspa network.
-   * Returned information: Submitted Transaction Id.
-   * @see {@link ISubmitTransactionRequest}, {@link ISubmitTransactionResponse}
+   *
+   * Unregister all notification callbacks for all events.
+   */
+  removeAllEventListeners(): void;
+  /**
+   * Manage subscription for a finality conflict notification event.
+   * Finality conflict notification event is produced when a finality
+   * conflict occurs in the Kaspa BlockDAG.
+   */
+  subscribeFinalityConflict(): Promise<void>;
+  /**
+   * Retrieves the virtual chain corresponding to a specified block hash.
+   * Returned information: Virtual chain information.
+   * @see {@link IGetVirtualChainFromBlockRequest}, {@link IGetVirtualChainFromBlockResponse}
    * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  submitTransaction(request: ISubmitTransactionRequest): Promise<ISubmitTransactionResponse>;
+  getVirtualChainFromBlock(request: IGetVirtualChainFromBlockRequest): Promise<IGetVirtualChainFromBlockResponse>;
+  /**
+   * Manage subscription for a new block template notification event.
+   * New block template notification event is produced when a new block
+   * template is generated for mining in the Kaspa BlockDAG.
+   */
+  subscribeNewBlockTemplate(): Promise<void>;
+  /**
+   * Feerate estimates (experimental)
+   * @see {@link IGetFeeEstimateExperimentalRequest}, {@link IGetFeeEstimateExperimentalResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getFeeEstimateExperimental(request: IGetFeeEstimateExperimentalRequest): Promise<IGetFeeEstimateExperimentalResponse>;
+  unsubscribeFinalityConflict(): Promise<void>;
   /**
    * Submits an RBF transaction to the Kaspa network.
    * Returned information: Submitted Transaction Id, Transaction that was replaced.
@@ -2498,6 +2815,99 @@ export class RpcClient {
    * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
   submitTransactionReplacement(request: ISubmitTransactionReplacementRequest): Promise<ISubmitTransactionReplacementResponse>;
+  unsubscribeNewBlockTemplate(): Promise<void>;
+  /**
+   * Retrieves the virtual chain corresponding to a specified block hash.
+   * Returned information: Virtual chain information. (Version 2)
+   * May be used to get fully populated transactions
+   * @see {@link IGetVirtualChainFromBlockV2Request}, {@link IGetVirtualChainFromBlockV2Response}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getVirtualChainFromBlockV2(request: IGetVirtualChainFromBlockV2Request): Promise<IGetVirtualChainFromBlockV2Response>;
+  /**
+   * Manage subscription for a virtual chain changed notification event.
+   * Virtual chain changed notification event is produced when the virtual
+   * chain changes in the Kaspa BlockDAG.
+   */
+  subscribeVirtualChainChanged(include_accepted_transaction_ids: boolean): Promise<void>;
+  /**
+   * Retrieves the estimated DAA (Difficulty Adjustment Algorithm)
+   * score timestamp estimate.
+   * Returned information: DAA score timestamp estimate.
+   * @see {@link IGetDaaScoreTimestampEstimateRequest}, {@link IGetDaaScoreTimestampEstimateResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getDaaScoreTimestampEstimate(request: IGetDaaScoreTimestampEstimateRequest): Promise<IGetDaaScoreTimestampEstimateResponse>;
+  /**
+   * Retrieves mempool entries associated with specific addresses.
+   * Returned information: List of mempool entries.
+   * @see {@link IGetMempoolEntriesByAddressesRequest}, {@link IGetMempoolEntriesByAddressesResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  getMempoolEntriesByAddresses(request: IGetMempoolEntriesByAddressesRequest): Promise<IGetMempoolEntriesByAddressesResponse>;
+  /**
+   * Manage subscription for a sink blue score changed notification event.
+   * Sink blue score changed notification event is produced when the blue
+   * score of the sink block changes in the Kaspa BlockDAG.
+   */
+  subscribeSinkBlueScoreChanged(): Promise<void>;
+  /**
+   * Manage subscription for a virtual chain changed notification event.
+   * Virtual chain changed notification event is produced when the virtual
+   * chain changes in the Kaspa BlockDAG.
+   */
+  unsubscribeVirtualChainChanged(include_accepted_transaction_ids: boolean): Promise<void>;
+  /**
+   * Estimates the network's current hash rate in hashes per second.
+   * Returned information: Estimated network hashes per second.
+   * @see {@link IEstimateNetworkHashesPerSecondRequest}, {@link IEstimateNetworkHashesPerSecondResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  estimateNetworkHashesPerSecond(request: IEstimateNetworkHashesPerSecondRequest): Promise<IEstimateNetworkHashesPerSecondResponse>;
+  unsubscribeSinkBlueScoreChanged(): Promise<void>;
+  /**
+   * Manage subscription for a finality conflict resolved notification event.
+   * Finality conflict resolved notification event is produced when a finality
+   * conflict in the Kaspa BlockDAG is resolved.
+   */
+  subscribeFinalityConflictResolved(): Promise<void>;
+  unsubscribeFinalityConflictResolved(): Promise<void>;
+  /**
+   * Bans a peer from connecting to the Kaspa node for a specified duration.
+   * Returned information: None.
+   * @see {@link IBanRequest}, {@link IBanResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+   */
+  ban(request: IBanRequest): Promise<IBanResponse>;
+  /**
+   * Manage subscription for a pruning point UTXO set override notification event.
+   * Pruning point UTXO set override notification event is produced when the
+   * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
+   */
+  subscribePruningPointUtxoSetOverride(): Promise<void>;
+  unsubscribePruningPointUtxoSetOverride(): Promise<void>;
+  /**
+   *
+   * Create a new RPC client with optional {@link Encoding} and a `url`.
+   *
+   * @see {@link IRpcConfig} interface for more details.
+   */
+  constructor(config?: IRpcConfig | null);
+  /**
+   * Tests the connection and responsiveness of a Kaspa node.
+   * Returned information: None.
+   * @see {@link IPingRequest}, {@link IPingResponse}
+   * @throws `string` on an RPC error or a server-side error.
+   */
+  ping(request?: IPingRequest | null): Promise<IPingResponse>;
+  /**
+   * Stop background RPC services (automatically stopped when invoking {@link RpcClient.disconnect}).
+   */
+  stop(): Promise<void>;
+  /**
+   * Start background RPC services (automatically started when invoking {@link RpcClient.connect}).
+   */
+  start(): Promise<void>;
   /**
    * Unbans a previously banned peer, allowing it to connect
    * to the Kaspa node again.
@@ -2507,85 +2917,52 @@ export class RpcClient {
    */
   unban(request: IUnbanRequest): Promise<IUnbanResponse>;
   /**
-   * Manage subscription for a block added notification event.
-   * Block added notification event is produced when a new
-   * block is added to the Kaspa BlockDAG.
+   * Connect to the Kaspa RPC server. This function starts a background
+   * task that connects and reconnects to the server if the connection
+   * is terminated.  Use [`disconnect()`](Self::disconnect()) to
+   * terminate the connection.
+   * @see {@link IConnectOptions} interface for more details.
    */
-  subscribeBlockAdded(): Promise<void>;
-  unsubscribeBlockAdded(): Promise<void>;
+  connect(args?: IConnectOptions | undefined | null): Promise<void>;
   /**
-   * Manage subscription for a finality conflict notification event.
-   * Finality conflict notification event is produced when a finality
-   * conflict occurs in the Kaspa BlockDAG.
+   * Adds a peer to the Kaspa node's list of known peers.
+   * Returned information: None.
+   * @see {@link IAddPeerRequest}, {@link IAddPeerResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  subscribeFinalityConflict(): Promise<void>;
-  unsubscribeFinalityConflict(): Promise<void>;
+  addPeer(request: IAddPeerRequest): Promise<IAddPeerResponse>;
   /**
-   * Manage subscription for a finality conflict resolved notification event.
-   * Finality conflict resolved notification event is produced when a finality
-   * conflict in the Kaspa BlockDAG is resolved.
+   * Retrieves general information about the Kaspa node.
+   * Returned information: Version of the Kaspa node, protocol
+   * version, network identifier.
+   * This call is primarily used by gRPC clients.
+   * For wRPC clients, use {@link RpcClient.getServerInfo}.
+   * @see {@link IGetInfoRequest}, {@link IGetInfoResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  subscribeFinalityConflictResolved(): Promise<void>;
-  unsubscribeFinalityConflictResolved(): Promise<void>;
+  getInfo(request?: IGetInfoRequest | null): Promise<IGetInfoResponse>;
   /**
-   * Manage subscription for a sink blue score changed notification event.
-   * Sink blue score changed notification event is produced when the blue
-   * score of the sink block changes in the Kaspa BlockDAG.
+   * Retrieves the current sink block, which is the block with
+   * the highest cumulative difficulty in the Kaspa BlockDAG.
+   * Returned information: Sink block hash, sink block height.
+   * @see {@link IGetSinkRequest}, {@link IGetSinkResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  subscribeSinkBlueScoreChanged(): Promise<void>;
-  unsubscribeSinkBlueScoreChanged(): Promise<void>;
+  getSink(request?: IGetSinkRequest | null): Promise<IGetSinkResponse>;
   /**
-   * Manage subscription for a pruning point UTXO set override notification event.
-   * Pruning point UTXO set override notification event is produced when the
-   * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
+   * Gracefully shuts down the Kaspa node.
+   * Returned information: None.
+   * @see {@link IShutdownRequest}, {@link IShutdownResponse}
+   * @throws `string` on an RPC error or a server-side error.
    */
-  subscribePruningPointUtxoSetOverride(): Promise<void>;
-  unsubscribePruningPointUtxoSetOverride(): Promise<void>;
+  shutdown(request?: IShutdownRequest | null): Promise<IShutdownResponse>;
   /**
-   * Manage subscription for a new block template notification event.
-   * New block template notification event is produced when a new block
-   * template is generated for mining in the Kaspa BlockDAG.
+   * Retrieves a specific block from the Kaspa BlockDAG.
+   * Returned information: Block information.
+   * @see {@link IGetBlockRequest}, {@link IGetBlockResponse}
+   * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
    */
-  subscribeNewBlockTemplate(): Promise<void>;
-  unsubscribeNewBlockTemplate(): Promise<void>;
-  /**
-   * Manage subscription for a virtual DAA score changed notification event.
-   * Virtual DAA score changed notification event is produced when the virtual
-   * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
-   */
-  subscribeVirtualDaaScoreChanged(): Promise<void>;
-  /**
-   * Manage subscription for a virtual DAA score changed notification event.
-   * Virtual DAA score changed notification event is produced when the virtual
-   * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
-   */
-  unsubscribeVirtualDaaScoreChanged(): Promise<void>;
-  /**
-   * Subscribe for a UTXOs changed notification event.
-   * UTXOs changed notification event is produced when the set
-   * of unspent transaction outputs (UTXOs) changes in the
-   * Kaspa BlockDAG. The event notification will be scoped to the
-   * provided list of addresses.
-   */
-  subscribeUtxosChanged(addresses: (Address | string)[]): Promise<void>;
-  /**
-   * Unsubscribe from UTXOs changed notification event
-   * for a specific set of addresses.
-   */
-  unsubscribeUtxosChanged(addresses: (Address | string)[]): Promise<void>;
-  /**
-   * Manage subscription for a virtual chain changed notification event.
-   * Virtual chain changed notification event is produced when the virtual
-   * chain changes in the Kaspa BlockDAG.
-   */
-  subscribeVirtualChainChanged(include_accepted_transaction_ids: boolean): Promise<void>;
-  /**
-   * Manage subscription for a virtual chain changed notification event.
-   * Virtual chain changed notification event is produced when the virtual
-   * chain changes in the Kaspa BlockDAG.
-   */
-  unsubscribeVirtualChainChanged(include_accepted_transaction_ids: boolean): Promise<void>;
-  static defaultPort(encoding: Encoding, network: NetworkType | NetworkId | string): number;
+  getBlock(request: IGetBlockRequest): Promise<IGetBlockResponse>;
   /**
    * Constructs an WebSocket RPC URL given the partial URL or an IP, RPC encoding
    * and a network type.
@@ -2598,91 +2975,29 @@ export class RpcClient {
    */
   static parseUrl(url: string, encoding: Encoding, network: NetworkId): string;
   /**
-   *
-   * Create a new RPC client with optional {@link Encoding} and a `url`.
-   *
-   * @see {@link IRpcConfig} interface for more details.
+   * Current nerwork id
    */
-  constructor(config?: IRpcConfig | null);
-  /**
-   * Set the resolver for the RPC client.
-   * This setting will take effect on the next connection.
-   */
-  setResolver(resolver: Resolver): void;
-  /**
-   * Set the network id for the RPC client.
-   * This setting will take effect on the next connection.
-   */
-  setNetworkId(network_id: NetworkId | string): void;
-  /**
-   * Connect to the Kaspa RPC server. This function starts a background
-   * task that connects and reconnects to the server if the connection
-   * is terminated.  Use [`disconnect()`](Self::disconnect()) to
-   * terminate the connection.
-   * @see {@link IConnectOptions} interface for more details.
-   */
-  connect(args?: IConnectOptions | undefined | null): Promise<void>;
-  /**
-   * Disconnect from the Kaspa RPC server.
-   */
-  disconnect(): Promise<void>;
-  /**
-   * Start background RPC services (automatically started when invoking {@link RpcClient.connect}).
-   */
-  start(): Promise<void>;
-  /**
-   * Stop background RPC services (automatically stopped when invoking {@link RpcClient.disconnect}).
-   */
-  stop(): Promise<void>;
-  /**
-   * Triggers a disconnection on the underlying WebSocket
-   * if the WebSocket is in connected state.
-   * This is intended for debug purposes only.
-   * Can be used to test application reconnection logic.
-   */
-  triggerAbort(): void;
-  /**
-   *
-   * Unregister an event listener.
-   * This function will remove the callback for the specified event.
-   * If the `callback` is not supplied, all callbacks will be
-   * removed for the specified event.
-   *
-   * @see {@link RpcClient.addEventListener}
-   */
-  removeEventListener(event: RpcEventType | string, callback?: RpcEventCallback | null): void;
-  /**
-   *
-   * Unregister a single event listener callback from all events.
-   *
-   *
-   */
-  clearEventListener(callback: RpcEventCallback): void;
-  /**
-   *
-   * Unregister all notification callbacks for all events.
-   */
-  removeAllEventListeners(): void;
-  /**
-   * The current URL of the RPC client.
-   */
-  readonly url: string | undefined;
-  /**
-   * Current rpc resolver
-   */
-  readonly resolver: Resolver | undefined;
+  readonly networkId: NetworkId | undefined;
   /**
    * The current connection status of the RPC client.
    */
   readonly isConnected: boolean;
   /**
+   * Optional: Resolver node id.
+   */
+  readonly nodeId: string | undefined;
+  /**
+   * The current URL of the RPC client.
+   */
+  readonly url: string | undefined;
+  /**
    * The current protocol encoding.
    */
   readonly encoding: string;
   /**
-   * Optional: Resolver node id.
+   * Current rpc resolver
    */
-  readonly nodeId: string | undefined;
+  readonly resolver: Resolver | undefined;
 }
 /**
  * Represents a Kaspad ScriptPublicKey
@@ -2699,8 +3014,8 @@ export class ScriptPublicKey {
   toString(): string;
   free(): void;
   constructor(version: number, script: any);
-  version: number;
   readonly script: string;
+  version: number;
 }
 export class SigHashType {
   private constructor();
@@ -2723,6 +3038,7 @@ export class Transaction {
 */
   toString(): string;
   free(): void;
+  constructor(js_value: ITransaction | Transaction);
   /**
    * Determines whether or not a transaction is a coinbase transaction. A coinbase
    * transaction is a special transaction created by miners that distributes fees and block subsidy
@@ -2731,16 +3047,10 @@ export class Transaction {
    */
   is_coinbase(): boolean;
   /**
-   * Recompute and finalize the tx id based on updated tx fields
+   * Serializes the transaction to a JSON string.
+   * The schema of the JSON is defined by {@link ISerializableTransaction}.
    */
-  finalize(): Hash;
-  constructor(js_value: ITransaction | Transaction);
-  /**
-   * Returns a list of unique addresses used by transaction inputs.
-   * This method can be used to determine addresses used by transaction inputs
-   * in order to select private keys needed for transaction signing.
-   */
-  addresses(network_type: NetworkType | NetworkId | string): Address[];
+  serializeToJSON(): string;
   /**
    * Serializes the transaction to a pure JavaScript Object.
    * The schema of the JavaScript object is defined by {@link ISerializableTransaction}.
@@ -2748,10 +3058,9 @@ export class Transaction {
    */
   serializeToObject(): ISerializableTransaction;
   /**
-   * Serializes the transaction to a JSON string.
-   * The schema of the JSON is defined by {@link ISerializableTransaction}.
+   * Deserialize the {@link Transaction} Object from a JSON string.
    */
-  serializeToJSON(): string;
+  static deserializeFromJSON(json: string): Transaction;
   /**
    * Serializes the transaction to a "Safe" JSON schema where it converts all `bigint` values to `string` to avoid potential client-side precision loss.
    */
@@ -2761,29 +3070,40 @@ export class Transaction {
    */
   static deserializeFromObject(js_value: any): Transaction;
   /**
-   * Deserialize the {@link Transaction} Object from a JSON string.
-   */
-  static deserializeFromJSON(json: string): Transaction;
-  /**
    * Deserialize the {@link Transaction} Object from a "Safe" JSON schema where all `bigint` values are represented as `string`.
    */
   static deserializeFromSafeJSON(json: string): Transaction;
+  populateGenesisCovenants(groups: (IGenesisCovenantGroup | GenesisCovenantGroup)[]): void;
   /**
-   * Returns the transaction ID
+   * Recompute and finalize the tx id based on updated tx fields
    */
-  readonly id: string;
+  finalize(): Hash;
+  /**
+   * Returns a list of unique addresses used by transaction inputs.
+   * This method can be used to determine addresses used by transaction inputs
+   * in order to select private keys needed for transaction signing.
+   */
+  addresses(network_type: NetworkType | NetworkId | string): Address[];
+  version: number;
+  lockTime: bigint;
+  storageMass: bigint;
   get inputs(): TransactionInput[];
   set inputs(value: (ITransactionInput | TransactionInput)[]);
   get outputs(): TransactionOutput[];
   set outputs(value: (ITransactionOutput | TransactionOutput)[]);
-  version: number;
-  lockTime: bigint;
-  gas: bigint;
   get subnetworkId(): string;
   set subnetworkId(value: any);
   get payload(): string;
   set payload(value: any);
+  gas: bigint;
+  /**
+   * @deprecated Use `storageMass` instead
+   */
   mass: bigint;
+  /**
+   * Returns the transaction ID
+   */
+  readonly id: string;
 }
 /**
  * Represents a Kaspa transaction input
@@ -2800,12 +3120,13 @@ export class TransactionInput {
   toString(): string;
   free(): void;
   constructor(value: ITransactionInput | TransactionInput);
+  sequence: bigint;
+  sigOpCount: number;
+  computeBudget: number;
   get previousOutpoint(): TransactionOutpoint;
   set previousOutpoint(value: any);
   get signatureScript(): string | undefined;
   set signatureScript(value: any);
-  sequence: bigint;
-  sigOpCount: number;
   readonly utxo: UtxoEntryReference | undefined;
 }
 /**
@@ -2847,9 +3168,11 @@ export class TransactionOutput {
   /**
    * TransactionOutput constructor
    */
-  constructor(value: bigint, script_public_key: ScriptPublicKey);
-  value: bigint;
+  constructor(value: bigint, script_public_key: ScriptPublicKey, covenant?: CovenantBinding | null);
+  get covenant(): CovenantBinding | undefined;
+  set covenant(value: CovenantBinding);
   scriptPublicKey: ScriptPublicKey;
+  value: bigint;
 }
 /**
  * @category Wallet SDK
@@ -2891,6 +3214,8 @@ export class TransactionUtxoEntry {
   scriptPublicKey: ScriptPublicKey;
   blockDaaScore: bigint;
   isCoinbase: boolean;
+  get covenantId(): Hash | undefined;
+  set covenantId(value: Hash | null | undefined);
 }
 /**
  * A simple collection of UTXO entries. This struct is used to
@@ -2912,16 +3237,16 @@ export class UtxoEntries {
   toString(): string;
   free(): void;
   /**
-   * Create a new `UtxoEntries` struct with a set of entries.
-   */
-  constructor(js_value: any);
-  /**
    * Sort the contained entries by amount. Please note that
    * this function is not intended for use with large UTXO sets
    * as it duplicates the whole contained UTXO set while sorting.
    */
   sort(): void;
   amount(): bigint;
+  /**
+   * Create a new `UtxoEntries` struct with a set of entries.
+   */
+  constructor(js_value: any);
   items: any;
 }
 /**
@@ -2948,6 +3273,8 @@ export class UtxoEntry {
   scriptPublicKey: ScriptPublicKey;
   blockDaaScore: bigint;
   isCoinbase: boolean;
+  get covenantId(): Hash | undefined;
+  set covenantId(value: Hash | null | undefined);
 }
 /**
  * [`Arc`] reference to a [`UtxoEntry`] used by the wallet subsystems.
@@ -2966,13 +3293,13 @@ export class UtxoEntryReference {
   toString(): string;
   free(): void;
   toString(): string;
-  readonly entry: UtxoEntry;
-  readonly outpoint: TransactionOutpoint;
-  readonly address: Address | undefined;
-  readonly amount: bigint;
   readonly isCoinbase: boolean;
   readonly blockDaaScore: bigint;
   readonly scriptPublicKey: ScriptPublicKey;
+  readonly entry: UtxoEntry;
+  readonly amount: bigint;
+  readonly address: Address | undefined;
+  readonly outpoint: TransactionOutpoint;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -2981,268 +3308,318 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_address_free: (a: number, b: number) => void;
   readonly address_constructor: (a: number, b: number) => number;
-  readonly address_validate: (a: number, b: number) => number;
-  readonly address_toString: (a: number, b: number) => void;
-  readonly address_version: (a: number, b: number) => void;
+  readonly address_payload: (a: number, b: number) => void;
   readonly address_prefix: (a: number, b: number) => void;
   readonly address_set_setPrefix: (a: number, b: number, c: number) => void;
-  readonly address_payload: (a: number, b: number) => void;
-  readonly address_short: (a: number, b: number, c: number) => void;
-  readonly __wbg_transactionoutpoint_free: (a: number, b: number) => void;
-  readonly transactionoutpoint_ctor: (a: number, b: number) => number;
-  readonly transactionoutpoint_getId: (a: number, b: number) => void;
-  readonly transactionoutpoint_transactionId: (a: number, b: number) => void;
-  readonly transactionoutpoint_index: (a: number) => number;
+  readonly address_toString: (a: number, b: number) => void;
+  readonly address_validate: (a: number, b: number) => number;
+  readonly address_version: (a: number, b: number) => void;
+  readonly __wbg_compressedparents_free: (a: number, b: number) => void;
   readonly __wbg_transaction_free: (a: number, b: number) => void;
-  readonly transaction_is_coinbase: (a: number) => number;
-  readonly transaction_finalize: (a: number, b: number) => void;
-  readonly transaction_id: (a: number, b: number) => void;
-  readonly transaction_constructor: (a: number, b: number) => void;
-  readonly transaction_get_inputs_as_js_array: (a: number) => number;
+  readonly compressedparents_expandedLen: (a: number) => number;
+  readonly compressedparents_get: (a: number, b: number, c: number) => void;
+  readonly compressedparents_new: (a: number, b: number) => void;
+  readonly compressedparents_toExpanded: (a: number, b: number) => void;
   readonly transaction_addresses: (a: number, b: number, c: number) => void;
-  readonly transaction_set_inputs_from_js_array: (a: number, b: number) => void;
-  readonly transaction_get_outputs_as_js_array: (a: number) => number;
-  readonly transaction_set_outputs_from_js_array: (a: number, b: number) => void;
-  readonly transaction_version: (a: number) => number;
-  readonly transaction_set_version: (a: number, b: number) => void;
-  readonly transaction_lockTime: (a: number) => bigint;
-  readonly transaction_set_lockTime: (a: number, b: bigint) => void;
-  readonly transaction_gas: (a: number) => bigint;
-  readonly transaction_set_gas: (a: number, b: bigint) => void;
-  readonly transaction_get_subnetwork_id_as_hex: (a: number, b: number) => void;
-  readonly transaction_set_subnetwork_id_from_js_value: (a: number, b: number) => void;
-  readonly transaction_get_payload_as_hex_string: (a: number, b: number) => void;
-  readonly transaction_set_payload_from_js_value: (a: number, b: number) => void;
-  readonly transaction_get_mass: (a: number) => bigint;
-  readonly transaction_set_mass: (a: number, b: bigint) => void;
-  readonly transaction_serializeToObject: (a: number, b: number) => void;
-  readonly transaction_serializeToJSON: (a: number, b: number) => void;
-  readonly transaction_serializeToSafeJSON: (a: number, b: number) => void;
-  readonly transaction_deserializeFromObject: (a: number, b: number) => void;
+  readonly transaction_constructor: (a: number, b: number) => void;
   readonly transaction_deserializeFromJSON: (a: number, b: number, c: number) => void;
+  readonly transaction_deserializeFromObject: (a: number, b: number) => void;
   readonly transaction_deserializeFromSafeJSON: (a: number, b: number, c: number) => void;
-  readonly isScriptPayToScriptHash: (a: number, b: number) => void;
-  readonly isScriptPayToPubkeyECDSA: (a: number, b: number) => void;
-  readonly isScriptPayToPubkey: (a: number, b: number) => void;
+  readonly transaction_finalize: (a: number, b: number) => void;
+  readonly transaction_gas: (a: number) => bigint;
+  readonly transaction_get_inputs_as_js_array: (a: number) => number;
+  readonly transaction_get_mass: (a: number) => bigint;
+  readonly transaction_get_outputs_as_js_array: (a: number) => number;
+  readonly transaction_get_payload_as_hex_string: (a: number, b: number) => void;
+  readonly transaction_get_subnetwork_id_as_hex: (a: number, b: number) => void;
+  readonly transaction_id: (a: number, b: number) => void;
+  readonly transaction_is_coinbase: (a: number) => number;
+  readonly transaction_lockTime: (a: number) => bigint;
+  readonly transaction_populateGenesisCovenants: (a: number, b: number, c: number) => void;
+  readonly transaction_serializeToJSON: (a: number, b: number) => void;
+  readonly transaction_serializeToObject: (a: number, b: number) => void;
+  readonly transaction_serializeToSafeJSON: (a: number, b: number) => void;
+  readonly transaction_set_gas: (a: number, b: bigint) => void;
+  readonly transaction_set_inputs_from_js_array: (a: number, b: number) => void;
+  readonly transaction_set_lockTime: (a: number, b: bigint) => void;
+  readonly transaction_set_mass: (a: number, b: bigint) => void;
+  readonly transaction_set_outputs_from_js_array: (a: number, b: number) => void;
+  readonly transaction_set_payload_from_js_value: (a: number, b: number) => void;
+  readonly transaction_set_subnetwork_id_from_js_value: (a: number, b: number) => void;
+  readonly transaction_set_version: (a: number, b: number) => void;
+  readonly transaction_version: (a: number) => number;
+  readonly transaction_get_storage_mass: (a: number) => bigint;
+  readonly transaction_set_storage_mass: (a: number, b: bigint) => void;
+  readonly __wbg_transactionoutput_free: (a: number, b: number) => void;
+  readonly transactionoutput_covenant: (a: number) => number;
+  readonly transactionoutput_ctor: (a: bigint, b: number, c: number) => number;
+  readonly transactionoutput_scriptPublicKey: (a: number) => number;
+  readonly transactionoutput_set_covenant: (a: number, b: number) => void;
+  readonly transactionoutput_set_scriptPublicKey: (a: number, b: number) => void;
+  readonly transactionoutput_set_value: (a: number, b: bigint) => void;
+  readonly transactionoutput_value: (a: number) => bigint;
   readonly addressFromScriptPublicKey: (a: number, b: number, c: number) => void;
-  readonly payToScriptHashSignatureScript: (a: number, b: number, c: number) => void;
-  readonly payToScriptHashScript: (a: number, b: number) => void;
+  readonly isScriptPayToPubkey: (a: number, b: number) => void;
+  readonly isScriptPayToPubkeyECDSA: (a: number, b: number) => void;
+  readonly isScriptPayToScriptHash: (a: number, b: number) => void;
   readonly payToAddressScript: (a: number, b: number) => void;
-  readonly transactionsigninghashecdsa_new: () => number;
-  readonly transactionsigninghashecdsa_update: (a: number, b: number, c: number) => void;
-  readonly transactionsigninghashecdsa_finalize: (a: number, b: number) => void;
-  readonly __wbg_transactionsigninghashecdsa_free: (a: number, b: number) => void;
-  readonly transactionsigninghash_new: () => number;
-  readonly transactionsigninghash_update: (a: number, b: number, c: number) => void;
-  readonly transactionsigninghash_finalize: (a: number, b: number) => void;
-  readonly __wbg_transactionsigninghash_free: (a: number, b: number) => void;
-  readonly header_constructor: (a: number, b: number) => void;
-  readonly header_finalize: (a: number, b: number) => void;
-  readonly header_asJSON: (a: number, b: number) => void;
-  readonly header_get_version: (a: number) => number;
-  readonly header_set_version: (a: number, b: number) => void;
-  readonly header_get_timestamp: (a: number) => bigint;
-  readonly header_set_timestamp: (a: number, b: bigint) => void;
-  readonly header_bits: (a: number) => number;
-  readonly header_set_bits: (a: number, b: number) => void;
-  readonly header_nonce: (a: number) => bigint;
-  readonly header_set_nonce: (a: number, b: bigint) => void;
-  readonly header_daa_score: (a: number) => bigint;
-  readonly header_set_daa_score: (a: number, b: bigint) => void;
-  readonly header_blue_score: (a: number) => bigint;
-  readonly header_set_blue_score: (a: number, b: bigint) => void;
-  readonly header_get_hash_as_hex: (a: number, b: number) => void;
-  readonly header_get_hash_merkle_root_as_hex: (a: number, b: number) => void;
-  readonly header_set_hash_merkle_root_from_js_value: (a: number, b: number) => void;
-  readonly header_get_accepted_id_merkle_root_as_hex: (a: number, b: number) => void;
-  readonly header_set_accepted_id_merkle_root_from_js_value: (a: number, b: number) => void;
-  readonly header_get_utxo_commitment_as_hex: (a: number, b: number) => void;
-  readonly header_set_utxo_commitment_from_js_value: (a: number, b: number) => void;
-  readonly header_get_pruning_point_as_hex: (a: number, b: number) => void;
-  readonly header_set_pruning_point_from_js_value: (a: number, b: number) => void;
-  readonly header_get_parents_by_level_as_js_value: (a: number) => number;
-  readonly header_set_parents_by_level_from_js_value: (a: number, b: number) => void;
-  readonly header_blue_work: (a: number) => number;
-  readonly header_getBlueWorkAsHex: (a: number, b: number) => void;
-  readonly header_set_blue_work_from_js_value: (a: number, b: number) => void;
-  readonly __wbg_header_free: (a: number, b: number) => void;
-  readonly __wbg_utxoentry_free: (a: number, b: number) => void;
+  readonly payToScriptHashScript: (a: number, b: number) => void;
+  readonly payToScriptHashSignatureScript: (a: number, b: number, c: number) => void;
   readonly __wbg_get_utxoentry_address: (a: number) => number;
-  readonly __wbg_set_utxoentry_address: (a: number, b: number) => void;
-  readonly __wbg_get_utxoentry_outpoint: (a: number) => number;
-  readonly __wbg_set_utxoentry_outpoint: (a: number, b: number) => void;
   readonly __wbg_get_utxoentry_amount: (a: number) => bigint;
-  readonly __wbg_set_utxoentry_amount: (a: number, b: bigint) => void;
-  readonly __wbg_get_utxoentry_scriptPublicKey: (a: number) => number;
-  readonly __wbg_set_utxoentry_scriptPublicKey: (a: number, b: number) => void;
   readonly __wbg_get_utxoentry_blockDaaScore: (a: number) => bigint;
-  readonly __wbg_set_utxoentry_blockDaaScore: (a: number, b: bigint) => void;
+  readonly __wbg_get_utxoentry_covenantId: (a: number) => number;
   readonly __wbg_get_utxoentry_isCoinbase: (a: number) => number;
+  readonly __wbg_get_utxoentry_outpoint: (a: number) => number;
+  readonly __wbg_get_utxoentry_scriptPublicKey: (a: number) => number;
+  readonly __wbg_set_utxoentry_address: (a: number, b: number) => void;
+  readonly __wbg_set_utxoentry_amount: (a: number, b: bigint) => void;
+  readonly __wbg_set_utxoentry_blockDaaScore: (a: number, b: bigint) => void;
+  readonly __wbg_set_utxoentry_covenantId: (a: number, b: number) => void;
   readonly __wbg_set_utxoentry_isCoinbase: (a: number, b: number) => void;
-  readonly utxoentry_toString: (a: number, b: number) => void;
-  readonly __wbg_utxoentryreference_free: (a: number, b: number) => void;
-  readonly utxoentryreference_toString: (a: number, b: number) => void;
-  readonly utxoentryreference_entry: (a: number) => number;
-  readonly utxoentryreference_outpoint: (a: number) => number;
-  readonly utxoentryreference_address: (a: number) => number;
-  readonly utxoentryreference_amount: (a: number) => bigint;
-  readonly utxoentryreference_isCoinbase: (a: number) => number;
-  readonly utxoentryreference_blockDaaScore: (a: number) => bigint;
-  readonly utxoentryreference_scriptPublicKey: (a: number) => number;
+  readonly __wbg_set_utxoentry_outpoint: (a: number, b: number) => void;
+  readonly __wbg_set_utxoentry_scriptPublicKey: (a: number, b: number) => void;
   readonly __wbg_utxoentries_free: (a: number, b: number) => void;
-  readonly utxoentries_js_ctor: (a: number, b: number) => void;
+  readonly __wbg_utxoentry_free: (a: number, b: number) => void;
+  readonly __wbg_utxoentryreference_free: (a: number, b: number) => void;
+  readonly utxoentries_amount: (a: number) => bigint;
   readonly utxoentries_get_items_as_js_array: (a: number) => number;
+  readonly utxoentries_js_ctor: (a: number, b: number) => void;
   readonly utxoentries_set_items_from_js_array: (a: number, b: number) => void;
   readonly utxoentries_sort: (a: number) => void;
-  readonly utxoentries_amount: (a: number) => bigint;
-  readonly __wbg_transactionoutput_free: (a: number, b: number) => void;
-  readonly transactionoutput_ctor: (a: bigint, b: number) => number;
-  readonly transactionoutput_value: (a: number) => bigint;
-  readonly transactionoutput_set_value: (a: number, b: bigint) => void;
-  readonly transactionoutput_scriptPublicKey: (a: number) => number;
-  readonly transactionoutput_set_scriptPublicKey: (a: number, b: number) => void;
+  readonly utxoentry_toString: (a: number, b: number) => void;
+  readonly utxoentryreference_address: (a: number) => number;
+  readonly utxoentryreference_amount: (a: number) => bigint;
+  readonly utxoentryreference_blockDaaScore: (a: number) => bigint;
+  readonly utxoentryreference_entry: (a: number) => number;
+  readonly utxoentryreference_isCoinbase: (a: number) => number;
+  readonly utxoentryreference_outpoint: (a: number) => number;
+  readonly utxoentryreference_scriptPublicKey: (a: number) => number;
+  readonly utxoentryreference_toString: (a: number, b: number) => void;
   readonly __wbg_transactioninput_free: (a: number, b: number) => void;
   readonly transactioninput_constructor: (a: number, b: number) => void;
+  readonly transactioninput_get_compute_budget: (a: number) => number;
   readonly transactioninput_get_previous_outpoint: (a: number) => number;
-  readonly transactioninput_set_previous_outpoint: (a: number, b: number, c: number) => void;
-  readonly transactioninput_get_signature_script_as_hex: (a: number, b: number) => void;
-  readonly transactioninput_set_signature_script_from_js_value: (a: number, b: number, c: number) => void;
   readonly transactioninput_get_sequence: (a: number) => bigint;
-  readonly transactioninput_set_sequence: (a: number, b: bigint) => void;
   readonly transactioninput_get_sig_op_count: (a: number) => number;
-  readonly transactioninput_set_sig_op_count: (a: number, b: number) => void;
+  readonly transactioninput_get_signature_script_as_hex: (a: number, b: number) => void;
   readonly transactioninput_get_utxo: (a: number) => number;
-  readonly __wbg_networkid_free: (a: number, b: number) => void;
-  readonly __wbg_get_networkid_type: (a: number) => number;
-  readonly __wbg_set_networkid_type: (a: number, b: number) => void;
+  readonly transactioninput_set_compute_budget: (a: number, b: number) => void;
+  readonly transactioninput_set_previous_outpoint: (a: number, b: number, c: number) => void;
+  readonly transactioninput_set_sequence: (a: number, b: bigint) => void;
+  readonly transactioninput_set_sig_op_count: (a: number, b: number) => void;
+  readonly transactioninput_set_signature_script_from_js_value: (a: number, b: number, c: number) => void;
+  readonly __wbg_covenantbinding_free: (a: number, b: number) => void;
+  readonly __wbg_genesiscovenantgroup_free: (a: number, b: number) => void;
+  readonly __wbg_header_free: (a: number, b: number) => void;
+  readonly covenantbinding_authorizingInput: (a: number) => number;
+  readonly covenantbinding_covenantId: (a: number) => number;
+  readonly covenantbinding_new: (a: number, b: number) => number;
+  readonly covenantbinding_set_authorizingInput: (a: number, b: number) => void;
+  readonly covenantbinding_set_covenantId: (a: number, b: number) => void;
+  readonly covenantbinding_toJSON: (a: number, b: number) => void;
+  readonly genesiscovenantgroup_authorizingInput: (a: number) => number;
+  readonly genesiscovenantgroup_ctor: (a: number, b: number, c: number) => void;
+  readonly genesiscovenantgroup_outputs: (a: number) => number;
+  readonly genesiscovenantgroup_set_authorizingInput: (a: number, b: number) => void;
+  readonly genesiscovenantgroup_set_outputs: (a: number, b: number, c: number) => void;
+  readonly genesiscovenantgroup_toJSON: (a: number, b: number) => void;
+  readonly genesiscovenantgroup_toString: (a: number, b: number) => void;
+  readonly header_asJSON: (a: number, b: number) => void;
+  readonly header_bits: (a: number) => number;
+  readonly header_blue_score: (a: number) => bigint;
+  readonly header_blue_work: (a: number) => number;
+  readonly header_constructor: (a: number, b: number) => void;
+  readonly header_daa_score: (a: number) => bigint;
+  readonly header_finalize: (a: number, b: number) => void;
+  readonly header_getBlueWorkAsHex: (a: number, b: number) => void;
+  readonly header_get_accepted_id_merkle_root_as_hex: (a: number, b: number) => void;
+  readonly header_get_hash_as_hex: (a: number, b: number) => void;
+  readonly header_get_hash_merkle_root_as_hex: (a: number, b: number) => void;
+  readonly header_get_parents_by_level_as_js_value: (a: number) => number;
+  readonly header_get_pruning_point_as_hex: (a: number, b: number) => void;
+  readonly header_get_timestamp: (a: number) => bigint;
+  readonly header_get_utxo_commitment_as_hex: (a: number, b: number) => void;
+  readonly header_get_version: (a: number) => number;
+  readonly header_nonce: (a: number) => bigint;
+  readonly header_set_accepted_id_merkle_root_from_js_value: (a: number, b: number) => void;
+  readonly header_set_bits: (a: number, b: number) => void;
+  readonly header_set_blue_score: (a: number, b: bigint) => void;
+  readonly header_set_blue_work_from_js_value: (a: number, b: number) => void;
+  readonly header_set_daa_score: (a: number, b: bigint) => void;
+  readonly header_set_hash_merkle_root_from_js_value: (a: number, b: number) => void;
+  readonly header_set_nonce: (a: number, b: bigint) => void;
+  readonly header_set_parents_by_level_from_js_value: (a: number, b: number) => void;
+  readonly header_set_pruning_point_from_js_value: (a: number, b: number) => void;
+  readonly header_set_timestamp: (a: number, b: bigint) => void;
+  readonly header_set_utxo_commitment_from_js_value: (a: number, b: number) => void;
+  readonly header_set_version: (a: number, b: number) => void;
+  readonly __wbg_optionalheader_free: (a: number, b: number) => void;
+  readonly __wbg_transactionoutpoint_free: (a: number, b: number) => void;
+  readonly __wbg_transactionsigninghash_free: (a: number, b: number) => void;
+  readonly __wbg_transactionsigninghashecdsa_free: (a: number, b: number) => void;
+  readonly covenantId: (a: number, b: number, c: number) => void;
+  readonly optionalheader_acceptedIdMerkleRoot: (a: number, b: number) => void;
+  readonly optionalheader_bits: (a: number) => number;
+  readonly optionalheader_blueScore: (a: number, b: number) => void;
+  readonly optionalheader_blueWork: (a: number) => number;
+  readonly optionalheader_daaScore: (a: number, b: number) => void;
+  readonly optionalheader_hash: (a: number, b: number) => void;
+  readonly optionalheader_hashMerkleRoot: (a: number, b: number) => void;
+  readonly optionalheader_new: (a: number, b: number) => void;
+  readonly optionalheader_nonce: (a: number, b: number) => void;
+  readonly optionalheader_parentsByLevel: (a: number) => number;
+  readonly optionalheader_pruningPoint: (a: number, b: number) => void;
+  readonly optionalheader_timestamp: (a: number, b: number) => void;
+  readonly optionalheader_utxoCommitment: (a: number, b: number) => void;
+  readonly optionalheader_version: (a: number) => number;
+  readonly transactionoutpoint_ctor: (a: number, b: number) => number;
+  readonly transactionoutpoint_getId: (a: number, b: number) => void;
+  readonly transactionoutpoint_index: (a: number) => number;
+  readonly transactionoutpoint_transactionId: (a: number, b: number) => void;
+  readonly transactionsigninghash_finalize: (a: number, b: number) => void;
+  readonly transactionsigninghash_new: () => number;
+  readonly transactionsigninghash_update: (a: number, b: number, c: number) => void;
+  readonly transactionsigninghashecdsa_finalize: (a: number, b: number) => void;
+  readonly transactionsigninghashecdsa_new: () => number;
+  readonly transactionsigninghashecdsa_update: (a: number, b: number, c: number) => void;
   readonly __wbg_get_networkid_suffix: (a: number) => number;
+  readonly __wbg_get_networkid_type: (a: number) => number;
+  readonly __wbg_networkid_free: (a: number, b: number) => void;
   readonly __wbg_set_networkid_suffix: (a: number, b: number) => void;
+  readonly __wbg_set_networkid_type: (a: number, b: number) => void;
+  readonly networkid_addressPrefix: (a: number, b: number) => void;
   readonly networkid_ctor: (a: number, b: number) => void;
   readonly networkid_id: (a: number, b: number) => void;
-  readonly networkid_addressPrefix: (a: number, b: number) => void;
   readonly networkid_toString: (a: number, b: number) => void;
-  readonly __wbg_transactionutxoentry_free: (a: number, b: number) => void;
-  readonly __wbg_get_transactionutxoentry_amount: (a: number) => bigint;
-  readonly __wbg_set_transactionutxoentry_amount: (a: number, b: bigint) => void;
-  readonly __wbg_get_transactionutxoentry_scriptPublicKey: (a: number) => number;
-  readonly __wbg_set_transactionutxoentry_scriptPublicKey: (a: number, b: number) => void;
-  readonly __wbg_get_transactionutxoentry_blockDaaScore: (a: number) => bigint;
-  readonly __wbg_set_transactionutxoentry_blockDaaScore: (a: number, b: bigint) => void;
-  readonly __wbg_get_transactionutxoentry_isCoinbase: (a: number) => number;
-  readonly __wbg_set_transactionutxoentry_isCoinbase: (a: number, b: number) => void;
   readonly __wbg_sighashtype_free: (a: number, b: number) => void;
-  readonly __wbg_scriptpublickey_free: (a: number, b: number) => void;
   readonly __wbg_get_scriptpublickey_version: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_amount: (a: number) => bigint;
+  readonly __wbg_get_transactionutxoentry_blockDaaScore: (a: number) => bigint;
+  readonly __wbg_get_transactionutxoentry_covenantId: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_isCoinbase: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_scriptPublicKey: (a: number) => number;
+  readonly __wbg_scriptpublickey_free: (a: number, b: number) => void;
   readonly __wbg_set_scriptpublickey_version: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_amount: (a: number, b: bigint) => void;
+  readonly __wbg_set_transactionutxoentry_blockDaaScore: (a: number, b: bigint) => void;
+  readonly __wbg_set_transactionutxoentry_covenantId: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_isCoinbase: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_scriptPublicKey: (a: number, b: number) => void;
+  readonly __wbg_transactionutxoentry_free: (a: number, b: number) => void;
   readonly scriptpublickey_constructor: (a: number, b: number, c: number) => void;
   readonly scriptpublickey_script_as_hex: (a: number, b: number) => void;
   readonly __wbg_hash_free: (a: number, b: number) => void;
   readonly hash_constructor: (a: number, b: number) => number;
   readonly hash_toString: (a: number, b: number) => void;
   readonly version: (a: number) => void;
-  readonly __wbg_nodedescriptor_free: (a: number, b: number) => void;
   readonly __wbg_get_nodedescriptor_uid: (a: number, b: number) => void;
-  readonly __wbg_set_nodedescriptor_uid: (a: number, b: number, c: number) => void;
   readonly __wbg_get_nodedescriptor_url: (a: number, b: number) => void;
+  readonly __wbg_nodedescriptor_free: (a: number, b: number) => void;
+  readonly __wbg_set_nodedescriptor_uid: (a: number, b: number, c: number) => void;
   readonly __wbg_set_nodedescriptor_url: (a: number, b: number, c: number) => void;
-  readonly rpcclient_getBlockCount: (a: number, b: number) => number;
-  readonly rpcclient_getBlockDagInfo: (a: number, b: number) => number;
-  readonly rpcclient_getCoinSupply: (a: number, b: number) => number;
-  readonly rpcclient_getConnectedPeerInfo: (a: number, b: number) => number;
-  readonly rpcclient_getInfo: (a: number, b: number) => number;
-  readonly rpcclient_getPeerAddresses: (a: number, b: number) => number;
-  readonly rpcclient_getMetrics: (a: number, b: number) => number;
-  readonly rpcclient_getConnections: (a: number, b: number) => number;
-  readonly rpcclient_getSink: (a: number, b: number) => number;
-  readonly rpcclient_getSinkBlueScore: (a: number, b: number) => number;
-  readonly rpcclient_ping: (a: number, b: number) => number;
-  readonly rpcclient_shutdown: (a: number, b: number) => number;
-  readonly rpcclient_getServerInfo: (a: number, b: number) => number;
-  readonly rpcclient_getSyncStatus: (a: number, b: number) => number;
-  readonly rpcclient_getFeeEstimate: (a: number, b: number) => number;
-  readonly rpcclient_getCurrentNetwork: (a: number, b: number) => number;
+  readonly __wbg_resolver_free: (a: number, b: number) => void;
+  readonly resolver_connect: (a: number, b: number) => number;
+  readonly resolver_ctor: (a: number, b: number) => void;
+  readonly resolver_getNode: (a: number, b: number, c: number) => number;
+  readonly resolver_getUrl: (a: number, b: number, c: number) => number;
+  readonly resolver_urls: (a: number) => number;
+  readonly __wbg_rpcclient_free: (a: number, b: number) => void;
+  readonly rpcclient_addEventListener: (a: number, b: number, c: number, d: number) => void;
   readonly rpcclient_addPeer: (a: number, b: number) => number;
   readonly rpcclient_ban: (a: number, b: number) => number;
+  readonly rpcclient_clearEventListener: (a: number, b: number, c: number) => void;
+  readonly rpcclient_connect: (a: number, b: number) => number;
+  readonly rpcclient_ctor: (a: number, b: number) => void;
+  readonly rpcclient_defaultPort: (a: number, b: number, c: number) => void;
+  readonly rpcclient_disconnect: (a: number) => number;
+  readonly rpcclient_encoding: (a: number, b: number) => void;
   readonly rpcclient_estimateNetworkHashesPerSecond: (a: number, b: number) => number;
   readonly rpcclient_getBalanceByAddress: (a: number, b: number) => number;
   readonly rpcclient_getBalancesByAddresses: (a: number, b: number) => number;
   readonly rpcclient_getBlock: (a: number, b: number) => number;
-  readonly rpcclient_getBlocks: (a: number, b: number) => number;
+  readonly rpcclient_getBlockCount: (a: number, b: number) => number;
+  readonly rpcclient_getBlockDagInfo: (a: number, b: number) => number;
+  readonly rpcclient_getBlockRewardInfo: (a: number, b: number) => number;
   readonly rpcclient_getBlockTemplate: (a: number, b: number) => number;
+  readonly rpcclient_getBlocks: (a: number, b: number) => number;
+  readonly rpcclient_getCoinSupply: (a: number, b: number) => number;
+  readonly rpcclient_getConnectedPeerInfo: (a: number, b: number) => number;
+  readonly rpcclient_getConnections: (a: number, b: number) => number;
   readonly rpcclient_getCurrentBlockColor: (a: number, b: number) => number;
+  readonly rpcclient_getCurrentNetwork: (a: number, b: number) => number;
   readonly rpcclient_getDaaScoreTimestampEstimate: (a: number, b: number) => number;
+  readonly rpcclient_getFeeEstimate: (a: number, b: number) => number;
   readonly rpcclient_getFeeEstimateExperimental: (a: number, b: number) => number;
   readonly rpcclient_getHeaders: (a: number, b: number) => number;
+  readonly rpcclient_getInfo: (a: number, b: number) => number;
   readonly rpcclient_getMempoolEntries: (a: number, b: number) => number;
   readonly rpcclient_getMempoolEntriesByAddresses: (a: number, b: number) => number;
   readonly rpcclient_getMempoolEntry: (a: number, b: number) => number;
+  readonly rpcclient_getMetrics: (a: number, b: number) => number;
+  readonly rpcclient_getPeerAddresses: (a: number, b: number) => number;
+  readonly rpcclient_getServerInfo: (a: number, b: number) => number;
+  readonly rpcclient_getSink: (a: number, b: number) => number;
+  readonly rpcclient_getSinkBlueScore: (a: number, b: number) => number;
   readonly rpcclient_getSubnetwork: (a: number, b: number) => number;
+  readonly rpcclient_getSyncStatus: (a: number, b: number) => number;
+  readonly rpcclient_getUtxoReturnAddress: (a: number, b: number) => number;
   readonly rpcclient_getUtxosByAddresses: (a: number, b: number) => number;
   readonly rpcclient_getVirtualChainFromBlock: (a: number, b: number) => number;
+  readonly rpcclient_getVirtualChainFromBlockV2: (a: number, b: number) => number;
+  readonly rpcclient_isConnected: (a: number) => number;
+  readonly rpcclient_networkId: (a: number) => number;
+  readonly rpcclient_nodeId: (a: number, b: number) => void;
+  readonly rpcclient_parseUrl: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly rpcclient_ping: (a: number, b: number) => number;
+  readonly rpcclient_removeAllEventListeners: (a: number, b: number) => void;
+  readonly rpcclient_removeEventListener: (a: number, b: number, c: number, d: number) => void;
   readonly rpcclient_resolveFinalityConflict: (a: number, b: number) => number;
+  readonly rpcclient_resolver: (a: number) => number;
+  readonly rpcclient_setNetworkId: (a: number, b: number, c: number) => void;
+  readonly rpcclient_setResolver: (a: number, b: number, c: number) => void;
+  readonly rpcclient_shutdown: (a: number, b: number) => number;
+  readonly rpcclient_start: (a: number) => number;
+  readonly rpcclient_stop: (a: number) => number;
   readonly rpcclient_submitBlock: (a: number, b: number) => number;
   readonly rpcclient_submitTransaction: (a: number, b: number) => number;
   readonly rpcclient_submitTransactionReplacement: (a: number, b: number) => number;
-  readonly rpcclient_unban: (a: number, b: number) => number;
   readonly rpcclient_subscribeBlockAdded: (a: number) => number;
-  readonly rpcclient_unsubscribeBlockAdded: (a: number) => number;
   readonly rpcclient_subscribeFinalityConflict: (a: number) => number;
-  readonly rpcclient_unsubscribeFinalityConflict: (a: number) => number;
   readonly rpcclient_subscribeFinalityConflictResolved: (a: number) => number;
-  readonly rpcclient_unsubscribeFinalityConflictResolved: (a: number) => number;
-  readonly rpcclient_subscribeSinkBlueScoreChanged: (a: number) => number;
-  readonly rpcclient_unsubscribeSinkBlueScoreChanged: (a: number) => number;
-  readonly rpcclient_subscribePruningPointUtxoSetOverride: (a: number) => number;
-  readonly rpcclient_unsubscribePruningPointUtxoSetOverride: (a: number) => number;
   readonly rpcclient_subscribeNewBlockTemplate: (a: number) => number;
-  readonly rpcclient_unsubscribeNewBlockTemplate: (a: number) => number;
-  readonly rpcclient_subscribeVirtualDaaScoreChanged: (a: number) => number;
-  readonly rpcclient_unsubscribeVirtualDaaScoreChanged: (a: number) => number;
+  readonly rpcclient_subscribePruningPointUtxoSetOverride: (a: number) => number;
+  readonly rpcclient_subscribeSinkBlueScoreChanged: (a: number) => number;
   readonly rpcclient_subscribeUtxosChanged: (a: number, b: number) => number;
-  readonly rpcclient_unsubscribeUtxosChanged: (a: number, b: number) => number;
   readonly rpcclient_subscribeVirtualChainChanged: (a: number, b: number) => number;
-  readonly rpcclient_unsubscribeVirtualChainChanged: (a: number, b: number) => number;
-  readonly rpcclient_defaultPort: (a: number, b: number, c: number) => void;
-  readonly rpcclient_parseUrl: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly rpcclient_ctor: (a: number, b: number) => void;
-  readonly rpcclient_url: (a: number, b: number) => void;
-  readonly rpcclient_resolver: (a: number) => number;
-  readonly rpcclient_setResolver: (a: number, b: number, c: number) => void;
-  readonly rpcclient_setNetworkId: (a: number, b: number, c: number) => void;
-  readonly rpcclient_isConnected: (a: number) => number;
-  readonly rpcclient_encoding: (a: number, b: number) => void;
-  readonly rpcclient_nodeId: (a: number, b: number) => void;
-  readonly rpcclient_connect: (a: number, b: number) => number;
-  readonly rpcclient_disconnect: (a: number) => number;
-  readonly rpcclient_start: (a: number) => number;
-  readonly rpcclient_stop: (a: number) => number;
+  readonly rpcclient_subscribeVirtualDaaScoreChanged: (a: number) => number;
   readonly rpcclient_triggerAbort: (a: number) => void;
-  readonly rpcclient_addEventListener: (a: number, b: number, c: number, d: number) => void;
-  readonly rpcclient_removeEventListener: (a: number, b: number, c: number, d: number) => void;
-  readonly rpcclient_clearEventListener: (a: number, b: number, c: number) => void;
-  readonly rpcclient_removeAllEventListeners: (a: number, b: number) => void;
-  readonly __wbg_rpcclient_free: (a: number, b: number) => void;
-  readonly resolver_urls: (a: number) => number;
-  readonly resolver_getNode: (a: number, b: number, c: number) => number;
-  readonly resolver_getUrl: (a: number, b: number, c: number) => number;
-  readonly resolver_connect: (a: number, b: number) => number;
-  readonly resolver_ctor: (a: number, b: number) => void;
-  readonly __wbg_resolver_free: (a: number, b: number) => void;
+  readonly rpcclient_unban: (a: number, b: number) => number;
+  readonly rpcclient_unsubscribeBlockAdded: (a: number) => number;
+  readonly rpcclient_unsubscribeFinalityConflict: (a: number) => number;
+  readonly rpcclient_unsubscribeFinalityConflictResolved: (a: number) => number;
+  readonly rpcclient_unsubscribeNewBlockTemplate: (a: number) => number;
+  readonly rpcclient_unsubscribePruningPointUtxoSetOverride: (a: number) => number;
+  readonly rpcclient_unsubscribeSinkBlueScoreChanged: (a: number) => number;
+  readonly rpcclient_unsubscribeUtxosChanged: (a: number, b: number) => number;
+  readonly rpcclient_unsubscribeVirtualChainChanged: (a: number, b: number) => number;
+  readonly rpcclient_unsubscribeVirtualDaaScoreChanged: (a: number) => number;
+  readonly rpcclient_url: (a: number, b: number) => void;
   readonly rustsecp256k1_v0_10_0_context_create: (a: number) => number;
   readonly rustsecp256k1_v0_10_0_context_destroy: (a: number) => void;
-  readonly rustsecp256k1_v0_10_0_default_illegal_callback_fn: (a: number, b: number) => void;
   readonly rustsecp256k1_v0_10_0_default_error_callback_fn: (a: number, b: number) => void;
-  readonly __wbg_aborted_free: (a: number, b: number) => void;
+  readonly rustsecp256k1_v0_10_0_default_illegal_callback_fn: (a: number, b: number) => void;
   readonly __wbg_abortable_free: (a: number, b: number) => void;
-  readonly abortable_new: () => number;
-  readonly abortable_isAborted: (a: number) => number;
+  readonly __wbg_aborted_free: (a: number, b: number) => void;
   readonly abortable_abort: (a: number) => void;
   readonly abortable_check: (a: number, b: number) => void;
+  readonly abortable_isAborted: (a: number) => number;
+  readonly abortable_new: () => number;
   readonly abortable_reset: (a: number) => void;
   readonly setLogLevel: (a: number) => void;
   readonly initWASM32Bindings: (a: number, b: number) => void;
-  readonly initConsolePanicHook: () => void;
   readonly initBrowserPanicHook: () => void;
+  readonly initConsolePanicHook: () => void;
   readonly presentPanicHookLogs: () => void;
   readonly defer: () => number;
   readonly __wbindgen_export_0: (a: number) => void;
@@ -3253,8 +3630,8 @@ export interface InitOutput {
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_export_5: (a: number, b: number) => void;
   readonly __wbindgen_export_6: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_export_7: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export_8: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export_7: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_export_8: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_9: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_10: (a: number, b: number, c: number, d: number) => void;
 }

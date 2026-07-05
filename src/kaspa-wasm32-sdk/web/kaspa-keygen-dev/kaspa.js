@@ -212,24 +212,6 @@ export function version() {
     }
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_2.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-/**
- * Configuration for the WASM32 bindings runtime interface.
- * @see {@link IWASM32BindingsConfig}
- * @category General
- * @param {IWASM32BindingsConfig} config
- */
-export function initWASM32Bindings(config) {
-    const ret = wasm.initWASM32Bindings(config);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
-    }
-}
-
 /**
  * Initialize Rust panic handler in console mode.
  *
@@ -239,6 +221,19 @@ export function initWASM32Bindings(config) {
  */
 export function initConsolePanicHook() {
     wasm.initConsolePanicHook();
+}
+
+/**
+ * Present panic logs to the user in the browser.
+ *
+ * This function should be called after a panic has occurred and the
+ * browser-based panic hook has been activated. It will present the
+ * collected panic logs in a full-screen `DIV` in the browser.
+ * @see {@link initBrowserPanicHook}
+ * @category General
+ */
+export function presentPanicHookLogs() {
+    wasm.presentPanicHookLogs();
 }
 
 /**
@@ -257,19 +252,6 @@ export function initBrowserPanicHook() {
 }
 
 /**
- * Present panic logs to the user in the browser.
- *
- * This function should be called after a panic has occurred and the
- * browser-based panic hook has been activated. It will present the
- * collected panic logs in a full-screen `DIV` in the browser.
- * @see {@link initBrowserPanicHook}
- * @category General
- */
-export function presentPanicHookLogs() {
-    wasm.presentPanicHookLogs();
-}
-
-/**
  * r" Deferred promise - an object that has `resolve()` and `reject()`
  * r" functions that can be called outside of the promise body.
  * r" WARNING: This function uses `eval` and can not be used in environments
@@ -281,6 +263,24 @@ export function presentPanicHookLogs() {
 export function defer() {
     const ret = wasm.defer();
     return ret;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_2.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+/**
+ * Configuration for the WASM32 bindings runtime interface.
+ * @see {@link IWASM32BindingsConfig}
+ * @category General
+ * @param {IWASM32BindingsConfig} config
+ */
+export function initWASM32Bindings(config) {
+    const ret = wasm.initWASM32Bindings(config);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
 }
 
 /**
@@ -394,12 +394,6 @@ export class Abortable {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_abortable_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.abortable_new();
-        this.__wbg_ptr = ret >>> 0;
-        AbortableFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
     /**
      * @returns {boolean}
      */
@@ -408,6 +402,12 @@ export class Abortable {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.abortable_isAborted(this.__wbg_ptr);
         return ret !== 0;
+    }
+    constructor() {
+        const ret = wasm.abortable_new();
+        this.__wbg_ptr = ret >>> 0;
+        AbortableFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     abort() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
@@ -483,9 +483,9 @@ export class Address {
 
     toJSON() {
         return {
-            version: this.version,
             prefix: this.prefix,
             payload: this.payload,
+            version: this.version,
         };
     }
 
@@ -516,14 +516,21 @@ export class Address {
         return this;
     }
     /**
-     * @param {string} address
-     * @returns {boolean}
+     * @returns {string}
      */
-    static validate(address) {
-        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.address_validate(ptr0, len0);
-        return ret !== 0;
+    get prefix() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.address_prefix(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * Convert an address to a string.
@@ -536,6 +543,23 @@ export class Address {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
             const ret = wasm.address_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get payload() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.address_payload(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -561,23 +585,6 @@ export class Address {
         }
     }
     /**
-     * @returns {string}
-     */
-    get prefix() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.address_prefix(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @param {string} prefix
      */
     set setPrefix(prefix) {
@@ -588,40 +595,14 @@ export class Address {
         wasm.address_set_setPrefix(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @returns {string}
+     * @param {string} address
+     * @returns {boolean}
      */
-    get payload() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.address_payload(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {number} n
-     * @returns {string}
-     */
-    short(n) {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(n);
-            const ret = wasm.address_short(this.__wbg_ptr, n);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
+    static validate(address) {
+        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.address_validate(ptr0, len0);
+        return ret !== 0;
     }
 }
 
@@ -656,6 +637,16 @@ export class DerivationPath {
         wasm.__wbg_derivationpath_free(ptr, 0);
     }
     /**
+     * Get the count of [`ChildNumber`] values in this derivation path.
+     * @returns {number}
+     */
+    length() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_length(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
      * @param {string} path
      */
     constructor(path) {
@@ -668,38 +659,6 @@ export class DerivationPath {
         this.__wbg_ptr = ret[0] >>> 0;
         DerivationPathFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * Is this derivation path empty? (i.e. the root)
-     * @returns {boolean}
-     */
-    isEmpty() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Get the count of [`ChildNumber`] values in this derivation path.
-     * @returns {number}
-     */
-    length() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_length(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Get the parent [`DerivationPath`] for the current one.
-     *
-     * Returns `Undefined` if this is already the root path.
-     * @returns {DerivationPath | undefined}
-     */
-    parent() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
-        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
     }
     /**
      * Push a [`ChildNumber`] onto an existing derivation path.
@@ -719,6 +678,18 @@ export class DerivationPath {
         }
     }
     /**
+     * Get the parent [`DerivationPath`] for the current one.
+     *
+     * Returns `Undefined` if this is already the root path.
+     * @returns {DerivationPath | undefined}
+     */
+    parent() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
+        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
+    }
+    /**
      * @returns {string}
      */
     toString() {
@@ -735,6 +706,16 @@ export class DerivationPath {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
+    /**
+     * Is this derivation path empty? (i.e. the root)
+     * @returns {boolean}
+     */
+    isEmpty() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
+        return ret !== 0;
+    }
 }
 
 const HashFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -744,6 +725,14 @@ const HashFinalization = (typeof FinalizationRegistry === 'undefined')
  * @category General
  */
 export class Hash {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Hash.prototype);
+        obj.__wbg_ptr = ptr;
+        HashFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
 
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
@@ -831,6 +820,23 @@ export class Keypair {
         wasm.__wbg_keypair_free(ptr, 0);
     }
     /**
+     * Get the [`Address`] of this Keypair's [`PublicKey`].
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.keypair_toAddress(this.__wbg_ptr, network);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
      * Get the [`PublicKey`] of this [`Keypair`].
      * @returns {string}
      */
@@ -867,31 +873,21 @@ export class Keypair {
         }
     }
     /**
-     * Get the `XOnlyPublicKey` of this [`Keypair`].
-     * @returns {any}
+     * Create a new [`Keypair`] from a [`PrivateKey`].
+     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
+     * @param {PrivateKey} secret_key
+     * @returns {Keypair}
      */
-    get xOnlyPublicKey() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Get the [`Address`] of this Keypair's [`PublicKey`].
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.keypair_toAddress(this.__wbg_ptr, network);
+    static fromPrivateKey(secret_key) {
+        _assertClass(secret_key, PrivateKey);
+        if (secret_key.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        const ret = wasm.keypair_fromPrivateKey(secret_key.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return Address.__wrap(ret[0]);
+        return Keypair.__wrap(ret[0]);
     }
     /**
      * Get `ECDSA` [`Address`] of this Keypair's [`PublicKey`].
@@ -911,29 +907,22 @@ export class Keypair {
         return Address.__wrap(ret[0]);
     }
     /**
+     * Get the `XOnlyPublicKey` of this [`Keypair`].
+     * @returns {any}
+     */
+    get xOnlyPublicKey() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * Create a new random [`Keypair`].
      * JavaScript: `let keypair = Keypair::random();`.
      * @returns {Keypair}
      */
     static random() {
         const ret = wasm.keypair_random();
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Keypair.__wrap(ret[0]);
-    }
-    /**
-     * Create a new [`Keypair`] from a [`PrivateKey`].
-     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
-     * @param {PrivateKey} secret_key
-     * @returns {Keypair}
-     */
-    static fromPrivateKey(secret_key) {
-        _assertClass(secret_key, PrivateKey);
-        if (secret_key.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        const ret = wasm.keypair_fromPrivateKey(secret_key.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -982,6 +971,16 @@ export class Mnemonic {
     }
     /**
      * @param {string} phrase
+     */
+    set phrase(phrase) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} phrase
      * @param {Language | null} [language]
      */
     constructor(phrase, language) {
@@ -999,19 +998,24 @@ export class Mnemonic {
         return this;
     }
     /**
-     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
-     * @param {string} phrase
-     * @param {Language | null} [language]
-     * @returns {boolean}
+     * @param {string | null} [password]
+     * @returns {string}
      */
-    static validate(phrase, language) {
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        if (!isLikeNone(language)) {
-            _assertNum(language);
+    toSeed(password) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len0 = WASM_VECTOR_LEN;
+            const ret = wasm.mnemonic_toSeed(this.__wbg_ptr, ptr0, len0);
+            deferred2_0 = ret[0];
+            deferred2_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
-        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
-        return ret !== 0;
     }
     /**
      * @returns {string}
@@ -1041,20 +1045,6 @@ export class Mnemonic {
         wasm.mnemonic_set_entropy(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {number | null} [word_count]
-     * @returns {Mnemonic}
-     */
-    static random(word_count) {
-        if (!isLikeNone(word_count)) {
-            _assertNum(word_count);
-        }
-        const ret = wasm.mnemonic_random(isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Mnemonic.__wrap(ret[0]);
-    }
-    /**
      * @returns {string}
      */
     get phrase() {
@@ -1072,34 +1062,33 @@ export class Mnemonic {
         }
     }
     /**
-     * @param {string} phrase
+     * @param {number | null} [word_count]
+     * @returns {Mnemonic}
      */
-    set phrase(phrase) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
+    static random(word_count) {
+        if (!isLikeNone(word_count)) {
+            _assertNum(word_count);
+        }
+        const ret = wasm.mnemonic_random(isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Mnemonic.__wrap(ret[0]);
     }
     /**
-     * @param {string | null} [password]
-     * @returns {string}
+     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
+     * @param {string} phrase
+     * @param {Language | null} [language]
+     * @returns {boolean}
      */
-    toSeed(password) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            var len0 = WASM_VECTOR_LEN;
-            const ret = wasm.mnemonic_toSeed(this.__wbg_ptr, ptr0, len0);
-            deferred2_0 = ret[0];
-            deferred2_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    static validate(phrase, language) {
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        if (!isLikeNone(language)) {
+            _assertNum(language);
         }
+        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
+        return ret !== 0;
     }
 }
 
@@ -1177,35 +1166,6 @@ export class NetworkId {
         wasm.__wbg_set_networkid_suffix(this.__wbg_ptr, isLikeNone(arg0) ? 0x100000001 : (arg0) >>> 0);
     }
     /**
-     * @param {any} value
-     */
-    constructor(value) {
-        const ret = wasm.networkid_ctor(value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        NetworkIdFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    get id() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.networkid_id(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {string}
      */
     toString() {
@@ -1232,6 +1192,35 @@ export class NetworkId {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
             const ret = wasm.networkid_addressPrefix(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {any} value
+     */
+    constructor(value) {
+        const ret = wasm.networkid_ctor(value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        NetworkIdFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {string}
+     */
+    get id() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.networkid_id(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -1270,37 +1259,21 @@ export class PrivateKey {
         wasm.__wbg_privatekey_free(ptr, 0);
     }
     /**
-     * Create a new [`PrivateKey`] from a hex-encoded string.
-     * @param {string} key
+     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
      */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.privatekey_try_new(ptr0, len0);
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.privatekey_toAddress(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Returns the [`PrivateKey`] key encoded as a hex string.
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.privatekey_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
+        return Address.__wrap(ret[0]);
     }
     /**
      * Generate a [`Keypair`] from this [`PrivateKey`].
@@ -1328,23 +1301,6 @@ export class PrivateKey {
         return PublicKey.__wrap(ret[0]);
     }
     /**
-     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.privatekey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
      * Get `ECDSA` [`Address`] of the PublicKey generated from this PrivateKey.
      * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
      * to determine the prefix of the address.
@@ -1360,6 +1316,39 @@ export class PrivateKey {
             throw takeFromExternrefTable0(ret[1]);
         }
         return Address.__wrap(ret[0]);
+    }
+    /**
+     * Returns the [`PrivateKey`] key encoded as a hex string.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.privatekey_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create a new [`PrivateKey`] from a hex-encoded string.
+     * @param {string} key
+     */
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.privatekey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -1392,6 +1381,34 @@ export class PrivateKeyGenerator {
         wasm.__wbg_privatekeygenerator_free(ptr, 0);
     }
     /**
+     * @param {number} index
+     * @returns {PrivateKey}
+     */
+    changeKey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.privatekeygenerator_changeKey(this.__wbg_ptr, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PrivateKey.__wrap(ret[0]);
+    }
+    /**
+     * @param {number} index
+     * @returns {PrivateKey}
+     */
+    receiveKey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.privatekeygenerator_receiveKey(this.__wbg_ptr, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PrivateKey.__wrap(ret[0]);
+    }
+    /**
      * @param {XPrv | string} xprv
      * @param {boolean} is_multisig
      * @param {bigint} account_index
@@ -1410,34 +1427,6 @@ export class PrivateKeyGenerator {
         this.__wbg_ptr = ret[0] >>> 0;
         PrivateKeyGeneratorFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * @param {number} index
-     * @returns {PrivateKey}
-     */
-    receiveKey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.privatekeygenerator_receiveKey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PrivateKey.__wrap(ret[0]);
-    }
-    /**
-     * @param {number} index
-     * @returns {PrivateKey}
-     */
-    changeKey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.privatekeygenerator_changeKey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PrivateKey.__wrap(ret[0]);
     }
 }
 
@@ -1471,19 +1460,31 @@ export class PublicKey {
         wasm.__wbg_publickey_free(ptr, 0);
     }
     /**
-     * Create a new [`PublicKey`] from a hex-encoded string.
-     * @param {string} key
+     * Compute a 4-byte key fingerprint for this public key as a hex string.
+     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
+     * @returns {HexString | undefined}
      */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.publickey_try_new(ptr0, len0);
+    fingerprint() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Get the [`Address`] of this PublicKey.
+     * Receives a [`NetworkType`] to determine the prefix of the address.
+     * JavaScript: `let address = publicKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.publickey_toAddress(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PublicKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        return Address.__wrap(ret[0]);
     }
     /**
      * @returns {string}
@@ -1501,22 +1502,6 @@ export class PublicKey {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-    }
-    /**
-     * Get the [`Address`] of this PublicKey.
-     * Receives a [`NetworkType`] to determine the prefix of the address.
-     * JavaScript: `let address = publicKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.publickey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
     }
     /**
      * Get `ECDSA` [`Address`] of this PublicKey.
@@ -1544,15 +1529,19 @@ export class PublicKey {
         return XOnlyPublicKey.__wrap(ret);
     }
     /**
-     * Compute a 4-byte key fingerprint for this public key as a hex string.
-     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
-     * @returns {HexString | undefined}
+     * Create a new [`PublicKey`] from a hex-encoded string.
+     * @param {string} key
      */
-    fingerprint() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
-        return ret;
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.publickey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PublicKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -1595,51 +1584,48 @@ export class PublicKeyGenerator {
         wasm.__wbg_publickeygenerator_free(ptr, 0);
     }
     /**
-     * @param {XPub | string} kpub
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Public Key derivation at a given index.
+     * @param {number} index
+     * @returns {PublicKey}
      */
-    static fromXPub(kpub, cosigner_index) {
-        if (!isLikeNone(cosigner_index)) {
-            _assertNum(cosigner_index);
-        }
-        const ret = wasm.publickeygenerator_fromXPub(kpub, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+    changePubkey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_changePubkey(this.__wbg_ptr, index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return PublicKeyGenerator.__wrap(ret[0]);
+        return PublicKey.__wrap(ret[0]);
     }
     /**
-     * @param {XPrv | string} xprv
-     * @param {boolean} is_multisig
-     * @param {bigint} account_index
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
      */
-    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
-        _assertBoolean(is_multisig);
-        _assertBigInt(account_index);
-        if (!isLikeNone(cosigner_index)) {
-            _assertNum(cosigner_index);
-        }
-        const ret = wasm.publickeygenerator_fromMasterXPrv(xprv, is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+    changeAddress(networkType, index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_changeAddress(this.__wbg_ptr, networkType, index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return PublicKeyGenerator.__wrap(ret[0]);
+        return Address.__wrap(ret[0]);
     }
     /**
-     * Generate Receive Public Key derivations for a given range.
+     * Generate Change Public Key derivations for a given range.
      * @param {number} start
      * @param {number} end
      * @returns {(PublicKey | string)[]}
      */
-    receivePubkeys(start, end) {
+    changePubkeys(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receivePubkeys(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_changePubkeys(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -1661,21 +1647,145 @@ export class PublicKeyGenerator {
         return PublicKey.__wrap(ret[0]);
     }
     /**
-     * Generate a range of Receive Public Key derivations and return them as strings.
+     * Generate a single Receive Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
+     */
+    receiveAddress(networkType, index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_receiveAddress(this.__wbg_ptr, networkType, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
+     * Generate Receive Public Key derivations for a given range.
      * @param {number} start
      * @param {number} end
-     * @returns {Array<string>}
+     * @returns {(PublicKey | string)[]}
      */
-    receivePubkeysAsStrings(start, end) {
+    receivePubkeys(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receivePubkeysAsStrings(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_receivePubkeys(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Generate Change Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    changeAddresses(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_changeAddresses(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {XPrv | string} xprv
+     * @param {boolean} is_multisig
+     * @param {bigint} account_index
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
+        _assertBoolean(is_multisig);
+        _assertBigInt(account_index);
+        if (!isLikeNone(cosigner_index)) {
+            _assertNum(cosigner_index);
+        }
+        const ret = wasm.publickeygenerator_fromMasterXPrv(xprv, is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PublicKeyGenerator.__wrap(ret[0]);
+    }
+    /**
+     * Generate Receive Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    receiveAddresses(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_receiveAddresses(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Generate a single Change Public Key derivation at a given index and return it as a string.
+     * @param {number} index
+     * @returns {string}
+     */
+    changePubkeyAsString(index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            _assertNum(index);
+            const ret = wasm.publickeygenerator_changePubkeyAsString(this.__wbg_ptr, index);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Generate a single Change Address derivation at a given index and return it as a string.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {string}
+     */
+    changeAddressAsString(networkType, index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            _assertNum(index);
+            const ret = wasm.publickeygenerator_changeAddressAsString(this.__wbg_ptr, networkType, index);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
     }
     /**
      * Generate a single Receive Public Key derivation at a given index and return it as a string.
@@ -1704,52 +1814,17 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Receive Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    receiveAddresses(networkType, start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_receiveAddresses(this.__wbg_ptr, networkType, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Receive Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    receiveAddress(networkType, index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_receiveAddress(this.__wbg_ptr, networkType, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
-     * Generate a range of Receive Address derivations and return them as strings.
-     * @param {NetworkType | NetworkId | string} networkType
+     * Generate a range of Change Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    receiveAddressAsStrings(networkType, start, end) {
+    changePubkeysAsStrings(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receiveAddressAsStrings(this.__wbg_ptr, networkType, start, end);
+        const ret = wasm.publickeygenerator_changePubkeysAsStrings(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -1783,113 +1858,21 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Change Public Key derivations for a given range.
-     * @param {number} start
-     * @param {number} end
-     * @returns {(PublicKey | string)[]}
-     */
-    changePubkeys(start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_changePubkeys(this.__wbg_ptr, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index.
-     * @param {number} index
-     * @returns {PublicKey}
-     */
-    changePubkey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_changePubkey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PublicKey.__wrap(ret[0]);
-    }
-    /**
-     * Generate a range of Change Public Key derivations and return them as strings.
+     * Generate a range of Receive Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    changePubkeysAsStrings(start, end) {
+    receivePubkeysAsStrings(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_changePubkeysAsStrings(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_receivePubkeysAsStrings(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index and return it as a string.
-     * @param {number} index
-     * @returns {string}
-     */
-    changePubkeyAsString(index) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(index);
-            const ret = wasm.publickeygenerator_changePubkeyAsString(this.__wbg_ptr, index);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * Generate Change Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    changeAddresses(networkType, start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_changeAddresses(this.__wbg_ptr, networkType, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    changeAddress(networkType, index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_changeAddress(this.__wbg_ptr, networkType, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
     }
     /**
      * Generate a range of Change Address derivations and return them as strings.
@@ -1910,31 +1893,37 @@ export class PublicKeyGenerator {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * Generate a single Change Address derivation at a given index and return it as a string.
+     * Generate a range of Receive Address derivations and return them as strings.
      * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {string}
+     * @param {number} start
+     * @param {number} end
+     * @returns {Array<string>}
      */
-    changeAddressAsString(networkType, index) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(index);
-            const ret = wasm.publickeygenerator_changeAddressAsString(this.__wbg_ptr, networkType, index);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    receiveAddressAsStrings(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_receiveAddressAsStrings(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {XPub | string} kpub
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromXPub(kpub, cosigner_index) {
+        if (!isLikeNone(cosigner_index)) {
+            _assertNum(cosigner_index);
+        }
+        const ret = wasm.publickeygenerator_fromXPub(kpub, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PublicKeyGenerator.__wrap(ret[0]);
     }
     /**
      * @returns {string}
@@ -1980,8 +1969,8 @@ export class ScriptPublicKey {
 
     toJSON() {
         return {
-            version: this.version,
             script: this.script,
+            version: this.version,
         };
     }
 
@@ -1999,24 +1988,6 @@ export class ScriptPublicKey {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_scriptpublickey_free(ptr, 0);
-    }
-    /**
-     * @returns {number}
-     */
-    get version() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} arg0
-     */
-    set version(arg0) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(arg0);
-        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
     }
     /**
      * @param {number} version
@@ -2048,6 +2019,24 @@ export class ScriptPublicKey {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @returns {number}
+     */
+    get version() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} arg0
+     */
+    set version(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(arg0);
+        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
     }
 }
 
@@ -2096,6 +2085,7 @@ export class TransactionUtxoEntry {
             scriptPublicKey: this.scriptPublicKey,
             blockDaaScore: this.blockDaaScore,
             isCoinbase: this.isCoinbase,
+            covenantId: this.covenantId,
         };
     }
 
@@ -2190,6 +2180,31 @@ export class TransactionUtxoEntry {
         _assertBoolean(arg0);
         wasm.__wbg_set_transactionutxoentry_isCoinbase(this.__wbg_ptr, arg0);
     }
+    /**
+     * @returns {Hash | undefined}
+     */
+    get covenantId() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_transactionutxoentry_covenantId(this.__wbg_ptr);
+        return ret === 0 ? undefined : Hash.__wrap(ret);
+    }
+    /**
+     * @param {Hash | null} [arg0]
+     */
+    set covenantId(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(arg0)) {
+            _assertClass(arg0, Hash);
+            if (arg0.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            ptr0 = arg0.__destroy_into_raw();
+        }
+        wasm.__wbg_set_transactionutxoentry_covenantId(this.__wbg_ptr, ptr0);
+    }
 }
 
 const XOnlyPublicKeyFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -2226,37 +2241,6 @@ export class XOnlyPublicKey {
         wasm.__wbg_xonlypublickey_free(ptr, 0);
     }
     /**
-     * @param {string} key
-     */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xonlypublickey_try_new(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xonlypublickey_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * Get the [`Address`] of this XOnlyPublicKey.
      * Receives a [`NetworkType`] to determine the prefix of the address.
      * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
@@ -2267,22 +2251,6 @@ export class XOnlyPublicKey {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.xonlypublickey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
-     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
-     * Receives a [`NetworkType`] to determine the prefix of the address.
-     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddressECDSA(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xonlypublickey_toAddressECDSA(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -2302,6 +2270,53 @@ export class XOnlyPublicKey {
             throw takeFromExternrefTable0(ret[1]);
         }
         return XOnlyPublicKey.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xonlypublickey_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
+     * Receives a [`NetworkType`] to determine the prefix of the address.
+     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddressECDSA(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xonlypublickey_toAddressECDSA(this.__wbg_ptr, network);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xonlypublickey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -2332,12 +2347,12 @@ export class XPrv {
 
     toJSON() {
         return {
-            xprv: this.xprv,
-            privateKey: this.privateKey,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            privateKey: this.privateKey,
+            parentFingerprint: this.parentFingerprint,
+            xprv: this.xprv,
+            depth: this.depth,
         };
     }
 
@@ -2355,50 +2370,6 @@ export class XPrv {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_xprv_free(ptr, 0);
-    }
-    /**
-     * @param {HexString} seed
-     */
-    constructor(seed) {
-        const ret = wasm.xprv_try_new(seed);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XPrvFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Create {@link XPrv} from `xprvxxxx..` string
-     * @param {string} xprv
-     * @returns {XPrv}
-     */
-    static fromXPrv(xprv) {
-        const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xprv_fromXPrv(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPrv.__wrap(ret[0]);
-    }
-    /**
-     * @param {number} child_number
-     * @param {boolean | null} [hardened]
-     * @returns {XPrv}
-     */
-    deriveChild(child_number, hardened) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(child_number);
-        if (!isLikeNone(hardened)) {
-            _assertBoolean(hardened);
-        }
-        const ret = wasm.xprv_deriveChild(this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPrv.__wrap(ret[0]);
     }
     /**
      * @param {any} path
@@ -2440,39 +2411,45 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
+     * @returns {number}
      */
-    toString() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_toString(this.__wbg_ptr);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * @returns {XPub}
-     */
-    toXPub() {
+    get childNumber() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.xprv_toXPub(this.__wbg_ptr);
+        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @param {number} child_number
+     * @param {boolean | null} [hardened]
+     * @returns {XPrv}
+     */
+    deriveChild(child_number, hardened) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(child_number);
+        if (!isLikeNone(hardened)) {
+            _assertBoolean(hardened);
+        }
+        const ret = wasm.xprv_deriveChild(this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return XPub.__wrap(ret[0]);
+        return XPrv.__wrap(ret[0]);
+    }
+    /**
+     * Create {@link XPrv} from `xprvxxxx..` string
+     * @param {string} xprv
+     * @returns {XPrv}
+     */
+    static fromXPrv(xprv) {
+        const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xprv_fromXPrv(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return XPrv.__wrap(ret[0]);
     }
     /**
      * @returns {PrivateKey}
@@ -2485,6 +2462,57 @@ export class XPrv {
             throw takeFromExternrefTable0(ret[1]);
         }
         return PrivateKey.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_chainCode(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get privateKey() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_privateKey(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_parentFingerprint(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -2510,23 +2538,6 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
-     */
-    get privateKey() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_privateKey(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {number}
      */
     get depth() {
@@ -2536,46 +2547,50 @@ export class XPrv {
         return ret;
     }
     /**
-     * @returns {string}
+     * @returns {XPub}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_parentFingerprint(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {number}
-     */
-    get childNumber() {
+    toXPub() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
+        const ret = wasm.xprv_toXPub(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return XPub.__wrap(ret[0]);
+    }
+    /**
+     * @param {HexString} seed
+     */
+    constructor(seed) {
+        const ret = wasm.xprv_try_new(seed);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XPrvFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {string}
      */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
+    toString() {
+        let deferred2_0;
+        let deferred2_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_chainCode(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            const ret = wasm.xprv_toString(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
         } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
 }
@@ -2607,11 +2622,11 @@ export class XPub {
 
     toJSON() {
         return {
-            xpub: this.xpub,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            parentFingerprint: this.parentFingerprint,
+            xpub: this.xpub,
+            depth: this.depth,
         };
     }
 
@@ -2631,18 +2646,35 @@ export class XPub {
         wasm.__wbg_xpub_free(ptr, 0);
     }
     /**
-     * @param {string} xpub
+     * @returns {PublicKey}
      */
-    constructor(xpub) {
-        const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xpub_try_new(ptr0, len0);
+    toPublicKey() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
+        return PublicKey.__wrap(ret);
+    }
+    /**
+     * @param {any} path
+     * @returns {XPub}
+     */
+    derivePath(path) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_derivePath(this.__wbg_ptr, path);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XPubFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        return XPub.__wrap(ret[0]);
+    }
+    /**
+     * @returns {number}
+     */
+    get childNumber() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
     }
     /**
      * @param {number} child_number
@@ -2663,52 +2695,38 @@ export class XPub {
         return XPub.__wrap(ret[0]);
     }
     /**
-     * @param {any} path
-     * @returns {XPub}
-     */
-    derivePath(path) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_derivePath(this.__wbg_ptr, path);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPub.__wrap(ret[0]);
-    }
-    /**
-     * @param {string} prefix
      * @returns {string}
      */
-    intoString(prefix) {
-        let deferred3_0;
-        let deferred3_1;
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            const len0 = WASM_VECTOR_LEN;
-            const ret = wasm.xpub_intoString(this.__wbg_ptr, ptr0, len0);
-            var ptr2 = ret[0];
-            var len2 = ret[1];
-            if (ret[3]) {
-                ptr2 = 0; len2 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred3_0 = ptr2;
-            deferred3_1 = len2;
-            return getStringFromWasm0(ptr2, len2);
+            const ret = wasm.xpub_chainCode(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
         } finally {
-            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
     /**
-     * @returns {PublicKey}
+     * @returns {string}
      */
-    toPublicKey() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
-        return PublicKey.__wrap(ret);
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xpub_parentFingerprint(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -2743,47 +2761,44 @@ export class XPub {
         return ret;
     }
     /**
+     * @param {string} prefix
      * @returns {string}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
+    intoString(prefix) {
+        let deferred3_0;
+        let deferred3_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.xpub_parentFingerprint(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.xpub_intoString(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
         } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
-     * @returns {number}
+     * @param {string} xpub
      */
-    get childNumber() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * @returns {string}
-     */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xpub_chainCode(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    constructor(xpub) {
+        const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xpub_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XPubFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 

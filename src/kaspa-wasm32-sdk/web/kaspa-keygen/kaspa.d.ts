@@ -18,14 +18,6 @@ export function setLogLevel(level: "off" | "error" | "warn" | "info" | "debug" |
  */
 export function initWASM32Bindings(config: IWASM32BindingsConfig): void;
 /**
- * Initialize Rust panic handler in console mode.
- *
- * This will output additional debug information during a panic to the console.
- * This function should be called right after loading WASM libraries.
- * @category General
- */
-export function initConsolePanicHook(): void;
-/**
  * Initialize Rust panic handler in browser mode.
  *
  * This will output additional debug information during a panic in the browser
@@ -37,6 +29,14 @@ export function initConsolePanicHook(): void;
  * @category General
  */
 export function initBrowserPanicHook(): void;
+/**
+ * Initialize Rust panic handler in console mode.
+ *
+ * This will output additional debug information during a panic to the console.
+ * This function should be called right after loading WASM libraries.
+ * @category General
+ */
+export function initConsolePanicHook(): void;
 /**
  * Present panic logs to the user in the browser.
  *
@@ -145,15 +145,6 @@ export interface IScriptPublicKey {
 
 
 /**
- * A string containing a hexadecimal representation of the data (typically representing for IDs or Hashes).
- * 
- * @category General
- */ 
-export type HexString = string;
-
-
-
-/**
  * Color range configuration for Hex View.
  * 
  * @category General
@@ -176,6 +167,15 @@ export interface IHexViewConfig {
     width? : number;
     colors? : IHexViewColor[];
 }
+
+
+
+/**
+ * A string containing a hexadecimal representation of the data (typically representing for IDs or Hashes).
+ * 
+ * @category General
+ */ 
+export type HexString = string;
 
 
 
@@ -213,8 +213,8 @@ export interface IWASM32BindingsConfig {
  */
 export class Abortable {
   free(): void;
-  constructor();
   isAborted(): boolean;
+  constructor();
   abort(): void;
   check(): void;
   reset(): void;
@@ -243,16 +243,15 @@ export class Address {
   toString(): string;
   free(): void;
   constructor(address: string);
-  static validate(address: string): boolean;
   /**
    * Convert an address to a string.
    */
   toString(): string;
-  short(n: number): string;
-  readonly version: string;
+  static validate(address: string): boolean;
   readonly prefix: string;
-  set setPrefix(value: string);
   readonly payload: string;
+  readonly version: string;
+  set setPrefix(value: string);
 }
 /**
  *
@@ -262,26 +261,26 @@ export class Address {
  */
 export class DerivationPath {
   free(): void;
-  constructor(path: string);
-  /**
-   * Is this derivation path empty? (i.e. the root)
-   */
-  isEmpty(): boolean;
   /**
    * Get the count of [`ChildNumber`] values in this derivation path.
    */
   length(): number;
+  constructor(path: string);
+  /**
+   * Push a [`ChildNumber`] onto an existing derivation path.
+   */
+  push(child_number: number, hardened?: boolean | null): void;
   /**
    * Get the parent [`DerivationPath`] for the current one.
    *
    * Returns `Undefined` if this is already the root path.
    */
   parent(): DerivationPath | undefined;
-  /**
-   * Push a [`ChildNumber`] onto an existing derivation path.
-   */
-  push(child_number: number, hardened?: boolean | null): void;
   toString(): string;
+  /**
+   * Is this derivation path empty? (i.e. the root)
+   */
+  isEmpty(): boolean;
 }
 /**
  * @category General
@@ -314,6 +313,11 @@ export class Keypair {
    */
   toAddress(network: NetworkType | NetworkId | string): Address;
   /**
+   * Create a new [`Keypair`] from a [`PrivateKey`].
+   * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
+   */
+  static fromPrivateKey(secret_key: PrivateKey): Keypair;
+  /**
    * Get `ECDSA` [`Address`] of this Keypair's [`PublicKey`].
    * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
    * to determine the prefix of the address.
@@ -325,11 +329,6 @@ export class Keypair {
    * JavaScript: `let keypair = Keypair::random();`.
    */
   static random(): Keypair;
-  /**
-   * Create a new [`Keypair`] from a [`PrivateKey`].
-   * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
-   */
-  static fromPrivateKey(secret_key: PrivateKey): Keypair;
   /**
    * Get the [`PublicKey`] of this [`Keypair`].
    */
@@ -358,14 +357,14 @@ export class Mnemonic {
   toString(): string;
   free(): void;
   constructor(phrase: string, language?: Language | null);
+  toSeed(password?: string | null): string;
+  static random(word_count?: number | null): Mnemonic;
   /**
    * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
    */
   static validate(phrase: string, language?: Language | null): boolean;
-  static random(word_count?: number | null): Mnemonic;
-  toSeed(password?: string | null): string;
-  entropy: string;
   phrase: string;
+  entropy: string;
 }
 /**
  *
@@ -384,9 +383,9 @@ export class NetworkId {
 */
   toString(): string;
   free(): void;
-  constructor(value: any);
   toString(): string;
   addressPrefix(): string;
+  constructor(value: any);
   type: NetworkType;
   get suffix(): number | undefined;
   set suffix(value: number | null | undefined);
@@ -399,19 +398,6 @@ export class NetworkId {
 export class PrivateKey {
   free(): void;
   /**
-   * Create a new [`PrivateKey`] from a hex-encoded string.
-   */
-  constructor(key: string);
-  /**
-   * Returns the [`PrivateKey`] key encoded as a hex string.
-   */
-  toString(): string;
-  /**
-   * Generate a [`Keypair`] from this [`PrivateKey`].
-   */
-  toKeypair(): Keypair;
-  toPublicKey(): PublicKey;
-  /**
    * Get the [`Address`] of the PublicKey generated from this PrivateKey.
    * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
    * to determine the prefix of the address.
@@ -419,12 +405,25 @@ export class PrivateKey {
    */
   toAddress(network: NetworkType | NetworkId | string): Address;
   /**
+   * Generate a [`Keypair`] from this [`PrivateKey`].
+   */
+  toKeypair(): Keypair;
+  toPublicKey(): PublicKey;
+  /**
    * Get `ECDSA` [`Address`] of the PublicKey generated from this PrivateKey.
    * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
    * to determine the prefix of the address.
    * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
    */
   toAddressECDSA(network: NetworkType | NetworkId | string): Address;
+  /**
+   * Returns the [`PrivateKey`] key encoded as a hex string.
+   */
+  toString(): string;
+  /**
+   * Create a new [`PrivateKey`] from a hex-encoded string.
+   */
+  constructor(key: string);
 }
 /**
  *
@@ -440,9 +439,9 @@ export class PrivateKey {
  */
 export class PrivateKeyGenerator {
   free(): void;
-  constructor(xprv: XPrv | string, is_multisig: boolean, account_index: bigint, cosigner_index?: number | null);
-  receiveKey(index: number): PrivateKey;
   changeKey(index: number): PrivateKey;
+  receiveKey(index: number): PrivateKey;
+  constructor(xprv: XPrv | string, is_multisig: boolean, account_index: bigint, cosigner_index?: number | null);
 }
 /**
  * Data structure that envelopes a PublicKey.
@@ -452,16 +451,17 @@ export class PrivateKeyGenerator {
 export class PublicKey {
   free(): void;
   /**
-   * Create a new [`PublicKey`] from a hex-encoded string.
+   * Compute a 4-byte key fingerprint for this public key as a hex string.
+   * Default implementation uses `RIPEMD160(SHA256(public_key))`.
    */
-  constructor(key: string);
-  toString(): string;
+  fingerprint(): HexString | undefined;
   /**
    * Get the [`Address`] of this PublicKey.
    * Receives a [`NetworkType`] to determine the prefix of the address.
    * JavaScript: `let address = publicKey.toAddress(NetworkType.MAINNET);`.
    */
   toAddress(network: NetworkType | NetworkId | string): Address;
+  toString(): string;
   /**
    * Get `ECDSA` [`Address`] of this PublicKey.
    * Receives a [`NetworkType`] to determine the prefix of the address.
@@ -470,10 +470,9 @@ export class PublicKey {
   toAddressECDSA(network: NetworkType | NetworkId | string): Address;
   toXOnlyPublicKey(): XOnlyPublicKey;
   /**
-   * Compute a 4-byte key fingerprint for this public key as a hex string.
-   * Default implementation uses `RIPEMD160(SHA256(public_key))`.
+   * Create a new [`PublicKey`] from a hex-encoded string.
    */
-  fingerprint(): HexString | undefined;
+  constructor(key: string);
 }
 /**
  *
@@ -488,72 +487,72 @@ export class PublicKey {
 export class PublicKeyGenerator {
   private constructor();
   free(): void;
-  static fromXPub(kpub: XPub | string, cosigner_index?: number | null): PublicKeyGenerator;
-  static fromMasterXPrv(xprv: XPrv | string, is_multisig: boolean, account_index: bigint, cosigner_index?: number | null): PublicKeyGenerator;
-  /**
-   * Generate Receive Public Key derivations for a given range.
-   */
-  receivePubkeys(start: number, end: number): (PublicKey | string)[];
-  /**
-   * Generate a single Receive Public Key derivation at a given index.
-   */
-  receivePubkey(index: number): PublicKey;
-  /**
-   * Generate a range of Receive Public Key derivations and return them as strings.
-   */
-  receivePubkeysAsStrings(start: number, end: number): Array<string>;
-  /**
-   * Generate a single Receive Public Key derivation at a given index and return it as a string.
-   */
-  receivePubkeyAsString(index: number): string;
-  /**
-   * Generate Receive Address derivations for a given range.
-   */
-  receiveAddresses(networkType: NetworkType | NetworkId | string, start: number, end: number): Address[];
-  /**
-   * Generate a single Receive Address derivation at a given index.
-   */
-  receiveAddress(networkType: NetworkType | NetworkId | string, index: number): Address;
-  /**
-   * Generate a range of Receive Address derivations and return them as strings.
-   */
-  receiveAddressAsStrings(networkType: NetworkType | NetworkId | string, start: number, end: number): Array<string>;
-  /**
-   * Generate a single Receive Address derivation at a given index and return it as a string.
-   */
-  receiveAddressAsString(networkType: NetworkType | NetworkId | string, index: number): string;
-  /**
-   * Generate Change Public Key derivations for a given range.
-   */
-  changePubkeys(start: number, end: number): (PublicKey | string)[];
   /**
    * Generate a single Change Public Key derivation at a given index.
    */
   changePubkey(index: number): PublicKey;
   /**
-   * Generate a range of Change Public Key derivations and return them as strings.
+   * Generate a single Change Address derivation at a given index.
    */
-  changePubkeysAsStrings(start: number, end: number): Array<string>;
+  changeAddress(networkType: NetworkType | NetworkId | string, index: number): Address;
+  /**
+   * Generate Change Public Key derivations for a given range.
+   */
+  changePubkeys(start: number, end: number): (PublicKey | string)[];
+  /**
+   * Generate a single Receive Public Key derivation at a given index.
+   */
+  receivePubkey(index: number): PublicKey;
+  /**
+   * Generate a single Receive Address derivation at a given index.
+   */
+  receiveAddress(networkType: NetworkType | NetworkId | string, index: number): Address;
+  /**
+   * Generate Receive Public Key derivations for a given range.
+   */
+  receivePubkeys(start: number, end: number): (PublicKey | string)[];
+  /**
+   * Generate Change Address derivations for a given range.
+   */
+  changeAddresses(networkType: NetworkType | NetworkId | string, start: number, end: number): Address[];
+  static fromMasterXPrv(xprv: XPrv | string, is_multisig: boolean, account_index: bigint, cosigner_index?: number | null): PublicKeyGenerator;
+  /**
+   * Generate Receive Address derivations for a given range.
+   */
+  receiveAddresses(networkType: NetworkType | NetworkId | string, start: number, end: number): Address[];
   /**
    * Generate a single Change Public Key derivation at a given index and return it as a string.
    */
   changePubkeyAsString(index: number): string;
   /**
-   * Generate Change Address derivations for a given range.
+   * Generate a single Change Address derivation at a given index and return it as a string.
    */
-  changeAddresses(networkType: NetworkType | NetworkId | string, start: number, end: number): Address[];
+  changeAddressAsString(networkType: NetworkType | NetworkId | string, index: number): string;
   /**
-   * Generate a single Change Address derivation at a given index.
+   * Generate a single Receive Public Key derivation at a given index and return it as a string.
    */
-  changeAddress(networkType: NetworkType | NetworkId | string, index: number): Address;
+  receivePubkeyAsString(index: number): string;
+  /**
+   * Generate a range of Change Public Key derivations and return them as strings.
+   */
+  changePubkeysAsStrings(start: number, end: number): Array<string>;
+  /**
+   * Generate a single Receive Address derivation at a given index and return it as a string.
+   */
+  receiveAddressAsString(networkType: NetworkType | NetworkId | string, index: number): string;
+  /**
+   * Generate a range of Receive Public Key derivations and return them as strings.
+   */
+  receivePubkeysAsStrings(start: number, end: number): Array<string>;
   /**
    * Generate a range of Change Address derivations and return them as strings.
    */
   changeAddressAsStrings(networkType: NetworkType | NetworkId | string, start: number, end: number): Array<string>;
   /**
-   * Generate a single Change Address derivation at a given index and return it as a string.
+   * Generate a range of Receive Address derivations and return them as strings.
    */
-  changeAddressAsString(networkType: NetworkType | NetworkId | string, index: number): string;
+  receiveAddressAsStrings(networkType: NetworkType | NetworkId | string, start: number, end: number): Array<string>;
+  static fromXPub(kpub: XPub | string, cosigner_index?: number | null): PublicKeyGenerator;
   toString(): string;
 }
 /**
@@ -571,8 +570,8 @@ export class ScriptPublicKey {
   toString(): string;
   free(): void;
   constructor(version: number, script: any);
-  version: number;
   readonly script: string;
+  version: number;
 }
 export class SigHashType {
   private constructor();
@@ -600,6 +599,8 @@ export class TransactionUtxoEntry {
   scriptPublicKey: ScriptPublicKey;
   blockDaaScore: bigint;
   isCoinbase: boolean;
+  get covenantId(): Hash | undefined;
+  set covenantId(value: Hash | null | undefined);
 }
 /**
  *
@@ -612,21 +613,21 @@ export class TransactionUtxoEntry {
  */
 export class XOnlyPublicKey {
   free(): void;
-  constructor(key: string);
-  toString(): string;
   /**
    * Get the [`Address`] of this XOnlyPublicKey.
    * Receives a [`NetworkType`] to determine the prefix of the address.
    * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
    */
   toAddress(network: NetworkType | NetworkId | string): Address;
+  static fromAddress(address: Address): XOnlyPublicKey;
+  toString(): string;
   /**
    * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
    * Receives a [`NetworkType`] to determine the prefix of the address.
    * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
    */
   toAddressECDSA(network: NetworkType | NetworkId | string): Address;
-  static fromAddress(address: Address): XOnlyPublicKey;
+  constructor(key: string);
 }
 /**
  *
@@ -650,23 +651,23 @@ export class XPrv {
 */
   toString(): string;
   free(): void;
-  constructor(seed: HexString);
+  derivePath(path: any): XPrv;
+  intoString(prefix: string): string;
+  deriveChild(child_number: number, hardened?: boolean | null): XPrv;
   /**
    * Create {@link XPrv} from `xprvxxxx..` string
    */
   static fromXPrv(xprv: string): XPrv;
-  deriveChild(child_number: number, hardened?: boolean | null): XPrv;
-  derivePath(path: any): XPrv;
-  intoString(prefix: string): string;
-  toString(): string;
-  toXPub(): XPub;
   toPrivateKey(): PrivateKey;
-  readonly xprv: string;
-  readonly privateKey: string;
-  readonly depth: number;
-  readonly parentFingerprint: string;
+  toXPub(): XPub;
+  constructor(seed: HexString);
+  toString(): string;
   readonly childNumber: number;
   readonly chainCode: string;
+  readonly privateKey: string;
+  readonly parentFingerprint: string;
+  readonly xprv: string;
+  readonly depth: number;
 }
 /**
  *
@@ -690,16 +691,16 @@ export class XPub {
 */
   toString(): string;
   free(): void;
-  constructor(xpub: string);
-  deriveChild(child_number: number, hardened?: boolean | null): XPub;
-  derivePath(path: any): XPub;
-  intoString(prefix: string): string;
   toPublicKey(): PublicKey;
-  readonly xpub: string;
-  readonly depth: number;
-  readonly parentFingerprint: string;
+  derivePath(path: any): XPub;
+  deriveChild(child_number: number, hardened?: boolean | null): XPub;
+  intoString(prefix: string): string;
+  constructor(xpub: string);
   readonly childNumber: number;
   readonly chainCode: string;
+  readonly parentFingerprint: string;
+  readonly xpub: string;
+  readonly depth: number;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -708,150 +709,151 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_address_free: (a: number, b: number) => void;
   readonly address_constructor: (a: number, b: number) => number;
-  readonly address_validate: (a: number, b: number) => number;
-  readonly address_toString: (a: number, b: number) => void;
-  readonly address_version: (a: number, b: number) => void;
+  readonly address_payload: (a: number, b: number) => void;
   readonly address_prefix: (a: number, b: number) => void;
   readonly address_set_setPrefix: (a: number, b: number, c: number) => void;
-  readonly address_payload: (a: number, b: number) => void;
-  readonly address_short: (a: number, b: number, c: number) => void;
+  readonly address_toString: (a: number, b: number) => void;
+  readonly address_validate: (a: number, b: number) => number;
+  readonly address_version: (a: number, b: number) => void;
   readonly __wbg_mnemonic_free: (a: number, b: number) => void;
   readonly mnemonic_constructor: (a: number, b: number, c: number, d: number) => void;
-  readonly mnemonic_validate: (a: number, b: number, c: number) => number;
   readonly mnemonic_entropy: (a: number, b: number) => void;
-  readonly mnemonic_set_entropy: (a: number, b: number, c: number) => void;
-  readonly mnemonic_random: (a: number, b: number) => void;
   readonly mnemonic_phrase: (a: number, b: number) => void;
+  readonly mnemonic_random: (a: number, b: number) => void;
+  readonly mnemonic_set_entropy: (a: number, b: number, c: number) => void;
   readonly mnemonic_set_phrase: (a: number, b: number, c: number) => void;
   readonly mnemonic_toSeed: (a: number, b: number, c: number, d: number) => void;
-  readonly __wbg_networkid_free: (a: number, b: number) => void;
-  readonly __wbg_get_networkid_type: (a: number) => number;
-  readonly __wbg_set_networkid_type: (a: number, b: number) => void;
+  readonly mnemonic_validate: (a: number, b: number, c: number) => number;
   readonly __wbg_get_networkid_suffix: (a: number) => number;
+  readonly __wbg_get_networkid_type: (a: number) => number;
+  readonly __wbg_networkid_free: (a: number, b: number) => void;
   readonly __wbg_set_networkid_suffix: (a: number, b: number) => void;
+  readonly __wbg_set_networkid_type: (a: number, b: number) => void;
+  readonly networkid_addressPrefix: (a: number, b: number) => void;
   readonly networkid_ctor: (a: number, b: number) => void;
   readonly networkid_id: (a: number, b: number) => void;
-  readonly networkid_addressPrefix: (a: number, b: number) => void;
   readonly networkid_toString: (a: number, b: number) => void;
-  readonly __wbg_transactionutxoentry_free: (a: number, b: number) => void;
-  readonly __wbg_get_transactionutxoentry_amount: (a: number) => bigint;
-  readonly __wbg_set_transactionutxoentry_amount: (a: number, b: bigint) => void;
-  readonly __wbg_get_transactionutxoentry_scriptPublicKey: (a: number) => number;
-  readonly __wbg_set_transactionutxoentry_scriptPublicKey: (a: number, b: number) => void;
-  readonly __wbg_get_transactionutxoentry_blockDaaScore: (a: number) => bigint;
-  readonly __wbg_set_transactionutxoentry_blockDaaScore: (a: number, b: bigint) => void;
-  readonly __wbg_get_transactionutxoentry_isCoinbase: (a: number) => number;
-  readonly __wbg_set_transactionutxoentry_isCoinbase: (a: number, b: number) => void;
   readonly __wbg_sighashtype_free: (a: number, b: number) => void;
-  readonly __wbg_scriptpublickey_free: (a: number, b: number) => void;
   readonly __wbg_get_scriptpublickey_version: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_amount: (a: number) => bigint;
+  readonly __wbg_get_transactionutxoentry_blockDaaScore: (a: number) => bigint;
+  readonly __wbg_get_transactionutxoentry_covenantId: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_isCoinbase: (a: number) => number;
+  readonly __wbg_get_transactionutxoentry_scriptPublicKey: (a: number) => number;
+  readonly __wbg_scriptpublickey_free: (a: number, b: number) => void;
   readonly __wbg_set_scriptpublickey_version: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_amount: (a: number, b: bigint) => void;
+  readonly __wbg_set_transactionutxoentry_blockDaaScore: (a: number, b: bigint) => void;
+  readonly __wbg_set_transactionutxoentry_covenantId: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_isCoinbase: (a: number, b: number) => void;
+  readonly __wbg_set_transactionutxoentry_scriptPublicKey: (a: number, b: number) => void;
+  readonly __wbg_transactionutxoentry_free: (a: number, b: number) => void;
   readonly scriptpublickey_constructor: (a: number, b: number, c: number) => void;
   readonly scriptpublickey_script_as_hex: (a: number, b: number) => void;
   readonly __wbg_hash_free: (a: number, b: number) => void;
   readonly hash_constructor: (a: number, b: number) => number;
   readonly hash_toString: (a: number, b: number) => void;
   readonly __wbg_publickey_free: (a: number, b: number) => void;
-  readonly publickey_try_new: (a: number, b: number, c: number) => void;
-  readonly publickey_toString: (a: number, b: number) => void;
+  readonly __wbg_xonlypublickey_free: (a: number, b: number) => void;
+  readonly publickey_fingerprint: (a: number) => number;
   readonly publickey_toAddress: (a: number, b: number, c: number) => void;
   readonly publickey_toAddressECDSA: (a: number, b: number, c: number) => void;
+  readonly publickey_toString: (a: number, b: number) => void;
   readonly publickey_toXOnlyPublicKey: (a: number) => number;
-  readonly publickey_fingerprint: (a: number) => number;
-  readonly __wbg_xonlypublickey_free: (a: number, b: number) => void;
-  readonly xonlypublickey_try_new: (a: number, b: number, c: number) => void;
-  readonly xonlypublickey_toString: (a: number, b: number) => void;
+  readonly publickey_try_new: (a: number, b: number, c: number) => void;
+  readonly xonlypublickey_fromAddress: (a: number, b: number) => void;
   readonly xonlypublickey_toAddress: (a: number, b: number, c: number) => void;
   readonly xonlypublickey_toAddressECDSA: (a: number, b: number, c: number) => void;
-  readonly xonlypublickey_fromAddress: (a: number, b: number) => void;
-  readonly __wbg_privatekey_free: (a: number, b: number) => void;
-  readonly privatekey_try_new: (a: number, b: number, c: number) => void;
-  readonly privatekey_toString: (a: number, b: number) => void;
-  readonly privatekey_toKeypair: (a: number, b: number) => void;
-  readonly privatekey_toPublicKey: (a: number, b: number) => void;
-  readonly privatekey_toAddress: (a: number, b: number, c: number) => void;
-  readonly privatekey_toAddressECDSA: (a: number, b: number, c: number) => void;
-  readonly __wbg_xprv_free: (a: number, b: number) => void;
-  readonly xprv_try_new: (a: number, b: number) => void;
-  readonly xprv_fromXPrv: (a: number, b: number, c: number) => void;
-  readonly xprv_deriveChild: (a: number, b: number, c: number, d: number) => void;
-  readonly xprv_derivePath: (a: number, b: number, c: number) => void;
-  readonly xprv_intoString: (a: number, b: number, c: number, d: number) => void;
-  readonly xprv_toString: (a: number, b: number) => void;
-  readonly xprv_toXPub: (a: number, b: number) => void;
-  readonly xprv_toPrivateKey: (a: number, b: number) => void;
-  readonly xprv_privateKey: (a: number, b: number) => void;
-  readonly xprv_depth: (a: number) => number;
-  readonly xprv_parentFingerprint: (a: number, b: number) => void;
-  readonly xprv_childNumber: (a: number) => number;
-  readonly xprv_chainCode: (a: number, b: number) => void;
-  readonly xprv_xprv: (a: number, b: number) => void;
-  readonly __wbg_keypair_free: (a: number, b: number) => void;
-  readonly keypair_get_public_key: (a: number, b: number) => void;
-  readonly keypair_get_private_key: (a: number, b: number) => void;
-  readonly keypair_get_xonly_public_key: (a: number) => number;
-  readonly keypair_toAddress: (a: number, b: number, c: number) => void;
-  readonly keypair_toAddressECDSA: (a: number, b: number, c: number) => void;
-  readonly keypair_random: (a: number) => void;
-  readonly keypair_fromPrivateKey: (a: number, b: number) => void;
-  readonly __wbg_xpub_free: (a: number, b: number) => void;
-  readonly xpub_try_new: (a: number, b: number, c: number) => void;
-  readonly xpub_deriveChild: (a: number, b: number, c: number, d: number) => void;
-  readonly xpub_derivePath: (a: number, b: number, c: number) => void;
-  readonly xpub_intoString: (a: number, b: number, c: number, d: number) => void;
-  readonly xpub_toPublicKey: (a: number) => number;
-  readonly xpub_xpub: (a: number, b: number) => void;
-  readonly xpub_depth: (a: number) => number;
-  readonly xpub_parentFingerprint: (a: number, b: number) => void;
-  readonly xpub_childNumber: (a: number) => number;
-  readonly xpub_chainCode: (a: number, b: number) => void;
-  readonly __wbg_publickeygenerator_free: (a: number, b: number) => void;
-  readonly publickeygenerator_fromXPub: (a: number, b: number, c: number) => void;
-  readonly publickeygenerator_fromMasterXPrv: (a: number, b: number, c: number, d: bigint, e: number) => void;
-  readonly publickeygenerator_receivePubkeys: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_receivePubkey: (a: number, b: number, c: number) => void;
-  readonly publickeygenerator_receivePubkeysAsStrings: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_receivePubkeyAsString: (a: number, b: number, c: number) => void;
-  readonly publickeygenerator_receiveAddresses: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly publickeygenerator_receiveAddress: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_receiveAddressAsStrings: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly publickeygenerator_receiveAddressAsString: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_changePubkeys: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_changePubkey: (a: number, b: number, c: number) => void;
-  readonly publickeygenerator_changePubkeysAsStrings: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_changePubkeyAsString: (a: number, b: number, c: number) => void;
-  readonly publickeygenerator_changeAddresses: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly publickeygenerator_changeAddress: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_changeAddressAsStrings: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly publickeygenerator_changeAddressAsString: (a: number, b: number, c: number, d: number) => void;
-  readonly publickeygenerator_toString: (a: number, b: number) => void;
-  readonly __wbg_privatekeygenerator_free: (a: number, b: number) => void;
-  readonly privatekeygenerator_new: (a: number, b: number, c: number, d: bigint, e: number) => void;
-  readonly privatekeygenerator_receiveKey: (a: number, b: number, c: number) => void;
-  readonly privatekeygenerator_changeKey: (a: number, b: number, c: number) => void;
+  readonly xonlypublickey_toString: (a: number, b: number) => void;
+  readonly xonlypublickey_try_new: (a: number, b: number, c: number) => void;
   readonly __wbg_derivationpath_free: (a: number, b: number) => void;
-  readonly derivationpath_new: (a: number, b: number, c: number) => void;
+  readonly __wbg_xpub_free: (a: number, b: number) => void;
   readonly derivationpath_isEmpty: (a: number) => number;
   readonly derivationpath_length: (a: number) => number;
+  readonly derivationpath_new: (a: number, b: number, c: number) => void;
   readonly derivationpath_parent: (a: number) => number;
   readonly derivationpath_push: (a: number, b: number, c: number, d: number) => void;
   readonly derivationpath_toString: (a: number, b: number) => void;
+  readonly xpub_chainCode: (a: number, b: number) => void;
+  readonly xpub_childNumber: (a: number) => number;
+  readonly xpub_depth: (a: number) => number;
+  readonly xpub_deriveChild: (a: number, b: number, c: number, d: number) => void;
+  readonly xpub_derivePath: (a: number, b: number, c: number) => void;
+  readonly xpub_intoString: (a: number, b: number, c: number, d: number) => void;
+  readonly xpub_parentFingerprint: (a: number, b: number) => void;
+  readonly xpub_toPublicKey: (a: number) => number;
+  readonly xpub_try_new: (a: number, b: number, c: number) => void;
+  readonly xpub_xpub: (a: number, b: number) => void;
+  readonly __wbg_publickeygenerator_free: (a: number, b: number) => void;
+  readonly publickeygenerator_changeAddress: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_changeAddressAsString: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_changeAddressAsStrings: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly publickeygenerator_changeAddresses: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly publickeygenerator_changePubkey: (a: number, b: number, c: number) => void;
+  readonly publickeygenerator_changePubkeyAsString: (a: number, b: number, c: number) => void;
+  readonly publickeygenerator_changePubkeys: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_changePubkeysAsStrings: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_fromMasterXPrv: (a: number, b: number, c: number, d: bigint, e: number) => void;
+  readonly publickeygenerator_fromXPub: (a: number, b: number, c: number) => void;
+  readonly publickeygenerator_receiveAddress: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_receiveAddressAsString: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_receiveAddressAsStrings: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly publickeygenerator_receiveAddresses: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly publickeygenerator_receivePubkey: (a: number, b: number, c: number) => void;
+  readonly publickeygenerator_receivePubkeyAsString: (a: number, b: number, c: number) => void;
+  readonly publickeygenerator_receivePubkeys: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_receivePubkeysAsStrings: (a: number, b: number, c: number, d: number) => void;
+  readonly publickeygenerator_toString: (a: number, b: number) => void;
+  readonly __wbg_privatekey_free: (a: number, b: number) => void;
+  readonly privatekey_toAddress: (a: number, b: number, c: number) => void;
+  readonly privatekey_toAddressECDSA: (a: number, b: number, c: number) => void;
+  readonly privatekey_toKeypair: (a: number, b: number) => void;
+  readonly privatekey_toPublicKey: (a: number, b: number) => void;
+  readonly privatekey_toString: (a: number, b: number) => void;
+  readonly privatekey_try_new: (a: number, b: number, c: number) => void;
+  readonly __wbg_privatekeygenerator_free: (a: number, b: number) => void;
+  readonly __wbg_xprv_free: (a: number, b: number) => void;
+  readonly privatekeygenerator_changeKey: (a: number, b: number, c: number) => void;
+  readonly privatekeygenerator_new: (a: number, b: number, c: number, d: bigint, e: number) => void;
+  readonly privatekeygenerator_receiveKey: (a: number, b: number, c: number) => void;
+  readonly xprv_chainCode: (a: number, b: number) => void;
+  readonly xprv_childNumber: (a: number) => number;
+  readonly xprv_depth: (a: number) => number;
+  readonly xprv_deriveChild: (a: number, b: number, c: number, d: number) => void;
+  readonly xprv_derivePath: (a: number, b: number, c: number) => void;
+  readonly xprv_fromXPrv: (a: number, b: number, c: number) => void;
+  readonly xprv_intoString: (a: number, b: number, c: number, d: number) => void;
+  readonly xprv_parentFingerprint: (a: number, b: number) => void;
+  readonly xprv_privateKey: (a: number, b: number) => void;
+  readonly xprv_toPrivateKey: (a: number, b: number) => void;
+  readonly xprv_toString: (a: number, b: number) => void;
+  readonly xprv_toXPub: (a: number, b: number) => void;
+  readonly xprv_try_new: (a: number, b: number) => void;
+  readonly xprv_xprv: (a: number, b: number) => void;
+  readonly __wbg_keypair_free: (a: number, b: number) => void;
+  readonly keypair_fromPrivateKey: (a: number, b: number) => void;
+  readonly keypair_get_private_key: (a: number, b: number) => void;
+  readonly keypair_get_public_key: (a: number, b: number) => void;
+  readonly keypair_get_xonly_public_key: (a: number) => number;
+  readonly keypair_random: (a: number) => void;
+  readonly keypair_toAddress: (a: number, b: number, c: number) => void;
+  readonly keypair_toAddressECDSA: (a: number, b: number, c: number) => void;
   readonly version: (a: number) => void;
   readonly rustsecp256k1_v0_10_0_context_create: (a: number) => number;
   readonly rustsecp256k1_v0_10_0_context_destroy: (a: number) => void;
-  readonly rustsecp256k1_v0_10_0_default_illegal_callback_fn: (a: number, b: number) => void;
   readonly rustsecp256k1_v0_10_0_default_error_callback_fn: (a: number, b: number) => void;
-  readonly __wbg_aborted_free: (a: number, b: number) => void;
+  readonly rustsecp256k1_v0_10_0_default_illegal_callback_fn: (a: number, b: number) => void;
   readonly __wbg_abortable_free: (a: number, b: number) => void;
-  readonly abortable_new: () => number;
-  readonly abortable_isAborted: (a: number) => number;
+  readonly __wbg_aborted_free: (a: number, b: number) => void;
   readonly abortable_abort: (a: number) => void;
   readonly abortable_check: (a: number, b: number) => void;
+  readonly abortable_isAborted: (a: number) => number;
+  readonly abortable_new: () => number;
   readonly abortable_reset: (a: number) => void;
   readonly setLogLevel: (a: number) => void;
   readonly initWASM32Bindings: (a: number, b: number) => void;
-  readonly initConsolePanicHook: () => void;
   readonly initBrowserPanicHook: () => void;
+  readonly initConsolePanicHook: () => void;
   readonly presentPanicHookLogs: () => void;
   readonly defer: () => number;
   readonly __wbindgen_export_0: (a: number) => void;
