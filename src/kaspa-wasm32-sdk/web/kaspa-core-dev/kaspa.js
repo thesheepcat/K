@@ -274,24 +274,6 @@ export function version() {
     }
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_2.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-/**
- * Configuration for the WASM32 bindings runtime interface.
- * @see {@link IWASM32BindingsConfig}
- * @category General
- * @param {IWASM32BindingsConfig} config
- */
-export function initWASM32Bindings(config) {
-    const ret = wasm.initWASM32Bindings(config);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
-    }
-}
-
 /**
  * Initialize Rust panic handler in console mode.
  *
@@ -301,6 +283,19 @@ export function initWASM32Bindings(config) {
  */
 export function initConsolePanicHook() {
     wasm.initConsolePanicHook();
+}
+
+/**
+ * Present panic logs to the user in the browser.
+ *
+ * This function should be called after a panic has occurred and the
+ * browser-based panic hook has been activated. It will present the
+ * collected panic logs in a full-screen `DIV` in the browser.
+ * @see {@link initBrowserPanicHook}
+ * @category General
+ */
+export function presentPanicHookLogs() {
+    wasm.presentPanicHookLogs();
 }
 
 /**
@@ -319,19 +314,6 @@ export function initBrowserPanicHook() {
 }
 
 /**
- * Present panic logs to the user in the browser.
- *
- * This function should be called after a panic has occurred and the
- * browser-based panic hook has been activated. It will present the
- * collected panic logs in a full-screen `DIV` in the browser.
- * @see {@link initBrowserPanicHook}
- * @category General
- */
-export function presentPanicHookLogs() {
-    wasm.presentPanicHookLogs();
-}
-
-/**
  * r" Deferred promise - an object that has `resolve()` and `reject()`
  * r" functions that can be called outside of the promise body.
  * r" WARNING: This function uses `eval` and can not be used in environments
@@ -343,6 +325,24 @@ export function presentPanicHookLogs() {
 export function defer() {
     const ret = wasm.defer();
     return ret;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_2.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+/**
+ * Configuration for the WASM32 bindings runtime interface.
+ * @see {@link IWASM32BindingsConfig}
+ * @category General
+ * @param {IWASM32BindingsConfig} config
+ */
+export function initWASM32Bindings(config) {
+    const ret = wasm.initWASM32Bindings(config);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
 }
 
 /**
@@ -382,6 +382,29 @@ function _assertClass(instance, klass) {
     }
 }
 /**
+ * Computes the covenant ID from the genesis outpoint and its authorized outputs.
+ *
+ * `genesis_outpoint` may be a [`TransactionOutpoint`] instance or a
+ * compatible plain object: `{ transactionId: HexString, index: number }`.
+ *
+ * `auth_outputs` is a JS array of objects, each with:
+ * - `index: number` — position of this output in the transaction's output array
+ * - `output: TransactionOutput | ITransactionOutput` — the authorized output
+ *
+ * @category Consensus
+ * @param {ITransactionOutpoint | TransactionOutpoint} genesis_outpoint
+ * @param {ICovenantAuthorizedOutput[]} auth_outputs
+ * @returns {Hash}
+ */
+export function covenantId(genesis_outpoint, auth_outputs) {
+    const ret = wasm.covenantId(genesis_outpoint, auth_outputs);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return Hash.__wrap(ret[0]);
+}
+
+/**
  * Returns true if the script passed is a pay-to-script-hash (P2SH) format, false otherwise.
  * @param script - The script ({@link HexString} or Uint8Array).
  * @category Wallet SDK
@@ -394,6 +417,37 @@ export function isScriptPayToScriptHash(script) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return ret[0] !== 0;
+}
+
+/**
+ * Generates a signature script that fits a pay-to-script-hash script.
+ * @param redeem_script - The redeem script ({@link HexString} or Uint8Array).
+ * @param signature - The signature ({@link HexString} or Uint8Array).
+ * @category Wallet SDK
+ * @param {HexString | Uint8Array} redeem_script
+ * @param {HexString | Uint8Array} signature
+ * @returns {HexString}
+ */
+export function payToScriptHashSignatureScript(redeem_script, signature) {
+    const ret = wasm.payToScriptHashSignatureScript(redeem_script, signature);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Creates a new script to pay a transaction output to the specified address.
+ * @category Wallet SDK
+ * @param {Address | string} address
+ * @returns {ScriptPublicKey}
+ */
+export function payToAddressScript(address) {
+    const ret = wasm.payToAddressScript(address);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ScriptPublicKey.__wrap(ret[0]);
 }
 
 /**
@@ -444,23 +498,6 @@ export function addressFromScriptPublicKey(script_public_key, network) {
 }
 
 /**
- * Generates a signature script that fits a pay-to-script-hash script.
- * @param redeem_script - The redeem script ({@link HexString} or Uint8Array).
- * @param signature - The signature ({@link HexString} or Uint8Array).
- * @category Wallet SDK
- * @param {HexString | Uint8Array} redeem_script
- * @param {HexString | Uint8Array} signature
- * @returns {HexString}
- */
-export function payToScriptHashSignatureScript(redeem_script, signature) {
-    const ret = wasm.payToScriptHashSignatureScript(redeem_script, signature);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
  * Takes a script and returns an equivalent pay-to-script-hash script.
  * @param redeem_script - The redeem script ({@link HexString} or Uint8Array).
  * @category Wallet SDK
@@ -469,20 +506,6 @@ export function payToScriptHashSignatureScript(redeem_script, signature) {
  */
 export function payToScriptHashScript(redeem_script) {
     const ret = wasm.payToScriptHashScript(redeem_script);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return ScriptPublicKey.__wrap(ret[0]);
-}
-
-/**
- * Creates a new script to pay a transaction output to the specified address.
- * @category Wallet SDK
- * @param {Address | string} address
- * @returns {ScriptPublicKey}
- */
-export function payToAddressScript(address) {
-    const ret = wasm.payToAddressScript(address);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -547,480 +570,6 @@ export function createMultisigAddress(minimum_signatures, keys, network_type, ec
 }
 
 /**
- * WASM32 binding for `argon2sha256iv` hash function.
- * @param text - The text string to hash.
- * @category Encryption
- * @param {string} text
- * @param {number} byteLength
- * @returns {HexString}
- */
-export function argon2sha256ivFromText(text, byteLength) {
-    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    _assertNum(byteLength);
-    const ret = wasm.argon2sha256ivFromText(ptr0, len0, byteLength);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `argon2sha256iv` hash function.
- * @param data - The data to hash ({@link HexString} or Uint8Array).
- * @category Encryption
- * @param {HexString | Uint8Array} data
- * @param {number} hashLength
- * @returns {HexString}
- */
-export function argon2sha256ivFromBinary(data, hashLength) {
-    _assertNum(hashLength);
-    const ret = wasm.argon2sha256ivFromBinary(data, hashLength);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `SHA256d` hash function.
- * @param {string} text - The text string to hash.
- * @category Encryption
- * @param {string} text
- * @returns {HexString}
- */
-export function sha256dFromText(text) {
-    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.sha256dFromText(ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `SHA256d` hash function.
- * @param data - The data to hash ({@link HexString} or Uint8Array).
- * @category Encryption
- * @param {HexString | Uint8Array} data
- * @returns {HexString}
- */
-export function sha256dFromBinary(data) {
-    const ret = wasm.sha256dFromBinary(data);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `SHA256` hash function.
- * @param {string} text - The text string to hash.
- * @category Encryption
- * @param {string} text
- * @returns {HexString}
- */
-export function sha256FromText(text) {
-    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.sha256FromText(ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `SHA256` hash function.
- * @param data - The data to hash ({@link HexString} or Uint8Array).
- * @category Encryption
- * @param {HexString | Uint8Array} data
- * @returns {HexString}
- */
-export function sha256FromBinary(data) {
-    const ret = wasm.sha256FromBinary(data);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM32 binding for `decryptXChaCha20Poly1305` function.
- * @category Encryption
- * @param {string} base64string
- * @param {string} password
- * @returns {string}
- */
-export function decryptXChaCha20Poly1305(base64string, password) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        const ptr0 = passStringToWasm0(base64string, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decryptXChaCha20Poly1305(ptr0, len0, ptr1, len1);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-    }
-}
-
-/**
- * WASM32 binding for `encryptXChaCha20Poly1305` function.
- * @returns The encrypted text as a base64 string.
- * @category Encryption
- * @param {string} plainText
- * @param {string} password
- * @returns {string}
- */
-export function encryptXChaCha20Poly1305(plainText, password) {
-    let deferred4_0;
-    let deferred4_1;
-    try {
-        const ptr0 = passStringToWasm0(plainText, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.encryptXChaCha20Poly1305(ptr0, len0, ptr1, len1);
-        var ptr3 = ret[0];
-        var len3 = ret[1];
-        if (ret[3]) {
-            ptr3 = 0; len3 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred4_0 = ptr3;
-        deferred4_1 = len3;
-        return getStringFromWasm0(ptr3, len3);
-    } finally {
-        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-    }
-}
-
-/**
- * @param {bigint} blockDaaScore
- * @param {bigint} currentDaaScore
- * @param {NetworkId | string} networkId
- * @param {boolean} isCoinbase
- * @returns {string}
- */
-export function getTransactionMaturityProgress(blockDaaScore, currentDaaScore, networkId, isCoinbase) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        _assertBoolean(isCoinbase);
-        const ret = wasm.getTransactionMaturityProgress(blockDaaScore, currentDaaScore, networkId, isCoinbase);
-        var ptr1 = ret[0];
-        var len1 = ret[1];
-        if (ret[3]) {
-            ptr1 = 0; len1 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred2_0 = ptr1;
-        deferred2_1 = len1;
-        return getStringFromWasm0(ptr1, len1);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * @param {NetworkId | string} networkId
- * @returns {INetworkParams}
- */
-export function getNetworkParams(networkId) {
-    const ret = wasm.getNetworkParams(networkId);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- *
- * Format a Sompi amount to a string representation of the amount in Kaspa with a suffix
- * based on the network type (e.g. `KAS` for mainnet, `TKAS` for testnet,
- * `SKAS` for simnet, `DKAS` for devnet).
- *
- * @category Wallet SDK
- * @param {bigint | number | HexString} sompi
- * @param {NetworkType | NetworkId | string} network
- * @returns {string}
- */
-export function sompiToKaspaStringWithSuffix(sompi, network) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ret = wasm.sompiToKaspaStringWithSuffix(sompi, network);
-        var ptr1 = ret[0];
-        var len1 = ret[1];
-        if (ret[3]) {
-            ptr1 = 0; len1 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred2_0 = ptr1;
-        deferred2_1 = len1;
-        return getStringFromWasm0(ptr1, len1);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- *
- * Convert Sompi to a string representation of the amount in Kaspa.
- *
- * @category Wallet SDK
- * @param {bigint | number | HexString} sompi
- * @returns {string}
- */
-export function sompiToKaspaString(sompi) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ret = wasm.sompiToKaspaString(sompi);
-        var ptr1 = ret[0];
-        var len1 = ret[1];
-        if (ret[3]) {
-            ptr1 = 0; len1 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred2_0 = ptr1;
-        deferred2_1 = len1;
-        return getStringFromWasm0(ptr1, len1);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * Convert a Kaspa string to Sompi represented by bigint.
- * This function provides correct precision handling and
- * can be used to parse user input.
- * @category Wallet SDK
- * @param {string} kaspa
- * @returns {bigint | undefined}
- */
-export function kaspaToSompi(kaspa) {
-    const ptr0 = passStringToWasm0(kaspa, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.kaspaToSompi(ptr0, len0);
-    return ret;
-}
-
-/**
- * Verifies with a public key the signature of the given message
- * @category Message Signing
- */
-export function verifyMessage(value) {
-    const ret = wasm.verifyMessage(value);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return ret[0] !== 0;
-}
-
-/**
- * Signs a message with the given private key
- * @category Message Signing
- * @param {ISignMessage} value
- * @returns {HexString}
- */
-export function signMessage(value) {
-    const ret = wasm.signMessage(value);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @category Wallet SDK
- * @param {any} script_hash
- * @param {PrivateKey} privkey
- * @returns {string}
- */
-export function signScriptHash(script_hash, privkey) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        _assertClass(privkey, PrivateKey);
-        if (privkey.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        const ret = wasm.signScriptHash(script_hash, privkey.__wbg_ptr);
-        var ptr1 = ret[0];
-        var len1 = ret[1];
-        if (ret[3]) {
-            ptr1 = 0; len1 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred2_0 = ptr1;
-        deferred2_1 = len1;
-        return getStringFromWasm0(ptr1, len1);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
-}
-
-/**
- * `createInputSignature()` is a helper function to sign a transaction input with a specific SigHash type using a private key.
- * @category Wallet SDK
- * @param {Transaction} tx
- * @param {number} input_index
- * @param {PrivateKey} private_key
- * @param {SighashType | null} [sighash_type]
- * @returns {HexString}
- */
-export function createInputSignature(tx, input_index, private_key, sighash_type) {
-    _assertClass(tx, Transaction);
-    if (tx.__wbg_ptr === 0) {
-        throw new Error('Attempt to use a moved value');
-    }
-    _assertNum(input_index);
-    _assertClass(private_key, PrivateKey);
-    if (private_key.__wbg_ptr === 0) {
-        throw new Error('Attempt to use a moved value');
-    }
-    if (!isLikeNone(sighash_type)) {
-        _assertNum(sighash_type);
-    }
-    const ret = wasm.createInputSignature(tx.__wbg_ptr, input_index, private_key.__wbg_ptr, isLikeNone(sighash_type) ? 6 : sighash_type);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * `signTransaction()` is a helper function to sign a transaction using a private key array or a signer array.
- * @category Wallet SDK
- * @param {Transaction} tx
- * @param {(PrivateKey | HexString | Uint8Array)[]} signer
- * @param {boolean} verify_sig
- * @returns {Transaction}
- */
-export function signTransaction(tx, signer, verify_sig) {
-    _assertClass(tx, Transaction);
-    if (tx.__wbg_ptr === 0) {
-        throw new Error('Attempt to use a moved value');
-    }
-    _assertBoolean(verify_sig);
-    const ret = wasm.signTransaction(tx.__wbg_ptr, signer, verify_sig);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return Transaction.__wrap(ret[0]);
-}
-
-/**
- * Set a custom storage folder for the wallet SDK
- * subsystem.  Encrypted wallet files and transaction
- * data will be stored in this folder. If not set
- * the storage folder will default to `~/.kaspa`
- * (note that the folder is hidden).
- *
- * This must be called before using any other wallet
- * SDK functions.
- *
- * NOTE: This function will create a folder if it
- * doesn't exist. This function will have no effect
- * if invoked in the browser environment.
- *
- * @param {String} folder - the path to the storage folder
- *
- * @category Wallet API
- */
-export function setDefaultStorageFolder(folder) {
-    const ptr0 = passStringToWasm0(folder, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.setDefaultStorageFolder(ptr0, len0);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
-    }
-}
-
-/**
- * Set the name of the default wallet file name
- * or the `localStorage` key.  If `Wallet::open`
- * is called without a wallet file name, this name
- * will be used.  Please note that this name
- * will be suffixed with `.wallet` suffix.
- *
- * This function should be called before using any
- * other wallet SDK functions.
- *
- * @param {String} folder - the name to the wallet file or key.
- *
- * @category Wallet API
- * @param {string} folder
- */
-export function setDefaultWalletFile(folder) {
-    const ptr0 = passStringToWasm0(folder, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.setDefaultWalletFile(ptr0, len0);
-    if (ret[1]) {
-        throw takeFromExternrefTable0(ret[0]);
-    }
-}
-
-/**
- * Helper function that creates an estimate using the transaction {@link Generator}
- * by producing only the {@link GeneratorSummary} containing the estimate.
- * @see {@link IGeneratorSettingsObject}, {@link Generator}, {@link createTransactions}
- * @category Wallet SDK
- * @param {IGeneratorSettingsObject} settings
- * @returns {Promise<GeneratorSummary>}
- */
-export function estimateTransactions(settings) {
-    const ret = wasm.estimateTransactions(settings);
-    return ret;
-}
-
-/**
- * Helper function that creates a set of transactions using the transaction {@link Generator}.
- * @see {@link IGeneratorSettingsObject}, {@link Generator}, {@link estimateTransactions}
- * @category Wallet SDK
- * @param {IGeneratorSettingsObject} settings
- * @returns {Promise<ICreateTransactions>}
- */
-export function createTransactions(settings) {
-    const ret = wasm.createTransactions(settings);
-    return ret;
-}
-
-/**
- * Create a basic transaction without any mass limit checks.
- * @category Wallet SDK
- * @param {IUtxoEntry[]} utxo_entry_source
- * @param {IPaymentOutput[]} outputs
- * @param {bigint} priority_fee
- * @param {HexString | Uint8Array | null} [payload]
- * @param {number | null} [sig_op_count]
- * @returns {Transaction}
- */
-export function createTransaction(utxo_entry_source, outputs, priority_fee, payload, sig_op_count) {
-    if (!isLikeNone(sig_op_count)) {
-        _assertNum(sig_op_count);
-    }
-    const ret = wasm.createTransaction(utxo_entry_source, outputs, priority_fee, isLikeNone(payload) ? 0 : addToExternrefTable0(payload), isLikeNone(sig_op_count) ? 0xFFFFFF : sig_op_count);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return Transaction.__wrap(ret[0]);
-}
-
-/**
  * `calculateStorageMass()` is a helper function to compute the storage mass of inputs and outputs.
  * This function can be use to calculate the storage mass of transaction inputs and outputs.
  * Note that the storage mass is only a component of the total transaction mass. You are not
@@ -1068,6 +617,21 @@ export function calculateTransactionFee(network_id, tx, minimum_signatures) {
         throw takeFromExternrefTable0(ret[2]);
     }
     return ret[0] === 0 ? undefined : BigInt.asUintN(64, ret[1]);
+}
+
+/**
+ * `maximumStandardTransactionMass()` returns the maximum transaction
+ * size allowed by the network.
+ *
+ * @category Wallet SDK
+ * @see {@link calculateTransactionMass}
+ * @see {@link updateTransactionMass}
+ * @see {@link calculateTransactionFee}
+ * @returns {bigint}
+ */
+export function maximumStandardTransactionMass() {
+    const ret = wasm.maximumStandardTransactionMass();
+    return BigInt.asUintN(64, ret);
 }
 
 /**
@@ -1131,18 +695,477 @@ export function calculateTransactionMass(network_id, tx, minimum_signatures) {
 }
 
 /**
- * `maximumStandardTransactionMass()` returns the maximum transaction
- * size allowed by the network.
+ * Helper function that creates an estimate using the transaction {@link Generator}
+ * by producing only the {@link GeneratorSummary} containing the estimate.
+ * @see {@link IGeneratorSettingsObject}, {@link Generator}, {@link createTransactions}
+ * @category Wallet SDK
+ * @param {IGeneratorSettingsObject} settings
+ * @returns {Promise<GeneratorSummary>}
+ */
+export function estimateTransactions(settings) {
+    const ret = wasm.estimateTransactions(settings);
+    return ret;
+}
+
+/**
+ * Create a basic transaction without any mass limit checks.
+ * @category Wallet SDK
+ * @param {IUtxoEntry[]} utxo_entry_source
+ * @param {IPaymentOutput[]} outputs
+ * @param {bigint} priority_fee
+ * @param {HexString | Uint8Array | null} [payload]
+ * @param {number | null} [sig_op_count]
+ * @returns {Transaction}
+ */
+export function createTransaction(utxo_entry_source, outputs, priority_fee, payload, sig_op_count) {
+    if (!isLikeNone(sig_op_count)) {
+        _assertNum(sig_op_count);
+    }
+    const ret = wasm.createTransaction(utxo_entry_source, outputs, priority_fee, isLikeNone(payload) ? 0 : addToExternrefTable0(payload), isLikeNone(sig_op_count) ? 0xFFFFFF : sig_op_count);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return Transaction.__wrap(ret[0]);
+}
+
+/**
+ * Helper function that creates a set of transactions using the transaction {@link Generator}.
+ * @see {@link IGeneratorSettingsObject}, {@link Generator}, {@link estimateTransactions}
+ * @category Wallet SDK
+ * @param {IGeneratorSettingsObject} settings
+ * @returns {Promise<ICreateTransactions>}
+ */
+export function createTransactions(settings) {
+    const ret = wasm.createTransactions(settings);
+    return ret;
+}
+
+/**
+ *
+ * Format a Sompi amount to a string representation of the amount in Kaspa with a suffix
+ * based on the network type (e.g. `KAS` for mainnet, `TKAS` for testnet,
+ * `SKAS` for simnet, `DKAS` for devnet).
  *
  * @category Wallet SDK
- * @see {@link calculateTransactionMass}
- * @see {@link updateTransactionMass}
- * @see {@link calculateTransactionFee}
- * @returns {bigint}
+ * @param {bigint | number | HexString} sompi
+ * @param {NetworkType | NetworkId | string} network
+ * @returns {string}
  */
-export function maximumStandardTransactionMass() {
-    const ret = wasm.maximumStandardTransactionMass();
-    return BigInt.asUintN(64, ret);
+export function sompiToKaspaStringWithSuffix(sompi, network) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ret = wasm.sompiToKaspaStringWithSuffix(sompi, network);
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
+ * @param {bigint} blockDaaScore
+ * @param {bigint} currentDaaScore
+ * @param {NetworkId | string} networkId
+ * @param {boolean} isCoinbase
+ * @returns {string}
+ */
+export function getTransactionMaturityProgress(blockDaaScore, currentDaaScore, networkId, isCoinbase) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        _assertBoolean(isCoinbase);
+        const ret = wasm.getTransactionMaturityProgress(blockDaaScore, currentDaaScore, networkId, isCoinbase);
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
+ * Convert a Kaspa string to Sompi represented by bigint.
+ * This function provides correct precision handling and
+ * can be used to parse user input.
+ * @category Wallet SDK
+ * @param {string} kaspa
+ * @returns {bigint | undefined}
+ */
+export function kaspaToSompi(kaspa) {
+    const ptr0 = passStringToWasm0(kaspa, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.kaspaToSompi(ptr0, len0);
+    return ret;
+}
+
+/**
+ *
+ * Convert Sompi to a string representation of the amount in Kaspa.
+ *
+ * @category Wallet SDK
+ * @param {bigint | number | HexString} sompi
+ * @returns {string}
+ */
+export function sompiToKaspaString(sompi) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ret = wasm.sompiToKaspaString(sompi);
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
+ * @param {NetworkId | string} networkId
+ * @returns {INetworkParams}
+ */
+export function getNetworkParams(networkId) {
+    const ret = wasm.getNetworkParams(networkId);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `SHA256` hash function.
+ * @param data - The data to hash ({@link HexString} or Uint8Array).
+ * @category Encryption
+ * @param {HexString | Uint8Array} data
+ * @returns {HexString}
+ */
+export function sha256FromBinary(data) {
+    const ret = wasm.sha256FromBinary(data);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `SHA256d` hash function.
+ * @param data - The data to hash ({@link HexString} or Uint8Array).
+ * @category Encryption
+ * @param {HexString | Uint8Array} data
+ * @returns {HexString}
+ */
+export function sha256dFromBinary(data) {
+    const ret = wasm.sha256dFromBinary(data);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `SHA256` hash function.
+ * @param {string} text - The text string to hash.
+ * @category Encryption
+ * @param {string} text
+ * @returns {HexString}
+ */
+export function sha256FromText(text) {
+    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.sha256FromText(ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `decryptXChaCha20Poly1305` function.
+ * @category Encryption
+ * @param {string} base64string
+ * @param {string} password
+ * @returns {string}
+ */
+export function decryptXChaCha20Poly1305(base64string, password) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(base64string, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decryptXChaCha20Poly1305(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * WASM32 binding for `argon2sha256iv` hash function.
+ * @param text - The text string to hash.
+ * @category Encryption
+ * @param {string} text
+ * @param {number} byteLength
+ * @returns {HexString}
+ */
+export function argon2sha256ivFromText(text, byteLength) {
+    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    _assertNum(byteLength);
+    const ret = wasm.argon2sha256ivFromText(ptr0, len0, byteLength);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `encryptXChaCha20Poly1305` function.
+ * @returns The encrypted text as a base64 string.
+ * @category Encryption
+ * @param {string} plainText
+ * @param {string} password
+ * @returns {string}
+ */
+export function encryptXChaCha20Poly1305(plainText, password) {
+    let deferred4_0;
+    let deferred4_1;
+    try {
+        const ptr0 = passStringToWasm0(plainText, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.encryptXChaCha20Poly1305(ptr0, len0, ptr1, len1);
+        var ptr3 = ret[0];
+        var len3 = ret[1];
+        if (ret[3]) {
+            ptr3 = 0; len3 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred4_0 = ptr3;
+        deferred4_1 = len3;
+        return getStringFromWasm0(ptr3, len3);
+    } finally {
+        wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+    }
+}
+
+/**
+ * WASM32 binding for `SHA256d` hash function.
+ * @param {string} text - The text string to hash.
+ * @category Encryption
+ * @param {string} text
+ * @returns {HexString}
+ */
+export function sha256dFromText(text) {
+    const ptr0 = passStringToWasm0(text, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.sha256dFromText(ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * WASM32 binding for `argon2sha256iv` hash function.
+ * @param data - The data to hash ({@link HexString} or Uint8Array).
+ * @category Encryption
+ * @param {HexString | Uint8Array} data
+ * @param {number} hashLength
+ * @returns {HexString}
+ */
+export function argon2sha256ivFromBinary(data, hashLength) {
+    _assertNum(hashLength);
+    const ret = wasm.argon2sha256ivFromBinary(data, hashLength);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * `signTransaction()` is a helper function to sign a transaction using a private key array or a signer array.
+ * @category Wallet SDK
+ * @param {Transaction} tx
+ * @param {(PrivateKey | HexString | Uint8Array)[]} signer
+ * @param {boolean} verify_sig
+ * @returns {Transaction}
+ */
+export function signTransaction(tx, signer, verify_sig) {
+    _assertClass(tx, Transaction);
+    if (tx.__wbg_ptr === 0) {
+        throw new Error('Attempt to use a moved value');
+    }
+    _assertBoolean(verify_sig);
+    const ret = wasm.signTransaction(tx.__wbg_ptr, signer, verify_sig);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return Transaction.__wrap(ret[0]);
+}
+
+/**
+ * `createInputSignature()` is a helper function to sign a transaction input with a specific SigHash type using a private key.
+ * @category Wallet SDK
+ * @param {Transaction} tx
+ * @param {number} input_index
+ * @param {PrivateKey} private_key
+ * @param {SighashType | null} [sighash_type]
+ * @returns {HexString}
+ */
+export function createInputSignature(tx, input_index, private_key, sighash_type) {
+    _assertClass(tx, Transaction);
+    if (tx.__wbg_ptr === 0) {
+        throw new Error('Attempt to use a moved value');
+    }
+    _assertNum(input_index);
+    _assertClass(private_key, PrivateKey);
+    if (private_key.__wbg_ptr === 0) {
+        throw new Error('Attempt to use a moved value');
+    }
+    if (!isLikeNone(sighash_type)) {
+        _assertNum(sighash_type);
+    }
+    const ret = wasm.createInputSignature(tx.__wbg_ptr, input_index, private_key.__wbg_ptr, isLikeNone(sighash_type) ? 6 : sighash_type);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @category Wallet SDK
+ * @param {any} script_hash
+ * @param {PrivateKey} privkey
+ * @returns {string}
+ */
+export function signScriptHash(script_hash, privkey) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        _assertClass(privkey, PrivateKey);
+        if (privkey.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        const ret = wasm.signScriptHash(script_hash, privkey.__wbg_ptr);
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
+ * Signs a message with the given private key
+ * @category Message Signing
+ * @param {ISignMessage} value
+ * @returns {HexString}
+ */
+export function signMessage(value) {
+    const ret = wasm.signMessage(value);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Verifies with a public key the signature of the given message
+ * @category Message Signing
+ */
+export function verifyMessage(value) {
+    const ret = wasm.verifyMessage(value);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] !== 0;
+}
+
+/**
+ * Set a custom storage folder for the wallet SDK
+ * subsystem.  Encrypted wallet files and transaction
+ * data will be stored in this folder. If not set
+ * the storage folder will default to `~/.kaspa`
+ * (note that the folder is hidden).
+ *
+ * This must be called before using any other wallet
+ * SDK functions.
+ *
+ * NOTE: This function will create a folder if it
+ * doesn't exist. This function will have no effect
+ * if invoked in the browser environment.
+ *
+ * @param {String} folder - the path to the storage folder
+ *
+ * @category Wallet API
+ */
+export function setDefaultStorageFolder(folder) {
+    const ptr0 = passStringToWasm0(folder, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.setDefaultStorageFolder(ptr0, len0);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
+}
+
+/**
+ * Set the name of the default wallet file name
+ * or the `localStorage` key.  If `Wallet::open`
+ * is called without a wallet file name, this name
+ * will be used.  Please note that this name
+ * will be suffixed with `.wallet` suffix.
+ *
+ * This function should be called before using any
+ * other wallet SDK functions.
+ *
+ * @param {String} folder - the name to the wallet file or key.
+ *
+ * @category Wallet API
+ * @param {string} folder
+ */
+export function setDefaultWalletFile(folder) {
+    const ptr0 = passStringToWasm0(folder, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.setDefaultWalletFile(ptr0, len0);
+    if (ret[1]) {
+        throw takeFromExternrefTable0(ret[0]);
+    }
 }
 
 /**
@@ -1163,73 +1186,73 @@ export function calculateTarget(difficulty) {
 function __wbg_adapter_68(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    _assertNum(arg2);
-    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hdf6bbd897e794961(arg0, arg1, arg2);
+    wasm.closure73_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_71(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure80_externref_shim(arg0, arg1, arg2);
+    _assertNum(arg2);
+    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hcb625c1ab7e3e901(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_74(arg0, arg1, arg2, arg3) {
     _assertNum(arg0);
     _assertNum(arg1);
     _assertNum(arg3);
-    const ret = wasm.closure82_externref_shim(arg0, arg1, arg2, arg3);
+    const ret = wasm.closure77_externref_shim(arg0, arg1, arg2, arg3);
     return ret;
 }
 
 function __wbg_adapter_77(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure169_externref_shim(arg0, arg1, arg2);
+    wasm.closure172_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_80(arg0, arg1) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm._dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h4c8a84c1cdb1a6ea(arg0, arg1);
+    wasm._dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h0e233d2eeaaa7ece(arg0, arg1);
 }
 
 function __wbg_adapter_83(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure979_externref_shim(arg0, arg1, arg2);
+    wasm.closure927_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_86(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure981_externref_shim(arg0, arg1, arg2);
+    wasm.closure929_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_89(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure3137_externref_shim(arg0, arg1, arg2);
+    wasm.closure7032_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_92(arg0, arg1) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm._dyn_core__ops__function__Fn_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h2b2ad1c56c02a25f(arg0, arg1);
+    wasm._dyn_core__ops__function__Fn_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h8ce15cc354d4afae(arg0, arg1);
 }
 
 function __wbg_adapter_95(arg0, arg1, arg2) {
     _assertNum(arg0);
     _assertNum(arg1);
-    const ret = wasm.closure7532_externref_shim_multivalue_shim(arg0, arg1, arg2);
+    const ret = wasm.closure8943_externref_shim_multivalue_shim(arg0, arg1, arg2);
     if (ret[1]) {
         throw takeFromExternrefTable0(ret[0]);
     }
 }
 
-function __wbg_adapter_398(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_395(arg0, arg1, arg2, arg3) {
     _assertNum(arg0);
     _assertNum(arg1);
-    wasm.closure210_externref_shim(arg0, arg1, arg2, arg3);
+    wasm.closure216_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 /**
@@ -1484,7 +1507,7 @@ export const Opcodes = Object.freeze({
      * Splice opcodes.
      */
     OpCat: 126, "126": "OpCat",
-    OpSubStr: 127, "127": "OpSubStr",
+    OpSubstr: 127, "127": "OpSubstr",
     OpLeft: 128, "128": "OpLeft",
     OpRight: 129, "129": "OpRight",
     OpSize: 130, "130": "OpSize",
@@ -1532,8 +1555,8 @@ export const Opcodes = Object.freeze({
     /**
      * Undefined opcodes.
      */
-    OpUnknown166: 166, "166": "OpUnknown166",
-    OpUnknown167: 167, "167": "OpUnknown167",
+    OpZkPrecompile: 166, "166": "OpZkPrecompile",
+    OpBlake2bWithKey: 167, "167": "OpBlake2bWithKey",
     /**
      * Crypto opcodes.
      */
@@ -1548,49 +1571,49 @@ export const Opcodes = Object.freeze({
     OpCheckLockTimeVerify: 176, "176": "OpCheckLockTimeVerify",
     OpCheckSequenceVerify: 177, "177": "OpCheckSequenceVerify",
     /**
-     * Undefined opcodes.
+     * Transaction introspection opcodes.
      */
-    OpUnknown178: 178, "178": "OpUnknown178",
-    OpUnknown179: 179, "179": "OpUnknown179",
-    OpUnknown180: 180, "180": "OpUnknown180",
-    OpUnknown181: 181, "181": "OpUnknown181",
-    OpUnknown182: 182, "182": "OpUnknown182",
-    OpUnknown183: 183, "183": "OpUnknown183",
-    OpUnknown184: 184, "184": "OpUnknown184",
-    OpUnknown185: 185, "185": "OpUnknown185",
-    OpUnknown186: 186, "186": "OpUnknown186",
-    OpUnknown187: 187, "187": "OpUnknown187",
-    OpUnknown188: 188, "188": "OpUnknown188",
-    OpUnknown189: 189, "189": "OpUnknown189",
-    OpUnknown190: 190, "190": "OpUnknown190",
-    OpUnknown191: 191, "191": "OpUnknown191",
-    OpUnknown192: 192, "192": "OpUnknown192",
-    OpUnknown193: 193, "193": "OpUnknown193",
-    OpUnknown194: 194, "194": "OpUnknown194",
-    OpUnknown195: 195, "195": "OpUnknown195",
-    OpUnknown196: 196, "196": "OpUnknown196",
-    OpUnknown197: 197, "197": "OpUnknown197",
-    OpUnknown198: 198, "198": "OpUnknown198",
-    OpUnknown199: 199, "199": "OpUnknown199",
-    OpUnknown200: 200, "200": "OpUnknown200",
-    OpUnknown201: 201, "201": "OpUnknown201",
+    OpTxVersion: 178, "178": "OpTxVersion",
+    OpTxInputCount: 179, "179": "OpTxInputCount",
+    OpTxOutputCount: 180, "180": "OpTxOutputCount",
+    OpTxLockTime: 181, "181": "OpTxLockTime",
+    OpTxSubnetId: 182, "182": "OpTxSubnetId",
+    OpTxGas: 183, "183": "OpTxGas",
+    OpTxPayloadSubstr: 184, "184": "OpTxPayloadSubstr",
+    OpTxInputIndex: 185, "185": "OpTxInputIndex",
+    OpOutpointTxId: 186, "186": "OpOutpointTxId",
+    OpOutpointIndex: 187, "187": "OpOutpointIndex",
+    OpTxInputScriptSigSubstr: 188, "188": "OpTxInputScriptSigSubstr",
+    OpTxInputSeq: 189, "189": "OpTxInputSeq",
+    OpTxInputAmount: 190, "190": "OpTxInputAmount",
+    OpTxInputSpk: 191, "191": "OpTxInputSpk",
+    OpTxInputDaaScore: 192, "192": "OpTxInputDaaScore",
+    OpTxInputIsCoinbase: 193, "193": "OpTxInputIsCoinbase",
+    OpTxOutputAmount: 194, "194": "OpTxOutputAmount",
+    OpTxOutputSpk: 195, "195": "OpTxOutputSpk",
+    OpTxPayloadLen: 196, "196": "OpTxPayloadLen",
+    OpTxInputSpkLen: 197, "197": "OpTxInputSpkLen",
+    OpTxInputSpkSubstr: 198, "198": "OpTxInputSpkSubstr",
+    OpTxOutputSpkLen: 199, "199": "OpTxOutputSpkLen",
+    OpTxOutputSpkSubstr: 200, "200": "OpTxOutputSpkSubstr",
+    OpTxInputScriptSigLen: 201, "201": "OpTxInputScriptSigLen",
     OpUnknown202: 202, "202": "OpUnknown202",
-    OpUnknown203: 203, "203": "OpUnknown203",
-    OpUnknown204: 204, "204": "OpUnknown204",
-    OpUnknown205: 205, "205": "OpUnknown205",
-    OpUnknown206: 206, "206": "OpUnknown206",
-    OpUnknown207: 207, "207": "OpUnknown207",
-    OpUnknown208: 208, "208": "OpUnknown208",
-    OpUnknown209: 209, "209": "OpUnknown209",
-    OpUnknown210: 210, "210": "OpUnknown210",
-    OpUnknown211: 211, "211": "OpUnknown211",
-    OpUnknown212: 212, "212": "OpUnknown212",
-    OpUnknown213: 213, "213": "OpUnknown213",
+    OpAuthOutputCount: 203, "203": "OpAuthOutputCount",
+    OpAuthOutputIdx: 204, "204": "OpAuthOutputIdx",
+    OpNum2Bin: 205, "205": "OpNum2Bin",
+    OpBin2Num: 206, "206": "OpBin2Num",
+    OpInputCovenantId: 207, "207": "OpInputCovenantId",
+    OpCovInputCount: 208, "208": "OpCovInputCount",
+    OpCovInputIdx: 209, "209": "OpCovInputIdx",
+    OpCovOutputCount: 210, "210": "OpCovOutputCount",
+    OpCovOutputIdx: 211, "211": "OpCovOutputIdx",
+    OpChainblockSeqCommit: 212, "212": "OpChainblockSeqCommit",
+    OpOutputCovenantId: 213, "213": "OpOutputCovenantId",
     OpUnknown214: 214, "214": "OpUnknown214",
-    OpUnknown215: 215, "215": "OpUnknown215",
-    OpUnknown216: 216, "216": "OpUnknown216",
-    OpUnknown217: 217, "217": "OpUnknown217",
-    OpUnknown218: 218, "218": "OpUnknown218",
+    OpCheckSigFromStack: 215, "215": "OpCheckSigFromStack",
+    OpCheckSigFromStackECDSA: 216, "216": "OpCheckSigFromStackECDSA",
+    OpBlake3: 217, "217": "OpBlake3",
+    OpBlake3WithKey: 218, "218": "OpBlake3WithKey",
     OpUnknown219: 219, "219": "OpUnknown219",
     OpUnknown220: 220, "220": "OpUnknown220",
     OpUnknown221: 221, "221": "OpUnknown221",
@@ -1685,12 +1708,6 @@ export class Abortable {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_abortable_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.abortable_new();
-        this.__wbg_ptr = ret >>> 0;
-        AbortableFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
     /**
      * @returns {boolean}
      */
@@ -1699,6 +1716,12 @@ export class Abortable {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.abortable_isAborted(this.__wbg_ptr);
         return ret !== 0;
+    }
+    constructor() {
+        const ret = wasm.abortable_new();
+        this.__wbg_ptr = ret >>> 0;
+        AbortableFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     abort() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
@@ -1787,20 +1810,6 @@ export class AccountKind {
         wasm.__wbg_accountkind_free(ptr, 0);
     }
     /**
-     * @param {string} kind
-     */
-    constructor(kind) {
-        const ptr0 = passStringToWasm0(kind, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.accountkind_ctor(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        AccountKindFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @returns {string}
      */
     toString() {
@@ -1816,6 +1825,20 @@ export class AccountKind {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @param {string} kind
+     */
+    constructor(kind) {
+        const ptr0 = passStringToWasm0(kind, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.accountkind_ctor(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        AccountKindFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -1839,9 +1862,9 @@ export class Address {
 
     toJSON() {
         return {
-            version: this.version,
             prefix: this.prefix,
             payload: this.payload,
+            version: this.version,
         };
     }
 
@@ -1872,14 +1895,21 @@ export class Address {
         return this;
     }
     /**
-     * @param {string} address
-     * @returns {boolean}
+     * @returns {string}
      */
-    static validate(address) {
-        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.address_validate(ptr0, len0);
-        return ret !== 0;
+    get prefix() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.address_prefix(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * Convert an address to a string.
@@ -1892,6 +1922,23 @@ export class Address {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
             const ret = wasm.address_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get payload() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.address_payload(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -1917,23 +1964,6 @@ export class Address {
         }
     }
     /**
-     * @returns {string}
-     */
-    get prefix() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.address_prefix(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @param {string} prefix
      */
     set setPrefix(prefix) {
@@ -1944,40 +1974,14 @@ export class Address {
         wasm.address_set_setPrefix(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @returns {string}
+     * @param {string} address
+     * @returns {boolean}
      */
-    get payload() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.address_payload(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {number} n
-     * @returns {string}
-     */
-    short(n) {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(n);
-            const ret = wasm.address_short(this.__wbg_ptr, n);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
+    static validate(address) {
+        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.address_validate(ptr0, len0);
+        return ret !== 0;
     }
 }
 
@@ -2003,23 +2007,6 @@ export class AgentConstructorOptions {
         wasm.__wbg_agentconstructoroptions_free(ptr, 0);
     }
     /**
-     * @returns {number}
-     */
-    get keep_alive_msecs() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.agentconstructoroptions_keep_alive_msecs(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} value
-     */
-    set keep_alive_msecs(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.agentconstructoroptions_set_keep_alive_msecs(this.__wbg_ptr, value);
-    }
-    /**
      * @returns {boolean}
      */
     get keep_alive() {
@@ -2027,32 +2014,6 @@ export class AgentConstructorOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.agentconstructoroptions_keep_alive(this.__wbg_ptr);
         return ret !== 0;
-    }
-    /**
-     * @param {boolean} value
-     */
-    set keep_alive(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBoolean(value);
-        wasm.agentconstructoroptions_set_keep_alive(this.__wbg_ptr, value);
-    }
-    /**
-     * @returns {number}
-     */
-    get max_free_sockets() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.agentconstructoroptions_max_free_sockets(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} value
-     */
-    set max_free_sockets(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.agentconstructoroptions_set_max_free_sockets(this.__wbg_ptr, value);
     }
     /**
      * @returns {number}
@@ -2066,10 +2027,61 @@ export class AgentConstructorOptions {
     /**
      * @param {number} value
      */
+    set timeout(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.agentconstructoroptions_set_timeout(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {boolean} value
+     */
+    set keep_alive(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBoolean(value);
+        wasm.agentconstructoroptions_set_keep_alive(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {number} value
+     */
     set max_sockets(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.agentconstructoroptions_set_max_sockets(this.__wbg_ptr, value);
+    }
+    /**
+     * @returns {number}
+     */
+    get keep_alive_msecs() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.agentconstructoroptions_keep_alive_msecs(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {number}
+     */
+    get max_free_sockets() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.agentconstructoroptions_max_free_sockets(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} value
+     */
+    set keep_alive_msecs(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.agentconstructoroptions_set_keep_alive_msecs(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {number} value
+     */
+    set max_free_sockets(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.agentconstructoroptions_set_max_free_sockets(this.__wbg_ptr, value);
     }
     /**
      * @returns {number}
@@ -2079,14 +2091,6 @@ export class AgentConstructorOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.agentconstructoroptions_timeout(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {number} value
-     */
-    set timeout(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.agentconstructoroptions_set_timeout(this.__wbg_ptr, value);
     }
 }
 
@@ -2116,6 +2120,14 @@ export class AppendFileOptions {
         wasm.__wbg_appendfileoptions_free(ptr, 0);
     }
     /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.appendfileoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
      * @param {string | null} [encoding]
      * @param {number | null} [mode]
      * @param {string | null} [flag]
@@ -2139,19 +2151,11 @@ export class AppendFileOptions {
     /**
      * @returns {string | undefined}
      */
-    get encoding() {
+    get flag() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.appendfileoptions_encoding(this.__wbg_ptr);
+        const ret = wasm.appendfileoptions_flag(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.appendfileoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @returns {number | undefined}
@@ -2163,23 +2167,12 @@ export class AppendFileOptions {
         return ret === 0x100000001 ? undefined : ret;
     }
     /**
-     * @param {number | null} [value]
-     */
-    set mode(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertNum(value);
-        }
-        wasm.appendfileoptions_set_mode(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
-    }
-    /**
      * @returns {string | undefined}
      */
-    get flag() {
+    get encoding() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.appendfileoptions_flag(this.__wbg_ptr);
+        const ret = wasm.appendfileoptions_encoding(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -2189,6 +2182,17 @@ export class AppendFileOptions {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.appendfileoptions_set_flag(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
+     * @param {number | null} [value]
+     */
+    set mode(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertNum(value);
+        }
+        wasm.appendfileoptions_set_mode(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
     }
 }
 
@@ -2210,6 +2214,38 @@ export class AssertionErrorOptions {
         wasm.__wbg_assertionerroroptions_free(ptr, 0);
     }
     /**
+     * @param {any} value
+     */
+    set actual(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.assertionerroroptions_set_actual(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {string | null} [value]
+     */
+    set message(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.assertionerroroptions_set_message(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
+     * @param {any} value
+     */
+    set expected(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.assertionerroroptions_set_expected(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {string} value
+     */
+    set operator(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.assertionerroroptions_set_operator(this.__wbg_ptr, value);
+    }
+    /**
      * @param {string | null | undefined} message
      * @param {any} actual
      * @param {any} expected
@@ -2222,24 +2258,6 @@ export class AssertionErrorOptions {
         return this;
     }
     /**
-     * If provided, the error message is set to this value.
-     * @returns {string | undefined}
-     */
-    get message() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.assertionerroroptions_message(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set message(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.assertionerroroptions_set_message(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
      * The actual property on the error instance.
      * @returns {any}
      */
@@ -2250,12 +2268,14 @@ export class AssertionErrorOptions {
         return ret;
     }
     /**
-     * @param {any} value
+     * If provided, the error message is set to this value.
+     * @returns {string | undefined}
      */
-    set actual(value) {
+    get message() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        wasm.assertionerroroptions_set_actual(this.__wbg_ptr, value);
+        const ret = wasm.assertionerroroptions_message(this.__wbg_ptr);
+        return ret;
     }
     /**
      * The expected property on the error instance.
@@ -2268,14 +2288,6 @@ export class AssertionErrorOptions {
         return ret;
     }
     /**
-     * @param {any} value
-     */
-    set expected(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.assertionerroroptions_set_expected(this.__wbg_ptr, value);
-    }
-    /**
      * The operator property on the error instance.
      * @returns {string}
      */
@@ -2284,14 +2296,6 @@ export class AssertionErrorOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.assertionerroroptions_operator(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string} value
-     */
-    set operator(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.assertionerroroptions_set_operator(this.__wbg_ptr, value);
     }
 }
 
@@ -2332,6 +2336,19 @@ export class Balance {
         wasm.__wbg_balance_free(ptr, 0);
     }
     /**
+     * @param {NetworkType | NetworkId | string} network_type
+     * @returns {BalanceStrings}
+     */
+    toBalanceStrings(network_type) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.balance_toBalanceStrings(this.__wbg_ptr, network_type);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return BalanceStrings.__wrap(ret[0]);
+    }
+    /**
      * Confirmed amount of funds available for spending.
      * @returns {bigint}
      */
@@ -2360,19 +2377,6 @@ export class Balance {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.balance_outgoing(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {NetworkType | NetworkId | string} network_type
-     * @returns {BalanceStrings}
-     */
-    toBalanceStrings(network_type) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.balance_toBalanceStrings(this.__wbg_ptr, network_type);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return BalanceStrings.__wrap(ret[0]);
     }
 }
 
@@ -2445,6 +2449,96 @@ export class BalanceStrings {
     }
 }
 
+const CompressedParentsFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_compressedparents_free(ptr >>> 0, 1));
+/**
+ * An efficient cumulative-sum run-length encoding for the parents-by-level vector in the block header.
+ * @category Consensus
+ */
+export class CompressedParents {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(CompressedParents.prototype);
+        obj.__wbg_ptr = ptr;
+        CompressedParentsFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    toJSON() {
+        return {
+        };
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        CompressedParentsFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_compressedparents_free(ptr, 0);
+    }
+    /**
+     * Converts the compressed parents to an expanded `JsValue` of `Array<Array<HexString>>`.
+     * @returns {any}
+     */
+    toExpanded() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.compressedparents_toExpanded(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * The number of levels in the expanded representation.
+     * @returns {number}
+     */
+    expandedLen() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.compressedparents_expandedLen(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Get the parent hashes at a specific level.
+     * Returns an array of `HexString`s.
+     * @param {number} index
+     * @returns {any}
+     */
+    get(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.compressedparents_get(this.__wbg_ptr, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {any} js_value
+     */
+    constructor(js_value) {
+        const ret = wasm.compressedparents_new(js_value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        CompressedParentsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+}
+
 const ConsoleConstructorOptionsFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_consoleconstructoroptions_free(ptr >>> 0, 1));
@@ -2471,38 +2565,12 @@ export class ConsoleConstructorOptions {
         wasm.__wbg_consoleconstructoroptions_free(ptr, 0);
     }
     /**
-     * @param {any} stdout
-     * @param {any} stderr
-     * @param {boolean | null | undefined} ignore_errors
-     * @param {any} color_mod
-     * @param {object | null} [inspect_options]
+     * @param {any} value
      */
-    constructor(stdout, stderr, ignore_errors, color_mod, inspect_options) {
-        if (!isLikeNone(ignore_errors)) {
-            _assertBoolean(ignore_errors);
-        }
-        const ret = wasm.consoleconstructoroptions_new_with_values(stdout, stderr, isLikeNone(ignore_errors) ? 0xFFFFFF : ignore_errors ? 1 : 0, color_mod, isLikeNone(inspect_options) ? 0 : addToExternrefTable0(inspect_options));
-        this.__wbg_ptr = ret >>> 0;
-        ConsoleConstructorOptionsFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @param {any} stdout
-     * @param {any} stderr
-     * @returns {ConsoleConstructorOptions}
-     */
-    static new(stdout, stderr) {
-        const ret = wasm.consoleconstructoroptions_new(stdout, stderr);
-        return ConsoleConstructorOptions.__wrap(ret);
-    }
-    /**
-     * @returns {any}
-     */
-    get stdout() {
+    set stderr(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.consoleconstructoroptions_stdout(this.__wbg_ptr);
-        return ret;
+        wasm.consoleconstructoroptions_set_stderr(this.__wbg_ptr, value);
     }
     /**
      * @param {any} value
@@ -2513,23 +2581,6 @@ export class ConsoleConstructorOptions {
         wasm.consoleconstructoroptions_set_stdout(this.__wbg_ptr, value);
     }
     /**
-     * @returns {any}
-     */
-    get stderr() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.consoleconstructoroptions_stderr(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {any} value
-     */
-    set stderr(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.consoleconstructoroptions_set_stderr(this.__wbg_ptr, value);
-    }
-    /**
      * @returns {boolean | undefined}
      */
     get ignore_errors() {
@@ -2537,26 +2588,6 @@ export class ConsoleConstructorOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.consoleconstructoroptions_ignore_errors(this.__wbg_ptr);
         return ret === 0xFFFFFF ? undefined : ret !== 0;
-    }
-    /**
-     * @param {boolean | null} [value]
-     */
-    set ignore_errors(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertBoolean(value);
-        }
-        wasm.consoleconstructoroptions_set_ignore_errors(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {any}
-     */
-    get color_mod() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.consoleconstructoroptions_color_mod(this.__wbg_ptr);
-        return ret;
     }
     /**
      * @param {any} value
@@ -2576,12 +2607,181 @@ export class ConsoleConstructorOptions {
         return ret;
     }
     /**
+     * @param {any} stdout
+     * @param {any} stderr
+     * @param {boolean | null | undefined} ignore_errors
+     * @param {any} color_mod
+     * @param {object | null} [inspect_options]
+     */
+    constructor(stdout, stderr, ignore_errors, color_mod, inspect_options) {
+        if (!isLikeNone(ignore_errors)) {
+            _assertBoolean(ignore_errors);
+        }
+        const ret = wasm.consoleconstructoroptions_new_with_values(stdout, stderr, isLikeNone(ignore_errors) ? 0xFFFFFF : ignore_errors ? 1 : 0, color_mod, isLikeNone(inspect_options) ? 0 : addToExternrefTable0(inspect_options));
+        this.__wbg_ptr = ret >>> 0;
+        ConsoleConstructorOptionsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @param {boolean | null} [value]
+     */
+    set ignore_errors(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertBoolean(value);
+        }
+        wasm.consoleconstructoroptions_set_ignore_errors(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
      * @param {object | null} [value]
      */
     set inspect_options(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.consoleconstructoroptions_set_inspect_options(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
+     * @param {any} stdout
+     * @param {any} stderr
+     * @returns {ConsoleConstructorOptions}
+     */
+    static new(stdout, stderr) {
+        const ret = wasm.consoleconstructoroptions_new(stdout, stderr);
+        return ConsoleConstructorOptions.__wrap(ret);
+    }
+    /**
+     * @returns {any}
+     */
+    get stderr() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.consoleconstructoroptions_stderr(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {any}
+     */
+    get stdout() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.consoleconstructoroptions_stdout(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {any}
+     */
+    get color_mod() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.consoleconstructoroptions_color_mod(this.__wbg_ptr);
+        return ret;
+    }
+}
+
+const CovenantBindingFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_covenantbinding_free(ptr >>> 0, 1));
+
+export class CovenantBinding {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(CovenantBinding.prototype);
+        obj.__wbg_ptr = ptr;
+        CovenantBindingFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    toJSON() {
+        return {
+            covenantId: this.covenantId,
+            authorizingInput: this.authorizingInput,
+        };
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        CovenantBindingFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_covenantbinding_free(ptr, 0);
+    }
+    /**
+     * @returns {object}
+     */
+    toJSON() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.covenantbinding_toJSON(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @returns {Hash}
+     */
+    get covenantId() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.covenantbinding_covenantId(this.__wbg_ptr);
+        return Hash.__wrap(ret);
+    }
+    /**
+     * @param {Hash} v
+     */
+    set covenantId(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertClass(v, Hash);
+        if (v.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = v.__destroy_into_raw();
+        wasm.covenantbinding_set_covenantId(this.__wbg_ptr, ptr0);
+    }
+    /**
+     * @returns {number}
+     */
+    get authorizingInput() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.covenantbinding_authorizingInput(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} v
+     */
+    set authorizingInput(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(v);
+        wasm.covenantbinding_set_authorizingInput(this.__wbg_ptr, v);
+    }
+    /**
+     * @param {number} authorizing_input
+     * @param {Hash} covenant_id
+     */
+    constructor(authorizing_input, covenant_id) {
+        _assertNum(authorizing_input);
+        _assertClass(covenant_id, Hash);
+        if (covenant_id.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = covenant_id.__destroy_into_raw();
+        const ret = wasm.covenantbinding_new(authorizing_input, ptr0);
+        this.__wbg_ptr = ret >>> 0;
+        CovenantBindingFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -2603,77 +2803,12 @@ export class CreateHookCallbacks {
         wasm.__wbg_createhookcallbacks_free(ptr, 0);
     }
     /**
-     * @param {Function} init
-     * @param {Function} before
-     * @param {Function} after
-     * @param {Function} destroy
-     * @param {Function} promise_resolve
-     */
-    constructor(init, before, after, destroy, promise_resolve) {
-        const ret = wasm.createhookcallbacks_new(init, before, after, destroy, promise_resolve);
-        this.__wbg_ptr = ret >>> 0;
-        CreateHookCallbacksFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {Function}
-     */
-    get init() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createhookcallbacks_init(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {Function} value
-     */
-    set init(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createhookcallbacks_set_init(this.__wbg_ptr, value);
-    }
-    /**
-     * @returns {Function}
-     */
-    get before() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createhookcallbacks_before(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {Function} value
      */
     set before(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.createhookcallbacks_set_before(this.__wbg_ptr, value);
-    }
-    /**
-     * @returns {Function}
-     */
-    get after() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createhookcallbacks_after(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {Function} value
-     */
-    set after(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createhookcallbacks_set_after(this.__wbg_ptr, value);
-    }
-    /**
-     * @returns {Function}
-     */
-    get destroy() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createhookcallbacks_destroy(this.__wbg_ptr);
-        return ret;
     }
     /**
      * @param {Function} value
@@ -2700,6 +2835,71 @@ export class CreateHookCallbacks {
         _assertNum(this.__wbg_ptr);
         wasm.createhookcallbacks_set_promise_resolve(this.__wbg_ptr, value);
     }
+    /**
+     * @param {Function} init
+     * @param {Function} before
+     * @param {Function} after
+     * @param {Function} destroy
+     * @param {Function} promise_resolve
+     */
+    constructor(init, before, after, destroy, promise_resolve) {
+        const ret = wasm.createhookcallbacks_new(init, before, after, destroy, promise_resolve);
+        this.__wbg_ptr = ret >>> 0;
+        CreateHookCallbacksFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {Function}
+     */
+    get init() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createhookcallbacks_init(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {Function}
+     */
+    get after() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createhookcallbacks_after(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {Function}
+     */
+    get before() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createhookcallbacks_before(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {Function}
+     */
+    get destroy() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createhookcallbacks_destroy(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {Function} value
+     */
+    set init(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.createhookcallbacks_set_init(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {Function} value
+     */
+    set after(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.createhookcallbacks_set_after(this.__wbg_ptr, value);
+    }
 }
 
 const CreateReadStreamOptionsFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -2718,6 +2918,63 @@ export class CreateReadStreamOptions {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_createreadstreamoptions_free(ptr, 0);
+    }
+    /**
+     * @returns {boolean | undefined}
+     */
+    get auto_close() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_auto_close(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
+     * @returns {boolean | undefined}
+     */
+    get emit_close() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_emit_close(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.createreadstreamoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
+     * @param {boolean | null} [value]
+     */
+    set auto_close(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertBoolean(value);
+        }
+        wasm.createreadstreamoptions_set_auto_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
+     * @param {boolean | null} [value]
+     */
+    set emit_close(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertBoolean(value);
+        }
+        wasm.createreadstreamoptions_set_emit_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get high_water_mark() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_high_water_mark(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : ret[1];
     }
     /**
      * @param {boolean | null} [auto_close]
@@ -2758,129 +3015,6 @@ export class CreateReadStreamOptions {
         return this;
     }
     /**
-     * @returns {boolean | undefined}
-     */
-    get auto_close() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_auto_close(this.__wbg_ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
-    }
-    /**
-     * @param {boolean | null} [value]
-     */
-    set auto_close(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertBoolean(value);
-        }
-        wasm.createreadstreamoptions_set_auto_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {boolean | undefined}
-     */
-    get emit_close() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_emit_close(this.__wbg_ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
-    }
-    /**
-     * @param {boolean | null} [value]
-     */
-    set emit_close(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertBoolean(value);
-        }
-        wasm.createreadstreamoptions_set_emit_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {string | undefined}
-     */
-    get encoding() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_encoding(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createreadstreamoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
-     * @returns {number | undefined}
-     */
-    get end() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_end(this.__wbg_ptr);
-        return ret[0] === 0 ? undefined : ret[1];
-    }
-    /**
-     * @param {number | null} [value]
-     */
-    set end(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertNum(value);
-        }
-        wasm.createreadstreamoptions_set_end(this.__wbg_ptr, !isLikeNone(value), isLikeNone(value) ? 0 : value);
-    }
-    /**
-     * @returns {number | undefined}
-     */
-    get fd() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_fd(this.__wbg_ptr);
-        return ret === 0x100000001 ? undefined : ret;
-    }
-    /**
-     * @param {number | null} [value]
-     */
-    set fd(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertNum(value);
-        }
-        wasm.createreadstreamoptions_set_fd(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
-    }
-    /**
-     * @returns {string | undefined}
-     */
-    get flags() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_flags(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set flags(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createreadstreamoptions_set_flags(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
-     * @returns {number | undefined}
-     */
-    get high_water_mark() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_high_water_mark(this.__wbg_ptr);
-        return ret[0] === 0 ? undefined : ret[1];
-    }
-    /**
      * @param {number | null} [value]
      */
     set high_water_mark(value) {
@@ -2894,11 +3028,78 @@ export class CreateReadStreamOptions {
     /**
      * @returns {number | undefined}
      */
+    get fd() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_fd(this.__wbg_ptr);
+        return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get end() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_end(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : ret[1];
+    }
+    /**
+     * @returns {number | undefined}
+     */
     get mode() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.createreadstreamoptions_mode(this.__wbg_ptr);
         return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get flags() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_flags(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get start() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_start(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : ret[1];
+    }
+    /**
+     * @param {number | null} [value]
+     */
+    set fd(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertNum(value);
+        }
+        wasm.createreadstreamoptions_set_fd(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
+    }
+    /**
+     * @param {number | null} [value]
+     */
+    set end(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertNum(value);
+        }
+        wasm.createreadstreamoptions_set_end(this.__wbg_ptr, !isLikeNone(value), isLikeNone(value) ? 0 : value);
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get encoding() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createreadstreamoptions_encoding(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @param {number | null} [value]
@@ -2912,13 +3113,12 @@ export class CreateReadStreamOptions {
         wasm.createreadstreamoptions_set_mode(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
     }
     /**
-     * @returns {number | undefined}
+     * @param {string | null} [value]
      */
-    get start() {
+    set flags(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.createreadstreamoptions_start(this.__wbg_ptr);
-        return ret[0] === 0 ? undefined : ret[1];
+        wasm.createreadstreamoptions_set_flags(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @param {number | null} [value]
@@ -2951,6 +3151,54 @@ export class CreateWriteStreamOptions {
         wasm.__wbg_createwritestreamoptions_free(ptr, 0);
     }
     /**
+     * @returns {boolean | undefined}
+     */
+    get auto_close() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_auto_close(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
+     * @returns {boolean | undefined}
+     */
+    get emit_close() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_emit_close(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.createwritestreamoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
+     * @param {boolean | null} [value]
+     */
+    set auto_close(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertBoolean(value);
+        }
+        wasm.createwritestreamoptions_set_auto_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
+     * @param {boolean | null} [value]
+     */
+    set emit_close(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        if (!isLikeNone(value)) {
+            _assertBoolean(value);
+        }
+        wasm.createwritestreamoptions_set_emit_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
      * @param {boolean | null} [auto_close]
      * @param {boolean | null} [emit_close]
      * @param {string | null} [encoding]
@@ -2981,63 +3229,6 @@ export class CreateWriteStreamOptions {
         return this;
     }
     /**
-     * @returns {boolean | undefined}
-     */
-    get auto_close() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_auto_close(this.__wbg_ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
-    }
-    /**
-     * @param {boolean | null} [value]
-     */
-    set auto_close(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertBoolean(value);
-        }
-        wasm.createwritestreamoptions_set_auto_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {boolean | undefined}
-     */
-    get emit_close() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_emit_close(this.__wbg_ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
-    }
-    /**
-     * @param {boolean | null} [value]
-     */
-    set emit_close(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        if (!isLikeNone(value)) {
-            _assertBoolean(value);
-        }
-        wasm.createwritestreamoptions_set_emit_close(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {string | undefined}
-     */
-    get encoding() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_encoding(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createwritestreamoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
      * @returns {number | undefined}
      */
     get fd() {
@@ -3045,6 +3236,33 @@ export class CreateWriteStreamOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.createwritestreamoptions_fd(this.__wbg_ptr);
         return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get mode() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_mode(this.__wbg_ptr);
+        return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get flags() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_flags(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get start() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_start(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : ret[1];
     }
     /**
      * @param {number | null} [value]
@@ -3060,28 +3278,11 @@ export class CreateWriteStreamOptions {
     /**
      * @returns {string | undefined}
      */
-    get flags() {
+    get encoding() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_flags(this.__wbg_ptr);
+        const ret = wasm.createwritestreamoptions_encoding(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set flags(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.createwritestreamoptions_set_flags(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
-     * @returns {number | undefined}
-     */
-    get mode() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_mode(this.__wbg_ptr);
-        return ret === 0x100000001 ? undefined : ret;
     }
     /**
      * @param {number | null} [value]
@@ -3095,13 +3296,12 @@ export class CreateWriteStreamOptions {
         wasm.createwritestreamoptions_set_mode(this.__wbg_ptr, isLikeNone(value) ? 0x100000001 : (value) >>> 0);
     }
     /**
-     * @returns {number | undefined}
+     * @param {string | null} [value]
      */
-    get start() {
+    set flags(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.createwritestreamoptions_start(this.__wbg_ptr);
-        return ret[0] === 0 ? undefined : ret[1];
+        wasm.createwritestreamoptions_set_flags(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @param {number | null} [value]
@@ -3151,19 +3351,6 @@ export class CryptoBox {
         wasm.__wbg_cryptobox_free(ptr, 0);
     }
     /**
-     * @param {CryptoBoxPrivateKey | HexString | Uint8Array} secretKey
-     * @param {CryptoBoxPublicKey | HexString | Uint8Array} peerPublicKey
-     */
-    constructor(secretKey, peerPublicKey) {
-        const ret = wasm.cryptobox_ctor(secretKey, peerPublicKey);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        CryptoBoxFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @returns {string}
      */
     get publicKey() {
@@ -3181,30 +3368,17 @@ export class CryptoBox {
         }
     }
     /**
-     * @param {string} plaintext
-     * @returns {string}
+     * @param {CryptoBoxPrivateKey | HexString | Uint8Array} secretKey
+     * @param {CryptoBoxPublicKey | HexString | Uint8Array} peerPublicKey
      */
-    encrypt(plaintext) {
-        let deferred3_0;
-        let deferred3_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ptr0 = passStringToWasm0(plaintext, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            const len0 = WASM_VECTOR_LEN;
-            const ret = wasm.cryptobox_encrypt(this.__wbg_ptr, ptr0, len0);
-            var ptr2 = ret[0];
-            var len2 = ret[1];
-            if (ret[3]) {
-                ptr2 = 0; len2 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred3_0 = ptr2;
-            deferred3_1 = len2;
-            return getStringFromWasm0(ptr2, len2);
-        } finally {
-            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    constructor(secretKey, peerPublicKey) {
+        const ret = wasm.cryptobox_ctor(secretKey, peerPublicKey);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        this.__wbg_ptr = ret[0] >>> 0;
+        CryptoBoxFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @param {string} base64string
@@ -3219,6 +3393,32 @@ export class CryptoBox {
             const ptr0 = passStringToWasm0(base64string, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len0 = WASM_VECTOR_LEN;
             const ret = wasm.cryptobox_decrypt(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * @param {string} plaintext
+     * @returns {string}
+     */
+    encrypt(plaintext) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ptr0 = passStringToWasm0(plaintext, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.cryptobox_encrypt(this.__wbg_ptr, ptr0, len0);
             var ptr2 = ret[0];
             var len2 = ret[1];
             if (ret[3]) {
@@ -3254,6 +3454,15 @@ export class CryptoBoxPrivateKey {
         wasm.__wbg_cryptoboxprivatekey_free(ptr, 0);
     }
     /**
+     * @returns {CryptoBoxPublicKey}
+     */
+    to_public_key() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.cryptoboxprivatekey_to_public_key(this.__wbg_ptr);
+        return CryptoBoxPublicKey.__wrap(ret);
+    }
+    /**
      * @param {HexString | Uint8Array} secretKey
      */
     constructor(secretKey) {
@@ -3264,15 +3473,6 @@ export class CryptoBoxPrivateKey {
         this.__wbg_ptr = ret[0] >>> 0;
         CryptoBoxPrivateKeyFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * @returns {CryptoBoxPublicKey}
-     */
-    to_public_key() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.cryptoboxprivatekey_to_public_key(this.__wbg_ptr);
-        return CryptoBoxPublicKey.__wrap(ret);
     }
 }
 
@@ -3304,18 +3504,6 @@ export class CryptoBoxPublicKey {
         wasm.__wbg_cryptoboxpublickey_free(ptr, 0);
     }
     /**
-     * @param {HexString | Uint8Array} publicKey
-     */
-    constructor(publicKey) {
-        const ret = wasm.cryptoboxpublickey_ctor(publicKey);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        CryptoBoxPublicKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @returns {string}
      */
     toString() {
@@ -3331,6 +3519,18 @@ export class CryptoBoxPublicKey {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @param {HexString | Uint8Array} publicKey
+     */
+    constructor(publicKey) {
+        const ret = wasm.cryptoboxpublickey_ctor(publicKey);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        CryptoBoxPublicKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -3365,6 +3565,16 @@ export class DerivationPath {
         wasm.__wbg_derivationpath_free(ptr, 0);
     }
     /**
+     * Get the count of [`ChildNumber`] values in this derivation path.
+     * @returns {number}
+     */
+    length() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_length(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
      * @param {string} path
      */
     constructor(path) {
@@ -3377,38 +3587,6 @@ export class DerivationPath {
         this.__wbg_ptr = ret[0] >>> 0;
         DerivationPathFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * Is this derivation path empty? (i.e. the root)
-     * @returns {boolean}
-     */
-    isEmpty() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Get the count of [`ChildNumber`] values in this derivation path.
-     * @returns {number}
-     */
-    length() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_length(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Get the parent [`DerivationPath`] for the current one.
-     *
-     * Returns `Undefined` if this is already the root path.
-     * @returns {DerivationPath | undefined}
-     */
-    parent() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
-        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
     }
     /**
      * Push a [`ChildNumber`] onto an existing derivation path.
@@ -3428,6 +3606,18 @@ export class DerivationPath {
         }
     }
     /**
+     * Get the parent [`DerivationPath`] for the current one.
+     *
+     * Returns `Undefined` if this is already the root path.
+     * @returns {DerivationPath | undefined}
+     */
+    parent() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
+        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
+    }
+    /**
      * @returns {string}
      */
     toString() {
@@ -3443,6 +3633,16 @@ export class DerivationPath {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * Is this derivation path empty? (i.e. the root)
+     * @returns {boolean}
+     */
+    isEmpty() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
+        return ret !== 0;
     }
 }
 
@@ -3485,6 +3685,24 @@ export class FormatInputPathObject {
         return this;
     }
     /**
+     * @returns {string | undefined}
+     */
+    get dir() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.formatinputpathobject_dir(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get ext() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.formatinputpathobject_ext(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * @returns {FormatInputPathObject}
      */
     static new() {
@@ -3501,20 +3719,21 @@ export class FormatInputPathObject {
         return ret;
     }
     /**
-     * @param {string | null} [value]
+     * @returns {string | undefined}
      */
-    set base(value) {
+    get name() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        wasm.formatinputpathobject_set_base(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+        const ret = wasm.formatinputpathobject_name(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {string | undefined}
      */
-    get dir() {
+    get root() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.formatinputpathobject_dir(this.__wbg_ptr);
+        const ret = wasm.formatinputpathobject_root(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -3526,15 +3745,6 @@ export class FormatInputPathObject {
         wasm.formatinputpathobject_set_dir(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
-     * @returns {string | undefined}
-     */
-    get ext() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.formatinputpathobject_ext(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {string | null} [value]
      */
     set ext(value) {
@@ -3543,13 +3753,12 @@ export class FormatInputPathObject {
         wasm.formatinputpathobject_set_ext(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
-     * @returns {string | undefined}
+     * @param {string | null} [value]
      */
-    get name() {
+    set base(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.formatinputpathobject_name(this.__wbg_ptr);
-        return ret;
+        wasm.formatinputpathobject_set_base(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @param {string | null} [value]
@@ -3558,15 +3767,6 @@ export class FormatInputPathObject {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.formatinputpathobject_set_name(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
-     * @returns {string | undefined}
-     */
-    get root() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.formatinputpathobject_root(this.__wbg_ptr);
-        return ret;
     }
     /**
      * @param {string | null} [value]
@@ -3661,15 +3861,6 @@ export class Generator {
         return ret;
     }
     /**
-     * @returns {Promise<GeneratorSummary>}
-     */
-    estimate() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.generator_estimate(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @returns {GeneratorSummary}
      */
     summary() {
@@ -3677,6 +3868,15 @@ export class Generator {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.generator_summary(this.__wbg_ptr);
         return GeneratorSummary.__wrap(ret);
+    }
+    /**
+     * @returns {Promise<GeneratorSummary>}
+     */
+    estimate() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.generator_estimate(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -3710,12 +3910,12 @@ export class GeneratorSummary {
     toJSON() {
         return {
             networkType: this.networkType,
-            utxos: this.utxos,
             fees: this.fees,
             mass: this.mass,
-            transactions: this.transactions,
-            finalAmount: this.finalAmount,
+            utxos: this.utxos,
             finalTransactionId: this.finalTransactionId,
+            finalAmount: this.finalAmount,
+            transactions: this.transactions,
         };
     }
 
@@ -3744,15 +3944,6 @@ export class GeneratorSummary {
         return ret;
     }
     /**
-     * @returns {number}
-     */
-    get utxos() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.generatorsummary_utxos(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
      * @returns {bigint}
      */
     get fees() {
@@ -3773,20 +3964,11 @@ export class GeneratorSummary {
     /**
      * @returns {number}
      */
-    get transactions() {
+    get utxos() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.generatorsummary_transactions(this.__wbg_ptr);
+        const ret = wasm.generatorsummary_utxos(this.__wbg_ptr);
         return ret >>> 0;
-    }
-    /**
-     * @returns {bigint | undefined}
-     */
-    get finalAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.generatorsummary_finalAmount(this.__wbg_ptr);
-        return ret;
     }
     /**
      * @returns {string | undefined}
@@ -3801,6 +3983,136 @@ export class GeneratorSummary {
             wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
         }
         return v1;
+    }
+    /**
+     * @returns {bigint | undefined}
+     */
+    get finalAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.generatorsummary_finalAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {number}
+     */
+    get transactions() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.generatorsummary_transactions(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+}
+
+const GenesisCovenantGroupFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_genesiscovenantgroup_free(ptr >>> 0, 1));
+/**
+ * A genesis covenant group for bulk covenant binding population.
+ *
+ * All listed outputs are bound to the same covenant id, derived from the
+ * authorizing input outpoint and this exact ordered output list.
+ * @category Consensus
+ */
+export class GenesisCovenantGroup {
+
+    toJSON() {
+        return {
+            outputs: this.outputs,
+            authorizingInput: this.authorizingInput,
+        };
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        GenesisCovenantGroupFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_genesiscovenantgroup_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.genesiscovenantgroup_toString(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @returns {object}
+     */
+    toJSON() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.genesiscovenantgroup_toJSON(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @returns {Array<number>}
+     */
+    get outputs() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.genesiscovenantgroup_outputs(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {Array<number>} outputs
+     */
+    set outputs(outputs) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.genesiscovenantgroup_set_outputs(this.__wbg_ptr, outputs);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @returns {number}
+     */
+    get authorizingInput() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.genesiscovenantgroup_authorizingInput(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} value
+     */
+    set authorizingInput(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(value);
+        wasm.genesiscovenantgroup_set_authorizingInput(this.__wbg_ptr, value);
+    }
+    /**
+     * @param {number} authorizing_input
+     * @param {Array<number>} outputs
+     */
+    constructor(authorizing_input, outputs) {
+        _assertNum(authorizing_input);
+        const ret = wasm.genesiscovenantgroup_ctor(authorizing_input, outputs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        GenesisCovenantGroupFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -3834,30 +4146,6 @@ export class GetNameOptions {
         wasm.__wbg_getnameoptions_free(ptr, 0);
     }
     /**
-     * @param {number | null | undefined} family
-     * @param {string} host
-     * @param {string} local_address
-     * @param {number} port
-     * @returns {GetNameOptions}
-     */
-    static new(family, host, local_address, port) {
-        if (!isLikeNone(family)) {
-            _assertNum(family);
-        }
-        _assertNum(port);
-        const ret = wasm.getnameoptions_new(isLikeNone(family) ? 0xFFFFFF : family, host, local_address, port);
-        return GetNameOptions.__wrap(ret);
-    }
-    /**
-     * @returns {number | undefined}
-     */
-    get family() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.getnameoptions_family(this.__wbg_ptr);
-        return ret === 0xFFFFFF ? undefined : ret;
-    }
-    /**
      * @param {number | null} [value]
      */
     set family(value) {
@@ -3867,23 +4155,6 @@ export class GetNameOptions {
             _assertNum(value);
         }
         wasm.getnameoptions_set_family(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value);
-    }
-    /**
-     * @returns {string}
-     */
-    get host() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.getnameoptions_host(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string} value
-     */
-    set host(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.getnameoptions_set_host(this.__wbg_ptr, value);
     }
     /**
      * @returns {string}
@@ -3903,6 +4174,30 @@ export class GetNameOptions {
         wasm.getnameoptions_set_local_address(this.__wbg_ptr, value);
     }
     /**
+     * @param {number | null | undefined} family
+     * @param {string} host
+     * @param {string} local_address
+     * @param {number} port
+     * @returns {GetNameOptions}
+     */
+    static new(family, host, local_address, port) {
+        if (!isLikeNone(family)) {
+            _assertNum(family);
+        }
+        _assertNum(port);
+        const ret = wasm.getnameoptions_new(isLikeNone(family) ? 0xFFFFFF : family, host, local_address, port);
+        return GetNameOptions.__wrap(ret);
+    }
+    /**
+     * @returns {string}
+     */
+    get host() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.getnameoptions_host(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * @returns {number}
      */
     get port() {
@@ -3910,6 +4205,23 @@ export class GetNameOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.getnameoptions_port(this.__wbg_ptr);
         return ret >>> 0;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get family() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.getnameoptions_family(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret;
+    }
+    /**
+     * @param {string} value
+     */
+    set host(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.getnameoptions_set_host(this.__wbg_ptr, value);
     }
     /**
      * @param {number} value
@@ -3991,19 +4303,19 @@ export class Header {
 
     toJSON() {
         return {
+            blueScore: this.blueScore,
             version: this.version,
             timestamp: this.timestamp,
+            hash: this.hash,
+            pruningPoint: this.pruningPoint,
+            utxoCommitment: this.utxoCommitment,
+            hashMerkleRoot: this.hashMerkleRoot,
+            parentsByLevel: this.parentsByLevel,
+            acceptedIdMerkleRoot: this.acceptedIdMerkleRoot,
             bits: this.bits,
             nonce: this.nonce,
-            daaScore: this.daaScore,
-            blueScore: this.blueScore,
-            hash: this.hash,
-            hashMerkleRoot: this.hashMerkleRoot,
-            acceptedIdMerkleRoot: this.acceptedIdMerkleRoot,
-            utxoCommitment: this.utxoCommitment,
-            pruningPoint: this.pruningPoint,
-            parentsByLevel: this.parentsByLevel,
             blueWork: this.blueWork,
+            daaScore: this.daaScore,
         };
     }
 
@@ -4021,6 +4333,15 @@ export class Header {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_header_free(ptr, 0);
+    }
+    /**
+     * @returns {bigint}
+     */
+    get blueScore() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.header_blue_score(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
     }
     /**
      * @param {Header | IHeader | IRawHeader} js_value
@@ -4046,26 +4367,6 @@ export class Header {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
             const ret = wasm.header_finalize(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Obtain `JSON` representation of the header. JSON representation
-     * should be obtained using WASM, to ensure proper serialization of
-     * big integers.
-     * @returns {string}
-     */
-    asJSON() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.header_asJSON(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -4101,60 +4402,6 @@ export class Header {
         return BigInt.asUintN(64, ret);
     }
     /**
-     * @param {bigint} timestamp
-     */
-    set timestamp(timestamp) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(timestamp);
-        wasm.header_set_timestamp(this.__wbg_ptr, timestamp);
-    }
-    /**
-     * @returns {number}
-     */
-    get bits() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.header_bits(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * @param {number} bits
-     */
-    set bits(bits) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(bits);
-        wasm.header_set_bits(this.__wbg_ptr, bits);
-    }
-    /**
-     * @returns {bigint}
-     */
-    get nonce() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.header_nonce(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
-     * @param {bigint} nonce
-     */
-    set nonce(nonce) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(nonce);
-        wasm.header_set_nonce(this.__wbg_ptr, nonce);
-    }
-    /**
-     * @returns {bigint}
-     */
-    get daaScore() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.header_daa_score(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
      * @param {bigint} daa_score
      */
     set daaScore(daa_score) {
@@ -4164,13 +4411,13 @@ export class Header {
         wasm.header_set_daa_score(this.__wbg_ptr, daa_score);
     }
     /**
-     * @returns {bigint}
+     * @param {bigint} timestamp
      */
-    get blueScore() {
+    set timestamp(timestamp) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.header_blue_score(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
+        _assertBigInt(timestamp);
+        wasm.header_set_timestamp(this.__wbg_ptr, timestamp);
     }
     /**
      * @param {bigint} blue_score
@@ -4201,52 +4448,36 @@ export class Header {
     /**
      * @returns {string}
      */
-    get hashMerkleRoot() {
+    getBlueWorkAsHex() {
         let deferred1_0;
         let deferred1_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.header_get_hash_merkle_root_as_hex(this.__wbg_ptr);
+            const ret = wasm.header_getBlueWorkAsHex(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-    }
-    /**
-     * @param {any} js_value
-     */
-    set hashMerkleRoot(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.header_set_hash_merkle_root_from_js_value(this.__wbg_ptr, js_value);
     }
     /**
      * @returns {string}
      */
-    get acceptedIdMerkleRoot() {
+    get pruningPoint() {
         let deferred1_0;
         let deferred1_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.header_get_accepted_id_merkle_root_as_hex(this.__wbg_ptr);
+            const ret = wasm.header_get_pruning_point_as_hex(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-    }
-    /**
-     * @param {any} js_value
-     */
-    set acceptedIdMerkleRoot(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.header_set_accepted_id_merkle_root_from_js_value(this.__wbg_ptr, js_value);
     }
     /**
      * @returns {string}
@@ -4266,29 +4497,29 @@ export class Header {
         }
     }
     /**
-     * @param {any} js_value
-     */
-    set utxoCommitment(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.header_set_utxo_commitment_from_js_value(this.__wbg_ptr, js_value);
-    }
-    /**
      * @returns {string}
      */
-    get pruningPoint() {
+    get hashMerkleRoot() {
         let deferred1_0;
         let deferred1_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.header_get_pruning_point_as_hex(this.__wbg_ptr);
+            const ret = wasm.header_get_hash_merkle_root_as_hex(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @param {any} js_value
+     */
+    set blueWork(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.header_set_blue_work_from_js_value(this.__wbg_ptr, js_value);
     }
     /**
      * @param {any} js_value
@@ -4310,10 +4541,98 @@ export class Header {
     /**
      * @param {any} js_value
      */
+    set utxoCommitment(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.header_set_utxo_commitment_from_js_value(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @returns {string}
+     */
+    get acceptedIdMerkleRoot() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.header_get_accepted_id_merkle_root_as_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {any} js_value
+     */
+    set hashMerkleRoot(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.header_set_hash_merkle_root_from_js_value(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @param {any} js_value
+     */
     set parentsByLevel(js_value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         wasm.header_set_parents_by_level_from_js_value(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @param {any} js_value
+     */
+    set acceptedIdMerkleRoot(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.header_set_accepted_id_merkle_root_from_js_value(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @returns {number}
+     */
+    get bits() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.header_bits(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @returns {bigint}
+     */
+    get nonce() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.header_nonce(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * Obtain `JSON` representation of the header. JSON representation
+     * should be obtained using WASM, to ensure proper serialization of
+     * big integers.
+     * @returns {string}
+     */
+    asJSON() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.header_asJSON(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {number} bits
+     */
+    set bits(bits) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(bits);
+        wasm.header_set_bits(this.__wbg_ptr, bits);
     }
     /**
      * @returns {bigint}
@@ -4325,29 +4644,22 @@ export class Header {
         return ret;
     }
     /**
-     * @returns {string}
+     * @returns {bigint}
      */
-    getBlueWorkAsHex() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.header_getBlueWorkAsHex(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {any} js_value
-     */
-    set blueWork(js_value) {
+    get daaScore() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        wasm.header_set_blue_work_from_js_value(this.__wbg_ptr, js_value);
+        const ret = wasm.header_daa_score(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @param {bigint} nonce
+     */
+    set nonce(nonce) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(nonce);
+        wasm.header_set_nonce(this.__wbg_ptr, nonce);
     }
 }
 
@@ -4396,6 +4708,23 @@ export class Keypair {
         wasm.__wbg_keypair_free(ptr, 0);
     }
     /**
+     * Get the [`Address`] of this Keypair's [`PublicKey`].
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.keypair_toAddress(this.__wbg_ptr, network);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
      * Get the [`PublicKey`] of this [`Keypair`].
      * @returns {string}
      */
@@ -4432,31 +4761,21 @@ export class Keypair {
         }
     }
     /**
-     * Get the `XOnlyPublicKey` of this [`Keypair`].
-     * @returns {any}
+     * Create a new [`Keypair`] from a [`PrivateKey`].
+     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
+     * @param {PrivateKey} secret_key
+     * @returns {Keypair}
      */
-    get xOnlyPublicKey() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Get the [`Address`] of this Keypair's [`PublicKey`].
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.keypair_toAddress(this.__wbg_ptr, network);
+    static fromPrivateKey(secret_key) {
+        _assertClass(secret_key, PrivateKey);
+        if (secret_key.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        const ret = wasm.keypair_fromPrivateKey(secret_key.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return Address.__wrap(ret[0]);
+        return Keypair.__wrap(ret[0]);
     }
     /**
      * Get `ECDSA` [`Address`] of this Keypair's [`PublicKey`].
@@ -4476,29 +4795,22 @@ export class Keypair {
         return Address.__wrap(ret[0]);
     }
     /**
+     * Get the `XOnlyPublicKey` of this [`Keypair`].
+     * @returns {any}
+     */
+    get xOnlyPublicKey() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * Create a new random [`Keypair`].
      * JavaScript: `let keypair = Keypair::random();`.
      * @returns {Keypair}
      */
     static random() {
         const ret = wasm.keypair_random();
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Keypair.__wrap(ret[0]);
-    }
-    /**
-     * Create a new [`Keypair`] from a [`PrivateKey`].
-     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
-     * @param {PrivateKey} secret_key
-     * @returns {Keypair}
-     */
-    static fromPrivateKey(secret_key) {
-        _assertClass(secret_key, PrivateKey);
-        if (secret_key.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        const ret = wasm.keypair_fromPrivateKey(secret_key.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -4532,6 +4844,14 @@ export class MkdtempSyncOptions {
         wasm.__wbg_mkdtempsyncoptions_free(ptr, 0);
     }
     /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.mkdtempsyncoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
      * @param {string | null} [encoding]
      */
     constructor(encoding) {
@@ -4555,14 +4875,6 @@ export class MkdtempSyncOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.mkdtempsyncoptions_encoding(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.mkdtempsyncoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
 }
 
@@ -4607,6 +4919,16 @@ export class Mnemonic {
     }
     /**
      * @param {string} phrase
+     */
+    set phrase(phrase) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} phrase
      * @param {Language | null} [language]
      */
     constructor(phrase, language) {
@@ -4624,19 +4946,24 @@ export class Mnemonic {
         return this;
     }
     /**
-     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
-     * @param {string} phrase
-     * @param {Language | null} [language]
-     * @returns {boolean}
+     * @param {string | null} [password]
+     * @returns {string}
      */
-    static validate(phrase, language) {
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        if (!isLikeNone(language)) {
-            _assertNum(language);
+    toSeed(password) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            var len0 = WASM_VECTOR_LEN;
+            const ret = wasm.mnemonic_toSeed(this.__wbg_ptr, ptr0, len0);
+            deferred2_0 = ret[0];
+            deferred2_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
-        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
-        return ret !== 0;
     }
     /**
      * @returns {string}
@@ -4666,20 +4993,6 @@ export class Mnemonic {
         wasm.mnemonic_set_entropy(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {number | null} [word_count]
-     * @returns {Mnemonic}
-     */
-    static random(word_count) {
-        if (!isLikeNone(word_count)) {
-            _assertNum(word_count);
-        }
-        const ret = wasm.mnemonic_random(isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Mnemonic.__wrap(ret[0]);
-    }
-    /**
      * @returns {string}
      */
     get phrase() {
@@ -4697,34 +5010,33 @@ export class Mnemonic {
         }
     }
     /**
-     * @param {string} phrase
+     * @param {number | null} [word_count]
+     * @returns {Mnemonic}
      */
-    set phrase(phrase) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
+    static random(word_count) {
+        if (!isLikeNone(word_count)) {
+            _assertNum(word_count);
+        }
+        const ret = wasm.mnemonic_random(isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Mnemonic.__wrap(ret[0]);
     }
     /**
-     * @param {string | null} [password]
-     * @returns {string}
+     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
+     * @param {string} phrase
+     * @param {Language | null} [language]
+     * @returns {boolean}
      */
-    toSeed(password) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            var len0 = WASM_VECTOR_LEN;
-            const ret = wasm.mnemonic_toSeed(this.__wbg_ptr, ptr0, len0);
-            deferred2_0 = ret[0];
-            deferred2_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    static validate(phrase, language) {
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        if (!isLikeNone(language)) {
+            _assertNum(language);
         }
+        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
+        return ret !== 0;
     }
 }
 
@@ -4760,6 +5072,16 @@ export class NetServerOptions {
         return ret === 0xFFFFFF ? undefined : ret !== 0;
     }
     /**
+     * @returns {boolean | undefined}
+     */
+    get pause_on_connect() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        const ptr = this.__destroy_into_raw();
+        _assertNum(ptr);
+        const ret = wasm.netserveroptions_pause_on_connect(ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
      * @param {boolean | null} [value]
      */
     set allow_half_open(value) {
@@ -4770,16 +5092,6 @@ export class NetServerOptions {
             _assertBoolean(value);
         }
         wasm.netserveroptions_set_allow_half_open(ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
-    }
-    /**
-     * @returns {boolean | undefined}
-     */
-    get pause_on_connect() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        const ptr = this.__destroy_into_raw();
-        _assertNum(ptr);
-        const ret = wasm.netserveroptions_pause_on_connect(ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
     }
     /**
      * @param {boolean | null} [value]
@@ -4877,35 +5189,6 @@ export class NetworkId {
         wasm.__wbg_set_networkid_suffix(this.__wbg_ptr, isLikeNone(arg0) ? 0x100000001 : (arg0) >>> 0);
     }
     /**
-     * @param {any} value
-     */
-    constructor(value) {
-        const ret = wasm.networkid_ctor(value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        NetworkIdFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    get id() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.networkid_id(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {string}
      */
     toString() {
@@ -4932,6 +5215,35 @@ export class NetworkId {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
             const ret = wasm.networkid_addressPrefix(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {any} value
+     */
+    constructor(value) {
+        const ret = wasm.networkid_ctor(value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        NetworkIdFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {string}
+     */
+    get id() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.networkid_id(this.__wbg_ptr);
             deferred1_0 = ret[0];
             deferred1_1 = ret[1];
             return getStringFromWasm0(ret[0], ret[1]);
@@ -5047,6 +5359,209 @@ export class NodeDescriptor {
     }
 }
 
+const OptionalHeaderFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_optionalheader_free(ptr >>> 0, 1));
+
+export class OptionalHeader {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(OptionalHeader.prototype);
+        obj.__wbg_ptr = ptr;
+        OptionalHeaderFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    toJSON() {
+        return {
+            blueScore: this.blueScore,
+            blueWork: this.blueWork,
+            pruningPoint: this.pruningPoint,
+            utxoCommitment: this.utxoCommitment,
+            hashMerkleRoot: this.hashMerkleRoot,
+            parentsByLevel: this.parentsByLevel,
+            acceptedIdMerkleRoot: this.acceptedIdMerkleRoot,
+            bits: this.bits,
+            hash: this.hash,
+            nonce: this.nonce,
+            version: this.version,
+            daaScore: this.daaScore,
+            timestamp: this.timestamp,
+        };
+    }
+
+    toString() {
+        return JSON.stringify(this);
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        OptionalHeaderFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_optionalheader_free(ptr, 0);
+    }
+    /**
+     * @returns {bigint | undefined}
+     */
+    get blueScore() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_blueScore(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : BigInt.asUintN(64, ret[1]);
+    }
+    /**
+     * @returns {any}
+     */
+    get blueWork() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_blueWork(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get pruningPoint() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_pruningPoint(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get utxoCommitment() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_utxoCommitment(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get hashMerkleRoot() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_hashMerkleRoot(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @returns {CompressedParents | undefined}
+     */
+    get parentsByLevel() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_parentsByLevel(this.__wbg_ptr);
+        return ret === 0 ? undefined : CompressedParents.__wrap(ret);
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get acceptedIdMerkleRoot() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_acceptedIdMerkleRoot(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @param {OptionalHeader | IOptionalHeader} js_value
+     */
+    constructor(js_value) {
+        const ret = wasm.optionalheader_new(js_value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        OptionalHeaderFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get bits() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_bits(this.__wbg_ptr);
+        return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get hash() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_hash(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @returns {bigint | undefined}
+     */
+    get nonce() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_nonce(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : BigInt.asUintN(64, ret[1]);
+    }
+    /**
+     * @returns {number | undefined}
+     */
+    get version() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_version(this.__wbg_ptr);
+        return ret === 0xFFFFFF ? undefined : ret;
+    }
+    /**
+     * @returns {bigint | undefined}
+     */
+    get daaScore() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_daaScore(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : BigInt.asUintN(64, ret[1]);
+    }
+    /**
+     * @returns {bigint | undefined}
+     */
+    get timestamp() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.optionalheader_timestamp(this.__wbg_ptr);
+        return ret[0] === 0 ? undefined : BigInt.asUintN(64, ret[1]);
+    }
+}
+
 const PSKBFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_pskb_free(ptr >>> 0, 1));
@@ -5072,37 +5587,18 @@ export class PSKB {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_pskb_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.pskb_new();
+    /**
+     * @param {string} hex_data
+     * @returns {PSKB}
+     */
+    static deserialize(hex_data) {
+        const ptr0 = passStringToWasm0(hex_data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.pskb_deserialize(ptr0, len0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PSKBFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    serialize() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pskb_serialize(this.__wbg_ptr);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
+        return PSKB.__wrap(ret[0]);
     }
     /**
      * @param {NetworkId | string} network_id
@@ -5129,28 +5625,6 @@ export class PSKB {
         }
     }
     /**
-     * @param {string} hex_data
-     * @returns {PSKB}
-     */
-    static deserialize(hex_data) {
-        const ptr0 = passStringToWasm0(hex_data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.pskb_deserialize(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKB.__wrap(ret[0]);
-    }
-    /**
-     * @returns {number}
-     */
-    get length() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskb_length(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
      * @param {PSKT} pskt
      */
     add(pskt) {
@@ -5165,6 +5639,15 @@ export class PSKB {
             throw takeFromExternrefTable0(ret[0]);
         }
     }
+    constructor() {
+        const ret = wasm.pskb_new();
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PSKBFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
     /**
      * @param {PSKB} other
      */
@@ -5176,6 +5659,38 @@ export class PSKB {
             throw new Error('Attempt to use a moved value');
         }
         wasm.pskb_merge(this.__wbg_ptr, other.__wbg_ptr);
+    }
+    /**
+     * @returns {number}
+     */
+    get length() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskb_length(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @returns {string}
+     */
+    serialize() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pskb_serialize(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
     }
 }
 
@@ -5216,16 +5731,17 @@ export class PSKT {
         wasm.__wbg_pskt_free(ptr, 0);
     }
     /**
-     * @param {PSKT | Transaction | string | undefined} payload
+     * Change role to `CONSTRUCTOR`
+     * @returns {PSKT}
      */
-    constructor(payload) {
-        const ret = wasm.pskt_new(payload);
+    toConstructor() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_toConstructor(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PSKTFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        return PSKT.__wrap(ret[0]);
     }
     /**
      * @returns {string}
@@ -5245,160 +5761,45 @@ export class PSKT {
         }
     }
     /**
-     * @returns {any}
+     * @returns {Hash}
      */
-    get payload() {
+    calculateId() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_payload(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {string}
-     */
-    serialize() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pskt_serialize(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        const ret = wasm.pskt_calculateId(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        return Hash.__wrap(ret[0]);
     }
     /**
-     * Change role to `CREATOR`
-     * #[wasm_bindgen(js_name = toCreator)]
+     * @param {bigint} n
+     * @param {number} input_index
      * @returns {PSKT}
      */
-    creator() {
+    setSequence(n, input_index) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_creator(this.__wbg_ptr);
+        _assertBigInt(n);
+        _assertNum(input_index);
+        const ret = wasm.pskt_setSequence(this.__wbg_ptr, n, input_index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return PSKT.__wrap(ret[0]);
     }
     /**
-     * Change role to `CONSTRUCTOR`
-     * @returns {PSKT}
+     * @param {any} data
+     * @returns {bigint}
      */
-    toConstructor() {
+    calculateMass(data) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toConstructor(this.__wbg_ptr);
+        const ret = wasm.pskt_calculateMass(this.__wbg_ptr, data);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * Change role to `UPDATER`
-     * @returns {PSKT}
-     */
-    toUpdater() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toUpdater(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * Change role to `SIGNER`
-     * @returns {PSKT}
-     */
-    toSigner() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toSigner(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * Change role to `COMBINER`
-     * @returns {PSKT}
-     */
-    toCombiner() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toCombiner(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * Change role to `FINALIZER`
-     * @returns {PSKT}
-     */
-    toFinalizer() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toFinalizer(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * Change role to `EXTRACTOR`
-     * @returns {PSKT}
-     */
-    toExtractor() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_toExtractor(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * @param {bigint} lock_time
-     * @returns {PSKT}
-     */
-    fallbackLockTime(lock_time) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(lock_time);
-        const ret = wasm.pskt_fallbackLockTime(this.__wbg_ptr, lock_time);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * @returns {PSKT}
-     */
-    inputsModifiable() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_inputsModifiable(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
-    }
-    /**
-     * @returns {PSKT}
-     */
-    outputsModifiable() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_outputsModifiable(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PSKT.__wrap(ret[0]);
+        return BigInt.asUintN(64, ret[0]);
     }
     /**
      * @returns {PSKT}
@@ -5411,6 +5812,15 @@ export class PSKT {
             throw takeFromExternrefTable0(ret[1]);
         }
         return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * @returns {any}
+     */
+    get payload() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_payload(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {PSKT}
@@ -5439,6 +5849,56 @@ export class PSKT {
         return PSKT.__wrap(ret[0]);
     }
     /**
+     * @returns {PSKT}
+     */
+    inputsModifiable() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_inputsModifiable(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * @param {bigint} lock_time
+     * @returns {PSKT}
+     */
+    fallbackLockTime(lock_time) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(lock_time);
+        const ret = wasm.pskt_fallbackLockTime(this.__wbg_ptr, lock_time);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * @returns {PSKT}
+     */
+    outputsModifiable() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_outputsModifiable(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * @param {PSKT | Transaction | string | undefined} payload
+     */
+    constructor(payload) {
+        const ret = wasm.pskt_new(payload);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PSKTFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
      * @param {ITransactionInput | TransactionInput} input
      * @returns {PSKT}
      */
@@ -5465,45 +5925,100 @@ export class PSKT {
         return PSKT.__wrap(ret[0]);
     }
     /**
-     * @param {bigint} n
-     * @param {number} input_index
+     * Change role to `SIGNER`
      * @returns {PSKT}
      */
-    setSequence(n, input_index) {
+    toSigner() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        _assertBigInt(n);
-        _assertNum(input_index);
-        const ret = wasm.pskt_setSequence(this.__wbg_ptr, n, input_index);
+        const ret = wasm.pskt_toSigner(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return PSKT.__wrap(ret[0]);
     }
     /**
-     * @returns {Hash}
+     * Change role to `CREATOR`
+     * #[wasm_bindgen(js_name = toCreator)]
+     * @returns {PSKT}
      */
-    calculateId() {
+    creator() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_calculateId(this.__wbg_ptr);
+        const ret = wasm.pskt_creator(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return Hash.__wrap(ret[0]);
+        return PSKT.__wrap(ret[0]);
     }
     /**
-     * @param {any} data
-     * @returns {bigint}
+     * Change role to `UPDATER`
+     * @returns {PSKT}
      */
-    calculateMass(data) {
+    toUpdater() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pskt_calculateMass(this.__wbg_ptr, data);
+        const ret = wasm.pskt_toUpdater(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return BigInt.asUintN(64, ret[0]);
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * Change role to `COMBINER`
+     * @returns {PSKT}
+     */
+    toCombiner() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_toCombiner(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * Change role to `EXTRACTOR`
+     * @returns {PSKT}
+     */
+    toExtractor() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_toExtractor(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * Change role to `FINALIZER`
+     * @returns {PSKT}
+     */
+    toFinalizer() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pskt_toFinalizer(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PSKT.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    serialize() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pskt_serialize(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
 }
 
@@ -5512,16 +6027,25 @@ const PaymentOutputFinalization = (typeof FinalizationRegistry === 'undefined')
     : new FinalizationRegistry(ptr => wasm.__wbg_paymentoutput_free(ptr >>> 0, 1));
 /**
  * A Rust data structure representing a single payment
- * output containing a destination address and amount.
+ * output containing a destination address, amount and covenant.
  *
  * @category Wallet SDK
  */
 export class PaymentOutput {
 
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(PaymentOutput.prototype);
+        obj.__wbg_ptr = ptr;
+        PaymentOutputFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
     toJSON() {
         return {
             address: this.address,
             amount: this.amount,
+            covenant: this.covenant,
         };
     }
 
@@ -5539,6 +6063,45 @@ export class PaymentOutput {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_paymentoutput_free(ptr, 0);
+    }
+    /**
+     * Factory method for covenant variant
+     * @param {Address} address
+     * @param {bigint} amount
+     * @param {CovenantBinding} covenant
+     * @returns {PaymentOutput}
+     */
+    static withCovenant(address, amount, covenant) {
+        _assertClass(address, Address);
+        if (address.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = address.__destroy_into_raw();
+        _assertBigInt(amount);
+        _assertClass(covenant, CovenantBinding);
+        if (covenant.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr1 = covenant.__destroy_into_raw();
+        const ret = wasm.paymentoutput_withCovenant(ptr0, amount, ptr1);
+        return PaymentOutput.__wrap(ret);
+    }
+    /**
+     * Main constructor (no covenant)
+     * @param {Address} address
+     * @param {bigint} amount
+     */
+    constructor(address, amount) {
+        _assertClass(address, Address);
+        if (address.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = address.__destroy_into_raw();
+        _assertBigInt(amount);
+        const ret = wasm.paymentoutput_new(ptr0, amount);
+        this.__wbg_ptr = ret >>> 0;
+        PaymentOutputFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {Address}
@@ -5581,20 +6144,29 @@ export class PaymentOutput {
         wasm.__wbg_set_paymentoutput_amount(this.__wbg_ptr, arg0);
     }
     /**
-     * @param {Address} address
-     * @param {bigint} amount
+     * @returns {CovenantBinding | undefined}
      */
-    constructor(address, amount) {
-        _assertClass(address, Address);
-        if (address.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
+    get covenant() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_paymentoutput_covenant(this.__wbg_ptr);
+        return ret === 0 ? undefined : CovenantBinding.__wrap(ret);
+    }
+    /**
+     * @param {CovenantBinding | null} [arg0]
+     */
+    set covenant(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(arg0)) {
+            _assertClass(arg0, CovenantBinding);
+            if (arg0.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            ptr0 = arg0.__destroy_into_raw();
         }
-        var ptr0 = address.__destroy_into_raw();
-        _assertBigInt(amount);
-        const ret = wasm.paymentoutput_new(ptr0, amount);
-        this.__wbg_ptr = ret >>> 0;
-        PaymentOutputFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        wasm.__wbg_set_paymentoutput_covenant(this.__wbg_ptr, ptr0);
     }
 }
 
@@ -5653,16 +6225,16 @@ export class PendingTransaction {
 
     toJSON() {
         return {
-            id: this.id,
-            paymentAmount: this.paymentAmount,
+            transaction: this.transaction,
             changeAmount: this.changeAmount,
-            feeAmount: this.feeAmount,
-            mass: this.mass,
+            paymentAmount: this.paymentAmount,
             minimumSignatures: this.minimumSignatures,
             aggregateInputAmount: this.aggregateInputAmount,
             aggregateOutputAmount: this.aggregateOutputAmount,
+            id: this.id,
+            feeAmount: this.feeAmount,
             type: this.type,
-            transaction: this.transaction,
+            mass: this.mass,
         };
     }
 
@@ -5680,159 +6252,6 @@ export class PendingTransaction {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_pendingtransaction_free(ptr, 0);
-    }
-    /**
-     * Transaction Id
-     * @returns {string}
-     */
-    get id() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pendingtransaction_id(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Total amount transferred to the destination (aggregate output - change).
-     * @returns {any}
-     */
-    get paymentAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_paymentAmount(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Change amount (if any).
-     * @returns {bigint}
-     */
-    get changeAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_changeAmount(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Total transaction fees (network fees + priority fees).
-     * @returns {bigint}
-     */
-    get feeAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_feeAmount(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Calculated transaction mass.
-     * @returns {bigint}
-     */
-    get mass() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_mass(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Minimum number of signatures required by the transaction.
-     * (as specified during the transaction creation).
-     * @returns {number}
-     */
-    get minimumSignatures() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_minimumSignatures(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Total aggregate input amount.
-     * @returns {bigint}
-     */
-    get aggregateInputAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_aggregateInputAmount(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Total aggregate output amount.
-     * @returns {bigint}
-     */
-    get aggregateOutputAmount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_aggregateOutputAmount(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Transaction type ("batch" or "final").
-     * @returns {string}
-     */
-    get type() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pendingtransaction_type(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * List of unique addresses used by transaction inputs.
-     * This method can be used to determine addresses used by transaction inputs
-     * in order to select private keys needed for transaction signing.
-     * @returns {Array<any>}
-     */
-    addresses() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_addresses(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Provides a list of UTXO entries used by the transaction.
-     * @returns {Array<any>}
-     */
-    getUtxoEntries() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_getUtxoEntries(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Creates and returns a signature for the input at the specified index.
-     * @param {number} input_index
-     * @param {PrivateKey} private_key
-     * @param {SighashType | null} [sighash_type]
-     * @returns {HexString}
-     */
-    createInputSignature(input_index, private_key, sighash_type) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(input_index);
-        _assertClass(private_key, PrivateKey);
-        if (private_key.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        if (!isLikeNone(sighash_type)) {
-            _assertNum(sighash_type);
-        }
-        const ret = wasm.pendingtransaction_createInputSignature(this.__wbg_ptr, input_index, private_key.__wbg_ptr, isLikeNone(sighash_type) ? 6 : sighash_type);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
     }
     /**
      * Sets a signature to the input at the specified index.
@@ -5870,6 +6289,229 @@ export class PendingTransaction {
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
         }
+    }
+    /**
+     * Returns encapsulated network [`Transaction`]
+     * @returns {Transaction}
+     */
+    get transaction() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_transaction(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Transaction.__wrap(ret[0]);
+    }
+    /**
+     * Change amount (if any).
+     * @returns {bigint}
+     */
+    get changeAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_changeAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Total amount transferred to the destination (aggregate output - change).
+     * @returns {any}
+     */
+    get paymentAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_paymentAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Provides a list of UTXO entries used by the transaction.
+     * @returns {Array<any>}
+     */
+    getUtxoEntries() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_getUtxoEntries(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Serializes the transaction to a JSON string.
+     * The schema of the JSON is defined by {@link ISerializableTransaction}.
+     * Once serialized, the transaction can be deserialized using {@link Transaction.deserializeFromJSON}.
+     * @see {@link Transaction}, {@link ISerializableTransaction}
+     * @returns {string}
+     */
+    serializeToJSON() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pendingtransaction_serializeToJSON(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Minimum number of signatures required by the transaction.
+     * (as specified during the transaction creation).
+     * @returns {number}
+     */
+    get minimumSignatures() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_minimumSignatures(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Serializes the transaction to a pure JavaScript Object.
+     * The schema of the JavaScript object is defined by {@link ISerializableTransaction}.
+     * @see {@link ISerializableTransaction}
+     * @see {@link Transaction}, {@link ISerializableTransaction}
+     * @returns {ITransaction | Transaction}
+     */
+    serializeToObject() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_serializeToObject(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Total aggregate input amount.
+     * @returns {bigint}
+     */
+    get aggregateInputAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_aggregateInputAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Total aggregate output amount.
+     * @returns {bigint}
+     */
+    get aggregateOutputAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_aggregateOutputAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Creates and returns a signature for the input at the specified index.
+     * @param {number} input_index
+     * @param {PrivateKey} private_key
+     * @param {SighashType | null} [sighash_type]
+     * @returns {HexString}
+     */
+    createInputSignature(input_index, private_key, sighash_type) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(input_index);
+        _assertClass(private_key, PrivateKey);
+        if (private_key.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        if (!isLikeNone(sighash_type)) {
+            _assertNum(sighash_type);
+        }
+        const ret = wasm.pendingtransaction_createInputSignature(this.__wbg_ptr, input_index, private_key.__wbg_ptr, isLikeNone(sighash_type) ? 6 : sighash_type);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Serializes the transaction to a "Safe" JSON schema where it converts all `bigint` values to `string` to avoid potential client-side precision loss.
+     * Once serialized, the transaction can be deserialized using {@link Transaction.deserializeFromSafeJSON}.
+     * @see {@link Transaction}, {@link ISerializableTransaction}
+     * @returns {string}
+     */
+    serializeToSafeJSON() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pendingtransaction_serializeToSafeJSON(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Transaction Id
+     * @returns {string}
+     */
+    get id() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pendingtransaction_id(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Total transaction fees (network fees + priority fees).
+     * @returns {bigint}
+     */
+    get feeAmount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_feeAmount(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Transaction type ("batch" or "final").
+     * @returns {string}
+     */
+    get type() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.pendingtransaction_type(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Calculated transaction mass.
+     * @returns {bigint}
+     */
+    get mass() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pendingtransaction_mass(this.__wbg_ptr);
+        return ret;
     }
     /**
      * Signs transaction with supplied [`Array`] or [`PrivateKey`] or an array of
@@ -5917,86 +6559,16 @@ export class PendingTransaction {
         return ret;
     }
     /**
-     * Returns encapsulated network [`Transaction`]
-     * @returns {Transaction}
+     * List of unique addresses used by transaction inputs.
+     * This method can be used to determine addresses used by transaction inputs
+     * in order to select private keys needed for transaction signing.
+     * @returns {Array<any>}
      */
-    get transaction() {
+    addresses() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_transaction(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Transaction.__wrap(ret[0]);
-    }
-    /**
-     * Serializes the transaction to a pure JavaScript Object.
-     * The schema of the JavaScript object is defined by {@link ISerializableTransaction}.
-     * @see {@link ISerializableTransaction}
-     * @see {@link Transaction}, {@link ISerializableTransaction}
-     * @returns {ITransaction | Transaction}
-     */
-    serializeToObject() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pendingtransaction_serializeToObject(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Serializes the transaction to a JSON string.
-     * The schema of the JSON is defined by {@link ISerializableTransaction}.
-     * Once serialized, the transaction can be deserialized using {@link Transaction.deserializeFromJSON}.
-     * @see {@link Transaction}, {@link ISerializableTransaction}
-     * @returns {string}
-     */
-    serializeToJSON() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pendingtransaction_serializeToJSON(this.__wbg_ptr);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * Serializes the transaction to a "Safe" JSON schema where it converts all `bigint` values to `string` to avoid potential client-side precision loss.
-     * Once serialized, the transaction can be deserialized using {@link Transaction.deserializeFromSafeJSON}.
-     * @see {@link Transaction}, {@link ISerializableTransaction}
-     * @returns {string}
-     */
-    serializeToSafeJSON() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.pendingtransaction_serializeToSafeJSON(this.__wbg_ptr);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
+        const ret = wasm.pendingtransaction_addresses(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -6018,6 +6590,16 @@ export class PipeOptions {
         wasm.__wbg_pipeoptions_free(ptr, 0);
     }
     /**
+     * @returns {boolean | undefined}
+     */
+    get end() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        const ptr = this.__destroy_into_raw();
+        _assertNum(ptr);
+        const ret = wasm.pipeoptions_end(ptr);
+        return ret === 0xFFFFFF ? undefined : ret !== 0;
+    }
+    /**
      * @param {boolean | null} [end]
      */
     constructor(end) {
@@ -6028,16 +6610,6 @@ export class PipeOptions {
         this.__wbg_ptr = ret >>> 0;
         PipeOptionsFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * @returns {boolean | undefined}
-     */
-    get end() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        const ptr = this.__destroy_into_raw();
-        _assertNum(ptr);
-        const ret = wasm.pipeoptions_end(ptr);
-        return ret === 0xFFFFFF ? undefined : ret !== 0;
     }
     /**
      * @param {boolean | null} [value]
@@ -6072,8 +6644,8 @@ export class PoW {
 
     toJSON() {
         return {
-            target: this.target,
             prePoWHash: this.prePoWHash,
+            target: this.target,
         };
     }
 
@@ -6091,35 +6663,6 @@ export class PoW {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_pow_free(ptr, 0);
-    }
-    /**
-     * @param {Header | IHeader | IRawHeader} header
-     * @param {bigint | null} [timestamp]
-     */
-    constructor(header, timestamp) {
-        if (!isLikeNone(timestamp)) {
-            _assertBigInt(timestamp);
-        }
-        const ret = wasm.pow_new(header, !isLikeNone(timestamp), isLikeNone(timestamp) ? BigInt(0) : timestamp);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PoWFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * The target based on the provided bits.
-     * @returns {bigint}
-     */
-    get target() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.pow_target(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
     }
     /**
      * Checks if the computed target meets or exceeds the difficulty specified in the template.
@@ -6154,6 +6697,35 @@ export class PoW {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
+    }
+    /**
+     * @param {Header | IHeader | IRawHeader} header
+     * @param {bigint | null} [timestamp]
+     */
+    constructor(header, timestamp) {
+        if (!isLikeNone(timestamp)) {
+            _assertBigInt(timestamp);
+        }
+        const ret = wasm.pow_new(header, !isLikeNone(timestamp), isLikeNone(timestamp) ? BigInt(0) : timestamp);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PoWFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * The target based on the provided bits.
+     * @returns {bigint}
+     */
+    get target() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.pow_target(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
     }
     /**
      * Can be used for parsing Stratum templates.
@@ -6206,37 +6778,21 @@ export class PrivateKey {
         wasm.__wbg_privatekey_free(ptr, 0);
     }
     /**
-     * Create a new [`PrivateKey`] from a hex-encoded string.
-     * @param {string} key
+     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
      */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.privatekey_try_new(ptr0, len0);
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.privatekey_toAddress(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Returns the [`PrivateKey`] key encoded as a hex string.
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.privatekey_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
+        return Address.__wrap(ret[0]);
     }
     /**
      * Generate a [`Keypair`] from this [`PrivateKey`].
@@ -6264,23 +6820,6 @@ export class PrivateKey {
         return PublicKey.__wrap(ret[0]);
     }
     /**
-     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.privatekey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
      * Get `ECDSA` [`Address`] of the PublicKey generated from this PrivateKey.
      * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
      * to determine the prefix of the address.
@@ -6296,6 +6835,39 @@ export class PrivateKey {
             throw takeFromExternrefTable0(ret[1]);
         }
         return Address.__wrap(ret[0]);
+    }
+    /**
+     * Returns the [`PrivateKey`] key encoded as a hex string.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.privatekey_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create a new [`PrivateKey`] from a hex-encoded string.
+     * @param {string} key
+     */
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.privatekey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -6328,6 +6900,34 @@ export class PrivateKeyGenerator {
         wasm.__wbg_privatekeygenerator_free(ptr, 0);
     }
     /**
+     * @param {number} index
+     * @returns {PrivateKey}
+     */
+    changeKey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.privatekeygenerator_changeKey(this.__wbg_ptr, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PrivateKey.__wrap(ret[0]);
+    }
+    /**
+     * @param {number} index
+     * @returns {PrivateKey}
+     */
+    receiveKey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.privatekeygenerator_receiveKey(this.__wbg_ptr, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PrivateKey.__wrap(ret[0]);
+    }
+    /**
      * @param {XPrv | string} xprv
      * @param {boolean} is_multisig
      * @param {bigint} account_index
@@ -6346,34 +6946,6 @@ export class PrivateKeyGenerator {
         this.__wbg_ptr = ret[0] >>> 0;
         PrivateKeyGeneratorFinalization.register(this, this.__wbg_ptr, this);
         return this;
-    }
-    /**
-     * @param {number} index
-     * @returns {PrivateKey}
-     */
-    receiveKey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.privatekeygenerator_receiveKey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PrivateKey.__wrap(ret[0]);
-    }
-    /**
-     * @param {number} index
-     * @returns {PrivateKey}
-     */
-    changeKey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.privatekeygenerator_changeKey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PrivateKey.__wrap(ret[0]);
     }
 }
 
@@ -6395,18 +6967,6 @@ export class ProcessSendOptions {
         wasm.__wbg_processsendoptions_free(ptr, 0);
     }
     /**
-     * @param {boolean | null} [swallow_errors]
-     */
-    constructor(swallow_errors) {
-        if (!isLikeNone(swallow_errors)) {
-            _assertBoolean(swallow_errors);
-        }
-        const ret = wasm.processsendoptions_new(isLikeNone(swallow_errors) ? 0xFFFFFF : swallow_errors ? 1 : 0);
-        this.__wbg_ptr = ret >>> 0;
-        ProcessSendOptionsFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @returns {boolean | undefined}
      */
     get swallow_errors() {
@@ -6425,6 +6985,18 @@ export class ProcessSendOptions {
             _assertBoolean(value);
         }
         wasm.processsendoptions_set_swallow_errors(this.__wbg_ptr, isLikeNone(value) ? 0xFFFFFF : value ? 1 : 0);
+    }
+    /**
+     * @param {boolean | null} [swallow_errors]
+     */
+    constructor(swallow_errors) {
+        if (!isLikeNone(swallow_errors)) {
+            _assertBoolean(swallow_errors);
+        }
+        const ret = wasm.processsendoptions_new(isLikeNone(swallow_errors) ? 0xFFFFFF : swallow_errors ? 1 : 0);
+        this.__wbg_ptr = ret >>> 0;
+        ProcessSendOptionsFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -6452,6 +7024,15 @@ export class PrvKeyDataInfo {
         wasm.__wbg_prvkeydatainfo_free(ptr, 0);
     }
     /**
+     * @returns {any}
+     */
+    get isEncrypted() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.prvkeydatainfo_isEncrypted(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * @returns {string}
      */
     get id() {
@@ -6475,15 +7056,6 @@ export class PrvKeyDataInfo {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.prvkeydatainfo_name(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {any}
-     */
-    get isEncrypted() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.prvkeydatainfo_isEncrypted(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -6531,19 +7103,31 @@ export class PublicKey {
         wasm.__wbg_publickey_free(ptr, 0);
     }
     /**
-     * Create a new [`PublicKey`] from a hex-encoded string.
-     * @param {string} key
+     * Compute a 4-byte key fingerprint for this public key as a hex string.
+     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
+     * @returns {HexString | undefined}
      */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.publickey_try_new(ptr0, len0);
+    fingerprint() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Get the [`Address`] of this PublicKey.
+     * Receives a [`NetworkType`] to determine the prefix of the address.
+     * JavaScript: `let address = publicKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddress(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.publickey_toAddress(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        PublicKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        return Address.__wrap(ret[0]);
     }
     /**
      * @returns {string}
@@ -6561,22 +7145,6 @@ export class PublicKey {
         } finally {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-    }
-    /**
-     * Get the [`Address`] of this PublicKey.
-     * Receives a [`NetworkType`] to determine the prefix of the address.
-     * JavaScript: `let address = publicKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.publickey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
     }
     /**
      * Get `ECDSA` [`Address`] of this PublicKey.
@@ -6604,15 +7172,19 @@ export class PublicKey {
         return XOnlyPublicKey.__wrap(ret);
     }
     /**
-     * Compute a 4-byte key fingerprint for this public key as a hex string.
-     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
-     * @returns {HexString | undefined}
+     * Create a new [`PublicKey`] from a hex-encoded string.
+     * @param {string} key
      */
-    fingerprint() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
-        return ret;
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.publickey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        PublicKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -6655,51 +7227,48 @@ export class PublicKeyGenerator {
         wasm.__wbg_publickeygenerator_free(ptr, 0);
     }
     /**
-     * @param {XPub | string} kpub
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Public Key derivation at a given index.
+     * @param {number} index
+     * @returns {PublicKey}
      */
-    static fromXPub(kpub, cosigner_index) {
-        if (!isLikeNone(cosigner_index)) {
-            _assertNum(cosigner_index);
-        }
-        const ret = wasm.publickeygenerator_fromXPub(kpub, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+    changePubkey(index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_changePubkey(this.__wbg_ptr, index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return PublicKeyGenerator.__wrap(ret[0]);
+        return PublicKey.__wrap(ret[0]);
     }
     /**
-     * @param {XPrv | string} xprv
-     * @param {boolean} is_multisig
-     * @param {bigint} account_index
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
      */
-    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
-        _assertBoolean(is_multisig);
-        _assertBigInt(account_index);
-        if (!isLikeNone(cosigner_index)) {
-            _assertNum(cosigner_index);
-        }
-        const ret = wasm.publickeygenerator_fromMasterXPrv(xprv, is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+    changeAddress(networkType, index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_changeAddress(this.__wbg_ptr, networkType, index);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return PublicKeyGenerator.__wrap(ret[0]);
+        return Address.__wrap(ret[0]);
     }
     /**
-     * Generate Receive Public Key derivations for a given range.
+     * Generate Change Public Key derivations for a given range.
      * @param {number} start
      * @param {number} end
      * @returns {(PublicKey | string)[]}
      */
-    receivePubkeys(start, end) {
+    changePubkeys(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receivePubkeys(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_changePubkeys(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -6721,21 +7290,145 @@ export class PublicKeyGenerator {
         return PublicKey.__wrap(ret[0]);
     }
     /**
-     * Generate a range of Receive Public Key derivations and return them as strings.
+     * Generate a single Receive Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
+     */
+    receiveAddress(networkType, index) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(index);
+        const ret = wasm.publickeygenerator_receiveAddress(this.__wbg_ptr, networkType, index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
+     * Generate Receive Public Key derivations for a given range.
      * @param {number} start
      * @param {number} end
-     * @returns {Array<string>}
+     * @returns {(PublicKey | string)[]}
      */
-    receivePubkeysAsStrings(start, end) {
+    receivePubkeys(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receivePubkeysAsStrings(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_receivePubkeys(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Generate Change Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    changeAddresses(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_changeAddresses(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {XPrv | string} xprv
+     * @param {boolean} is_multisig
+     * @param {bigint} account_index
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
+        _assertBoolean(is_multisig);
+        _assertBigInt(account_index);
+        if (!isLikeNone(cosigner_index)) {
+            _assertNum(cosigner_index);
+        }
+        const ret = wasm.publickeygenerator_fromMasterXPrv(xprv, is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PublicKeyGenerator.__wrap(ret[0]);
+    }
+    /**
+     * Generate Receive Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    receiveAddresses(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_receiveAddresses(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Generate a single Change Public Key derivation at a given index and return it as a string.
+     * @param {number} index
+     * @returns {string}
+     */
+    changePubkeyAsString(index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            _assertNum(index);
+            const ret = wasm.publickeygenerator_changePubkeyAsString(this.__wbg_ptr, index);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Generate a single Change Address derivation at a given index and return it as a string.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {string}
+     */
+    changeAddressAsString(networkType, index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            _assertNum(index);
+            const ret = wasm.publickeygenerator_changeAddressAsString(this.__wbg_ptr, networkType, index);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
     }
     /**
      * Generate a single Receive Public Key derivation at a given index and return it as a string.
@@ -6764,52 +7457,17 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Receive Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    receiveAddresses(networkType, start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_receiveAddresses(this.__wbg_ptr, networkType, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Receive Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    receiveAddress(networkType, index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_receiveAddress(this.__wbg_ptr, networkType, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
-     * Generate a range of Receive Address derivations and return them as strings.
-     * @param {NetworkType | NetworkId | string} networkType
+     * Generate a range of Change Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    receiveAddressAsStrings(networkType, start, end) {
+    changePubkeysAsStrings(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_receiveAddressAsStrings(this.__wbg_ptr, networkType, start, end);
+        const ret = wasm.publickeygenerator_changePubkeysAsStrings(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -6843,113 +7501,21 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Change Public Key derivations for a given range.
-     * @param {number} start
-     * @param {number} end
-     * @returns {(PublicKey | string)[]}
-     */
-    changePubkeys(start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_changePubkeys(this.__wbg_ptr, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index.
-     * @param {number} index
-     * @returns {PublicKey}
-     */
-    changePubkey(index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_changePubkey(this.__wbg_ptr, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return PublicKey.__wrap(ret[0]);
-    }
-    /**
-     * Generate a range of Change Public Key derivations and return them as strings.
+     * Generate a range of Receive Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    changePubkeysAsStrings(start, end) {
+    receivePubkeysAsStrings(start, end) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertNum(start);
         _assertNum(end);
-        const ret = wasm.publickeygenerator_changePubkeysAsStrings(this.__wbg_ptr, start, end);
+        const ret = wasm.publickeygenerator_receivePubkeysAsStrings(this.__wbg_ptr, start, end);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index and return it as a string.
-     * @param {number} index
-     * @returns {string}
-     */
-    changePubkeyAsString(index) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(index);
-            const ret = wasm.publickeygenerator_changePubkeyAsString(this.__wbg_ptr, index);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * Generate Change Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    changeAddresses(networkType, start, end) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(start);
-        _assertNum(end);
-        const ret = wasm.publickeygenerator_changeAddresses(this.__wbg_ptr, networkType, start, end);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Generate a single Change Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    changeAddress(networkType, index) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(index);
-        const ret = wasm.publickeygenerator_changeAddress(this.__wbg_ptr, networkType, index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
     }
     /**
      * Generate a range of Change Address derivations and return them as strings.
@@ -6970,31 +7536,37 @@ export class PublicKeyGenerator {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * Generate a single Change Address derivation at a given index and return it as a string.
+     * Generate a range of Receive Address derivations and return them as strings.
      * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {string}
+     * @param {number} start
+     * @param {number} end
+     * @returns {Array<string>}
      */
-    changeAddressAsString(networkType, index) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            _assertNum(index);
-            const ret = wasm.publickeygenerator_changeAddressAsString(this.__wbg_ptr, networkType, index);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    receiveAddressAsStrings(networkType, start, end) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(start);
+        _assertNum(end);
+        const ret = wasm.publickeygenerator_receiveAddressAsStrings(this.__wbg_ptr, networkType, start, end);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {XPub | string} kpub
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromXPub(kpub, cosigner_index) {
+        if (!isLikeNone(cosigner_index)) {
+            _assertNum(cosigner_index);
+        }
+        const ret = wasm.publickeygenerator_fromXPub(kpub, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return PublicKeyGenerator.__wrap(ret[0]);
     }
     /**
      * @returns {string}
@@ -7046,26 +7618,6 @@ export class ReadStream {
      * @param {Function} listener
      * @returns {any}
      */
-    add_listener_with_open(listener) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.readstream_add_listener_with_open(this.__wbg_ptr, listener);
-        return ret;
-    }
-    /**
-     * @param {Function} listener
-     * @returns {any}
-     */
-    add_listener_with_close(listener) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.readstream_add_listener_with_close(this.__wbg_ptr, listener);
-        return ret;
-    }
-    /**
-     * @param {Function} listener
-     * @returns {any}
-     */
     on_with_open(listener) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
@@ -7100,6 +7652,26 @@ export class ReadStream {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.readstream_once_with_close(this.__wbg_ptr, listener);
+        return ret;
+    }
+    /**
+     * @param {Function} listener
+     * @returns {any}
+     */
+    add_listener_with_open(listener) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.readstream_add_listener_with_open(this.__wbg_ptr, listener);
+        return ret;
+    }
+    /**
+     * @param {Function} listener
+     * @returns {any}
+     */
+    add_listener_with_close(listener) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.readstream_add_listener_with_close(this.__wbg_ptr, listener);
         return ret;
     }
     /**
@@ -7207,6 +7779,23 @@ export class Resolver {
         wasm.__wbg_resolver_free(ptr, 0);
     }
     /**
+     * Creates a new Resolver client with the given
+     * configuration supplied as {@link IResolverConfig}
+     * interface. If not supplied, the default configuration
+     * containing a list of community-operated resolvers
+     * will be used.
+     * @param {IResolverConfig | string[] | null} [args]
+     */
+    constructor(args) {
+        const ret = wasm.resolver_ctor(isLikeNone(args) ? 0 : addToExternrefTable0(args));
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        ResolverFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
      * List of public Kaspa Resolver URLs.
      * @returns {string[] | undefined}
      */
@@ -7217,17 +7806,16 @@ export class Resolver {
         return ret;
     }
     /**
-     * Fetches a public Kaspa wRPC endpoint for the given encoding and network identifier.
-     * @see {@link Encoding}, {@link NetworkId}, {@link Node}
-     * @param {Encoding} encoding
-     * @param {NetworkId | string} network_id
-     * @returns {Promise<NodeDescriptor>}
+     * Connect to a public Kaspa wRPC endpoint for the given encoding and network identifier
+     * supplied via {@link IResolverConnect} interface.
+     * @see {@link IResolverConnect}, {@link RpcClient}
+     * @param {IResolverConnect | NetworkId | string} options
+     * @returns {Promise<RpcClient>}
      */
-    getNode(encoding, network_id) {
+    connect(options) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        _assertNum(encoding);
-        const ret = wasm.resolver_getNode(this.__wbg_ptr, encoding, network_id);
+        const ret = wasm.resolver_connect(this.__wbg_ptr, options);
         return ret;
     }
     /**
@@ -7245,34 +7833,18 @@ export class Resolver {
         return ret;
     }
     /**
-     * Connect to a public Kaspa wRPC endpoint for the given encoding and network identifier
-     * supplied via {@link IResolverConnect} interface.
-     * @see {@link IResolverConnect}, {@link RpcClient}
-     * @param {IResolverConnect | NetworkId | string} options
-     * @returns {Promise<RpcClient>}
+     * Fetches a public Kaspa wRPC endpoint for the given encoding and network identifier.
+     * @see {@link Encoding}, {@link NetworkId}, {@link Node}
+     * @param {Encoding} encoding
+     * @param {NetworkId | string} network_id
+     * @returns {Promise<NodeDescriptor>}
      */
-    connect(options) {
+    getNode(encoding, network_id) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.resolver_connect(this.__wbg_ptr, options);
+        _assertNum(encoding);
+        const ret = wasm.resolver_getNode(this.__wbg_ptr, encoding, network_id);
         return ret;
-    }
-    /**
-     * Creates a new Resolver client with the given
-     * configuration supplied as {@link IResolverConfig}
-     * interface. If not supplied, the default configuration
-     * containing a list of community-operated resolvers
-     * will be used.
-     * @param {IResolverConfig | string[] | null} [args]
-     */
-    constructor(args) {
-        const ret = wasm.resolver_ctor(isLikeNone(args) ? 0 : addToExternrefTable0(args));
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        ResolverFinalization.register(this, this.__wbg_ptr, this);
-        return this;
     }
 }
 
@@ -7377,11 +7949,12 @@ export class RpcClient {
 
     toJSON() {
         return {
-            url: this.url,
-            resolver: this.resolver,
+            networkId: this.networkId,
             isConnected: this.isConnected,
-            encoding: this.encoding,
             nodeId: this.nodeId,
+            url: this.url,
+            encoding: this.encoding,
+            resolver: this.resolver,
         };
     }
 
@@ -7401,98 +7974,51 @@ export class RpcClient {
         wasm.__wbg_rpcclient_free(ptr, 0);
     }
     /**
-     * Retrieves the current number of blocks in the Kaspa BlockDAG.
-     * This is not a block count, not a "block height" and can not be
-     * used for transaction validation.
-     * Returned information: Current block count.
-     * @see {@link IGetBlockCountRequest}, {@link IGetBlockCountResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetBlockCountRequest | null} [request]
-     * @returns {Promise<IGetBlockCountResponse>}
+     * Disconnect from the Kaspa RPC server.
+     * @returns {Promise<void>}
      */
-    getBlockCount(request) {
+    disconnect() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBlockCount(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        const ret = wasm.rpcclient_disconnect(this.__wbg_ptr);
         return ret;
     }
     /**
-     * Provides information about the Directed Acyclic Graph (DAG)
-     * structure of the Kaspa BlockDAG.
-     * Returned information: Number of blocks in the DAG,
-     * number of tips in the DAG, hash of the selected parent block,
-     * difficulty of the selected parent block, selected parent block
-     * blue score, selected parent block time.
-     * @see {@link IGetBlockDagInfoRequest}, {@link IGetBlockDagInfoResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetBlockDagInfoRequest | null} [request]
-     * @returns {Promise<IGetBlockDagInfoResponse>}
+     * Retrieves multiple blocks from the Kaspa BlockDAG.
+     * Returned information: List of block information.
+     * @see {@link IGetBlocksRequest}, {@link IGetBlocksResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBlocksRequest} request
+     * @returns {Promise<IGetBlocksResponse>}
      */
-    getBlockDagInfo(request) {
+    getBlocks(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBlockDagInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        const ret = wasm.rpcclient_getBlocks(this.__wbg_ptr, request);
         return ret;
     }
     /**
-     * Returns the total current coin supply of Kaspa network.
-     * Returned information: Total coin supply.
-     * @see {@link IGetCoinSupplyRequest}, {@link IGetCoinSupplyResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetCoinSupplyRequest | null} [request]
-     * @returns {Promise<IGetCoinSupplyResponse>}
+     * Current nerwork id
+     * @returns {NetworkId | undefined}
      */
-    getCoinSupply(request) {
+    get networkId() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getCoinSupply(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
+        const ret = wasm.rpcclient_networkId(this.__wbg_ptr);
+        return ret === 0 ? undefined : NetworkId.__wrap(ret);
     }
     /**
-     * Retrieves information about the peers connected to the Kaspa node.
-     * Returned information: Peer ID, IP address and port, connection
-     * status, protocol version.
-     * @see {@link IGetConnectedPeerInfoRequest}, {@link IGetConnectedPeerInfoResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetConnectedPeerInfoRequest | null} [request]
-     * @returns {Promise<IGetConnectedPeerInfoResponse>}
+     * Retrieves block headers from the Kaspa BlockDAG.
+     * Returned information: List of block headers.
+     * @see {@link IGetHeadersRequest}, {@link IGetHeadersResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetHeadersRequest} request
+     * @returns {Promise<IGetHeadersResponse>}
      */
-    getConnectedPeerInfo(request) {
+    getHeaders(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getConnectedPeerInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Retrieves general information about the Kaspa node.
-     * Returned information: Version of the Kaspa node, protocol
-     * version, network identifier.
-     * This call is primarily used by gRPC clients.
-     * For wRPC clients, use {@link RpcClient.getServerInfo}.
-     * @see {@link IGetInfoRequest}, {@link IGetInfoResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetInfoRequest | null} [request]
-     * @returns {Promise<IGetInfoResponse>}
-     */
-    getInfo(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Provides a list of addresses of known peers in the Kaspa
-     * network that the node can potentially connect to.
-     * Returned information: List of peer addresses.
-     * @see {@link IGetPeerAddressesRequest}, {@link IGetPeerAddressesResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetPeerAddressesRequest | null} [request]
-     * @returns {Promise<IGetPeerAddressesResponse>}
-     */
-    getPeerAddresses(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getPeerAddresses(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        const ret = wasm.rpcclient_getHeaders(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -7511,6 +8037,129 @@ export class RpcClient {
         return ret;
     }
     /**
+     * @param {Encoding} encoding
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {number}
+     */
+    static defaultPort(encoding, network) {
+        _assertNum(encoding);
+        const ret = wasm.rpcclient_defaultPort(encoding, network);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0];
+    }
+    /**
+     * The current connection status of the RPC client.
+     * @returns {boolean}
+     */
+    get isConnected() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_isConnected(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * Set the resolver for the RPC client.
+     * This setting will take effect on the next connection.
+     * @param {Resolver} resolver
+     */
+    setResolver(resolver) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertClass(resolver, Resolver);
+        if (resolver.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = resolver.__destroy_into_raw();
+        const ret = wasm.rpcclient_setResolver(this.__wbg_ptr, ptr0);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Submits a block to the Kaspa network.
+     * Returned information: None.
+     * @see {@link ISubmitBlockRequest}, {@link ISubmitBlockResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {ISubmitBlockRequest} request
+     * @returns {Promise<ISubmitBlockResponse>}
+     */
+    submitBlock(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_submitBlock(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Triggers a disconnection on the underlying WebSocket
+     * if the WebSocket is in connected state.
+     * This is intended for debug purposes only.
+     * Can be used to test application reconnection logic.
+     */
+    triggerAbort() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.rpcclient_triggerAbort(this.__wbg_ptr);
+    }
+    /**
+     * Retrieves information about a subnetwork in the Kaspa BlockDAG.
+     * Returned information: Subnetwork information.
+     * @see {@link IGetSubnetworkRequest}, {@link IGetSubnetworkResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetSubnetworkRequest} request
+     * @returns {Promise<IGetSubnetworkResponse>}
+     */
+    getSubnetwork(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getSubnetwork(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Set the network id for the RPC client.
+     * This setting will take effect on the next connection.
+     * @param {NetworkId | string} network_id
+     */
+    setNetworkId(network_id) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_setNetworkId(this.__wbg_ptr, network_id);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Retrieves the current number of blocks in the Kaspa BlockDAG.
+     * This is not a block count, not a "block height" and can not be
+     * used for transaction validation.
+     * Returned information: Current block count.
+     * @see {@link IGetBlockCountRequest}, {@link IGetBlockCountResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetBlockCountRequest | null} [request]
+     * @returns {Promise<IGetBlockCountResponse>}
+     */
+    getBlockCount(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBlockCount(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Returns the total current coin supply of Kaspa network.
+     * Returned information: Total coin supply.
+     * @see {@link IGetCoinSupplyRequest}, {@link IGetCoinSupplyResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetCoinSupplyRequest | null} [request]
+     * @returns {Promise<IGetCoinSupplyResponse>}
+     */
+    getCoinSupply(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getCoinSupply(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
      * Retrieves current number of network connections
      * @see {@link IGetConnectionsRequest}, {@link IGetConnectionsResponse}
      * @throws `string` on an RPC error or a server-side error.
@@ -7521,65 +8170,6 @@ export class RpcClient {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.rpcclient_getConnections(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Retrieves the current sink block, which is the block with
-     * the highest cumulative difficulty in the Kaspa BlockDAG.
-     * Returned information: Sink block hash, sink block height.
-     * @see {@link IGetSinkRequest}, {@link IGetSinkResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetSinkRequest | null} [request]
-     * @returns {Promise<IGetSinkResponse>}
-     */
-    getSink(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getSink(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Returns the blue score of the current sink block, indicating
-     * the total amount of work that has been done on the main chain
-     * leading up to that block.
-     * Returned information: Blue score of the sink block.
-     * @see {@link IGetSinkBlueScoreRequest}, {@link IGetSinkBlueScoreResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetSinkBlueScoreRequest | null} [request]
-     * @returns {Promise<IGetSinkBlueScoreResponse>}
-     */
-    getSinkBlueScore(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getSinkBlueScore(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Tests the connection and responsiveness of a Kaspa node.
-     * Returned information: None.
-     * @see {@link IPingRequest}, {@link IPingResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IPingRequest | null} [request]
-     * @returns {Promise<IPingResponse>}
-     */
-    ping(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_ping(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Gracefully shuts down the Kaspa node.
-     * Returned information: None.
-     * @see {@link IShutdownRequest}, {@link IShutdownResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IShutdownRequest | null} [request]
-     * @returns {Promise<IShutdownResponse>}
-     */
-    shutdown(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_shutdown(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
         return ret;
     }
     /**
@@ -7625,702 +8215,6 @@ export class RpcClient {
         return ret;
     }
     /**
-     * Retrieves the current network configuration.
-     * Returned information: Current network configuration.
-     * @see {@link IGetCurrentNetworkRequest}, {@link IGetCurrentNetworkResponse}
-     * @throws `string` on an RPC error or a server-side error.
-     * @param {IGetCurrentNetworkRequest | null} [request]
-     * @returns {Promise<IGetCurrentNetworkResponse>}
-     */
-    getCurrentNetwork(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getCurrentNetwork(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
-        return ret;
-    }
-    /**
-     * Adds a peer to the Kaspa node's list of known peers.
-     * Returned information: None.
-     * @see {@link IAddPeerRequest}, {@link IAddPeerResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IAddPeerRequest} request
-     * @returns {Promise<IAddPeerResponse>}
-     */
-    addPeer(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_addPeer(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Bans a peer from connecting to the Kaspa node for a specified duration.
-     * Returned information: None.
-     * @see {@link IBanRequest}, {@link IBanResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IBanRequest} request
-     * @returns {Promise<IBanResponse>}
-     */
-    ban(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_ban(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Estimates the network's current hash rate in hashes per second.
-     * Returned information: Estimated network hashes per second.
-     * @see {@link IEstimateNetworkHashesPerSecondRequest}, {@link IEstimateNetworkHashesPerSecondResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IEstimateNetworkHashesPerSecondRequest} request
-     * @returns {Promise<IEstimateNetworkHashesPerSecondResponse>}
-     */
-    estimateNetworkHashesPerSecond(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_estimateNetworkHashesPerSecond(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves the balance of a specific address in the Kaspa BlockDAG.
-     * Returned information: Balance of the address.
-     * @see {@link IGetBalanceByAddressRequest}, {@link IGetBalanceByAddressResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetBalanceByAddressRequest} request
-     * @returns {Promise<IGetBalanceByAddressResponse>}
-     */
-    getBalanceByAddress(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBalanceByAddress(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves balances for multiple addresses in the Kaspa BlockDAG.
-     * Returned information: Balances of the addresses.
-     * @see {@link IGetBalancesByAddressesRequest}, {@link IGetBalancesByAddressesResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetBalancesByAddressesRequest | Address[] | string[]} request
-     * @returns {Promise<IGetBalancesByAddressesResponse>}
-     */
-    getBalancesByAddresses(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBalancesByAddresses(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves a specific block from the Kaspa BlockDAG.
-     * Returned information: Block information.
-     * @see {@link IGetBlockRequest}, {@link IGetBlockResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetBlockRequest} request
-     * @returns {Promise<IGetBlockResponse>}
-     */
-    getBlock(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBlock(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves multiple blocks from the Kaspa BlockDAG.
-     * Returned information: List of block information.
-     * @see {@link IGetBlocksRequest}, {@link IGetBlocksResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetBlocksRequest} request
-     * @returns {Promise<IGetBlocksResponse>}
-     */
-    getBlocks(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBlocks(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Generates a new block template for mining.
-     * Returned information: Block template information.
-     * @see {@link IGetBlockTemplateRequest}, {@link IGetBlockTemplateResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetBlockTemplateRequest} request
-     * @returns {Promise<IGetBlockTemplateResponse>}
-     */
-    getBlockTemplate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getBlockTemplate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Checks if block is blue or not.
-     * Returned information: Block blueness.
-     * @see {@link IGetCurrentBlockColorRequest}, {@link IGetCurrentBlockColorResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetCurrentBlockColorRequest} request
-     * @returns {Promise<IGetCurrentBlockColorResponse>}
-     */
-    getCurrentBlockColor(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getCurrentBlockColor(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves the estimated DAA (Difficulty Adjustment Algorithm)
-     * score timestamp estimate.
-     * Returned information: DAA score timestamp estimate.
-     * @see {@link IGetDaaScoreTimestampEstimateRequest}, {@link IGetDaaScoreTimestampEstimateResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetDaaScoreTimestampEstimateRequest} request
-     * @returns {Promise<IGetDaaScoreTimestampEstimateResponse>}
-     */
-    getDaaScoreTimestampEstimate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getDaaScoreTimestampEstimate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Feerate estimates (experimental)
-     * @see {@link IGetFeeEstimateExperimentalRequest}, {@link IGetFeeEstimateExperimentalResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetFeeEstimateExperimentalRequest} request
-     * @returns {Promise<IGetFeeEstimateExperimentalResponse>}
-     */
-    getFeeEstimateExperimental(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getFeeEstimateExperimental(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves block headers from the Kaspa BlockDAG.
-     * Returned information: List of block headers.
-     * @see {@link IGetHeadersRequest}, {@link IGetHeadersResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetHeadersRequest} request
-     * @returns {Promise<IGetHeadersResponse>}
-     */
-    getHeaders(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getHeaders(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves mempool entries from the Kaspa node's mempool.
-     * Returned information: List of mempool entries.
-     * @see {@link IGetMempoolEntriesRequest}, {@link IGetMempoolEntriesResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetMempoolEntriesRequest} request
-     * @returns {Promise<IGetMempoolEntriesResponse>}
-     */
-    getMempoolEntries(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getMempoolEntries(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves mempool entries associated with specific addresses.
-     * Returned information: List of mempool entries.
-     * @see {@link IGetMempoolEntriesByAddressesRequest}, {@link IGetMempoolEntriesByAddressesResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetMempoolEntriesByAddressesRequest} request
-     * @returns {Promise<IGetMempoolEntriesByAddressesResponse>}
-     */
-    getMempoolEntriesByAddresses(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getMempoolEntriesByAddresses(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves a specific mempool entry by transaction ID.
-     * Returned information: Mempool entry information.
-     * @see {@link IGetMempoolEntryRequest}, {@link IGetMempoolEntryResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetMempoolEntryRequest} request
-     * @returns {Promise<IGetMempoolEntryResponse>}
-     */
-    getMempoolEntry(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getMempoolEntry(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves information about a subnetwork in the Kaspa BlockDAG.
-     * Returned information: Subnetwork information.
-     * @see {@link IGetSubnetworkRequest}, {@link IGetSubnetworkResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetSubnetworkRequest} request
-     * @returns {Promise<IGetSubnetworkResponse>}
-     */
-    getSubnetwork(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getSubnetwork(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves unspent transaction outputs (UTXOs) associated with
-     * specific addresses.
-     * Returned information: List of UTXOs.
-     * @see {@link IGetUtxosByAddressesRequest}, {@link IGetUtxosByAddressesResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetUtxosByAddressesRequest | Address[] | string[]} request
-     * @returns {Promise<IGetUtxosByAddressesResponse>}
-     */
-    getUtxosByAddresses(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getUtxosByAddresses(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Retrieves the virtual chain corresponding to a specified block hash.
-     * Returned information: Virtual chain information.
-     * @see {@link IGetVirtualChainFromBlockRequest}, {@link IGetVirtualChainFromBlockResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IGetVirtualChainFromBlockRequest} request
-     * @returns {Promise<IGetVirtualChainFromBlockResponse>}
-     */
-    getVirtualChainFromBlock(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_getVirtualChainFromBlock(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Resolves a finality conflict in the Kaspa BlockDAG.
-     * Returned information: None.
-     * @see {@link IResolveFinalityConflictRequest}, {@link IResolveFinalityConflictResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IResolveFinalityConflictRequest} request
-     * @returns {Promise<IResolveFinalityConflictResponse>}
-     */
-    resolveFinalityConflict(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_resolveFinalityConflict(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Submits a block to the Kaspa network.
-     * Returned information: None.
-     * @see {@link ISubmitBlockRequest}, {@link ISubmitBlockResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {ISubmitBlockRequest} request
-     * @returns {Promise<ISubmitBlockResponse>}
-     */
-    submitBlock(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_submitBlock(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Submits a transaction to the Kaspa network.
-     * Returned information: Submitted Transaction Id.
-     * @see {@link ISubmitTransactionRequest}, {@link ISubmitTransactionResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {ISubmitTransactionRequest} request
-     * @returns {Promise<ISubmitTransactionResponse>}
-     */
-    submitTransaction(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_submitTransaction(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Submits an RBF transaction to the Kaspa network.
-     * Returned information: Submitted Transaction Id, Transaction that was replaced.
-     * @see {@link ISubmitTransactionReplacementRequest}, {@link ISubmitTransactionReplacementResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {ISubmitTransactionReplacementRequest} request
-     * @returns {Promise<ISubmitTransactionReplacementResponse>}
-     */
-    submitTransactionReplacement(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_submitTransactionReplacement(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Unbans a previously banned peer, allowing it to connect
-     * to the Kaspa node again.
-     * Returned information: None.
-     * @see {@link IUnbanRequest}, {@link IUnbanResponse}
-     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
-     * @param {IUnbanRequest} request
-     * @returns {Promise<IUnbanResponse>}
-     */
-    unban(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unban(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * Manage subscription for a block added notification event.
-     * Block added notification event is produced when a new
-     * block is added to the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribeBlockAdded() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeBlockAdded(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribeBlockAdded() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeBlockAdded(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a finality conflict notification event.
-     * Finality conflict notification event is produced when a finality
-     * conflict occurs in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribeFinalityConflict() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeFinalityConflict(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribeFinalityConflict() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeFinalityConflict(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a finality conflict resolved notification event.
-     * Finality conflict resolved notification event is produced when a finality
-     * conflict in the Kaspa BlockDAG is resolved.
-     * @returns {Promise<void>}
-     */
-    subscribeFinalityConflictResolved() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeFinalityConflictResolved(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribeFinalityConflictResolved() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeFinalityConflictResolved(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a sink blue score changed notification event.
-     * Sink blue score changed notification event is produced when the blue
-     * score of the sink block changes in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribeSinkBlueScoreChanged() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeSinkBlueScoreChanged(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribeSinkBlueScoreChanged() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeSinkBlueScoreChanged(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a pruning point UTXO set override notification event.
-     * Pruning point UTXO set override notification event is produced when the
-     * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribePruningPointUtxoSetOverride() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribePruningPointUtxoSetOverride(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribePruningPointUtxoSetOverride() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribePruningPointUtxoSetOverride(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a new block template notification event.
-     * New block template notification event is produced when a new block
-     * template is generated for mining in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribeNewBlockTemplate() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeNewBlockTemplate(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    unsubscribeNewBlockTemplate() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeNewBlockTemplate(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a virtual DAA score changed notification event.
-     * Virtual DAA score changed notification event is produced when the virtual
-     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    subscribeVirtualDaaScoreChanged() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeVirtualDaaScoreChanged(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Manage subscription for a virtual DAA score changed notification event.
-     * Virtual DAA score changed notification event is produced when the virtual
-     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
-     * @returns {Promise<void>}
-     */
-    unsubscribeVirtualDaaScoreChanged() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeVirtualDaaScoreChanged(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Subscribe for a UTXOs changed notification event.
-     * UTXOs changed notification event is produced when the set
-     * of unspent transaction outputs (UTXOs) changes in the
-     * Kaspa BlockDAG. The event notification will be scoped to the
-     * provided list of addresses.
-     * @param {(Address | string)[]} addresses
-     * @returns {Promise<void>}
-     */
-    subscribeUtxosChanged(addresses) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_subscribeUtxosChanged(this.__wbg_ptr, addresses);
-        return ret;
-    }
-    /**
-     * Unsubscribe from UTXOs changed notification event
-     * for a specific set of addresses.
-     * @param {(Address | string)[]} addresses
-     * @returns {Promise<void>}
-     */
-    unsubscribeUtxosChanged(addresses) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_unsubscribeUtxosChanged(this.__wbg_ptr, addresses);
-        return ret;
-    }
-    /**
-     * Manage subscription for a virtual chain changed notification event.
-     * Virtual chain changed notification event is produced when the virtual
-     * chain changes in the Kaspa BlockDAG.
-     * @param {boolean} include_accepted_transaction_ids
-     * @returns {Promise<void>}
-     */
-    subscribeVirtualChainChanged(include_accepted_transaction_ids) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBoolean(include_accepted_transaction_ids);
-        const ret = wasm.rpcclient_subscribeVirtualChainChanged(this.__wbg_ptr, include_accepted_transaction_ids);
-        return ret;
-    }
-    /**
-     * Manage subscription for a virtual chain changed notification event.
-     * Virtual chain changed notification event is produced when the virtual
-     * chain changes in the Kaspa BlockDAG.
-     * @param {boolean} include_accepted_transaction_ids
-     * @returns {Promise<void>}
-     */
-    unsubscribeVirtualChainChanged(include_accepted_transaction_ids) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBoolean(include_accepted_transaction_ids);
-        const ret = wasm.rpcclient_unsubscribeVirtualChainChanged(this.__wbg_ptr, include_accepted_transaction_ids);
-        return ret;
-    }
-    /**
-     * @param {Encoding} encoding
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {number}
-     */
-    static defaultPort(encoding, network) {
-        _assertNum(encoding);
-        const ret = wasm.rpcclient_defaultPort(encoding, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ret[0];
-    }
-    /**
-     * Constructs an WebSocket RPC URL given the partial URL or an IP, RPC encoding
-     * and a network type.
-     *
-     * # Arguments
-     *
-     * * `url` - Partial URL or an IP address
-     * * `encoding` - RPC encoding
-     * * `network_type` - Network type
-     * @param {string} url
-     * @param {Encoding} encoding
-     * @param {NetworkId} network
-     * @returns {string}
-     */
-    static parseUrl(url, encoding, network) {
-        let deferred4_0;
-        let deferred4_1;
-        try {
-            const ptr0 = passStringToWasm0(url, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            const len0 = WASM_VECTOR_LEN;
-            _assertNum(encoding);
-            _assertClass(network, NetworkId);
-            if (network.__wbg_ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            var ptr1 = network.__destroy_into_raw();
-            const ret = wasm.rpcclient_parseUrl(ptr0, len0, encoding, ptr1);
-            var ptr3 = ret[0];
-            var len3 = ret[1];
-            if (ret[3]) {
-                ptr3 = 0; len3 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred4_0 = ptr3;
-            deferred4_1 = len3;
-            return getStringFromWasm0(ptr3, len3);
-        } finally {
-            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
-        }
-    }
-    /**
-     *
-     * Create a new RPC client with optional {@link Encoding} and a `url`.
-     *
-     * @see {@link IRpcConfig} interface for more details.
-     * @param {IRpcConfig | null} [config]
-     */
-    constructor(config) {
-        const ret = wasm.rpcclient_ctor(isLikeNone(config) ? 0 : addToExternrefTable0(config));
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        RpcClientFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * The current URL of the RPC client.
-     * @returns {string | undefined}
-     */
-    get url() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_url(this.__wbg_ptr);
-        let v1;
-        if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
-            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
-        }
-        return v1;
-    }
-    /**
-     * Current rpc resolver
-     * @returns {Resolver | undefined}
-     */
-    get resolver() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_resolver(this.__wbg_ptr);
-        return ret === 0 ? undefined : Resolver.__wrap(ret);
-    }
-    /**
-     * Set the resolver for the RPC client.
-     * This setting will take effect on the next connection.
-     * @param {Resolver} resolver
-     */
-    setResolver(resolver) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertClass(resolver, Resolver);
-        if (resolver.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        var ptr0 = resolver.__destroy_into_raw();
-        const ret = wasm.rpcclient_setResolver(this.__wbg_ptr, ptr0);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * Set the network id for the RPC client.
-     * This setting will take effect on the next connection.
-     * @param {NetworkId | string} network_id
-     */
-    setNetworkId(network_id) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_setNetworkId(this.__wbg_ptr, network_id);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * The current connection status of the RPC client.
-     * @returns {boolean}
-     */
-    get isConnected() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_isConnected(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * The current protocol encoding.
-     * @returns {string}
-     */
-    get encoding() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.rpcclient_encoding(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * Optional: Resolver node id.
      * @returns {string | undefined}
      */
@@ -8336,60 +8230,18 @@ export class RpcClient {
         return v1;
     }
     /**
-     * Connect to the Kaspa RPC server. This function starts a background
-     * task that connects and reconnects to the server if the connection
-     * is terminated.  Use [`disconnect()`](Self::disconnect()) to
-     * terminate the connection.
-     * @see {@link IConnectOptions} interface for more details.
-     * @param {IConnectOptions | undefined | null} [args]
-     * @returns {Promise<void>}
+     * Retrieves a specific mempool entry by transaction ID.
+     * Returned information: Mempool entry information.
+     * @see {@link IGetMempoolEntryRequest}, {@link IGetMempoolEntryResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetMempoolEntryRequest} request
+     * @returns {Promise<IGetMempoolEntryResponse>}
      */
-    connect(args) {
+    getMempoolEntry(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_connect(this.__wbg_ptr, isLikeNone(args) ? 0 : addToExternrefTable0(args));
+        const ret = wasm.rpcclient_getMempoolEntry(this.__wbg_ptr, request);
         return ret;
-    }
-    /**
-     * Disconnect from the Kaspa RPC server.
-     * @returns {Promise<void>}
-     */
-    disconnect() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_disconnect(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Start background RPC services (automatically started when invoking {@link RpcClient.connect}).
-     * @returns {Promise<void>}
-     */
-    start() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_start(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Stop background RPC services (automatically stopped when invoking {@link RpcClient.disconnect}).
-     * @returns {Promise<void>}
-     */
-    stop() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_stop(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Triggers a disconnection on the underlying WebSocket
-     * if the WebSocket is in connected state.
-     * This is intended for debug purposes only.
-     * Can be used to test application reconnection logic.
-     */
-    triggerAbort() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.rpcclient_triggerAbort(this.__wbg_ptr);
     }
     /**
      *
@@ -8513,6 +8365,152 @@ export class RpcClient {
         }
     }
     /**
+     * Provides information about the Directed Acyclic Graph (DAG)
+     * structure of the Kaspa BlockDAG.
+     * Returned information: Number of blocks in the DAG,
+     * number of tips in the DAG, hash of the selected parent block,
+     * difficulty of the selected parent block, selected parent block
+     * blue score, selected parent block time.
+     * @see {@link IGetBlockDagInfoRequest}, {@link IGetBlockDagInfoResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetBlockDagInfoRequest | null} [request]
+     * @returns {Promise<IGetBlockDagInfoResponse>}
+     */
+    getBlockDagInfo(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBlockDagInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Generates a new block template for mining.
+     * Returned information: Block template information.
+     * @see {@link IGetBlockTemplateRequest}, {@link IGetBlockTemplateResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBlockTemplateRequest} request
+     * @returns {Promise<IGetBlockTemplateResponse>}
+     */
+    getBlockTemplate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBlockTemplate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Provides a list of addresses of known peers in the Kaspa
+     * network that the node can potentially connect to.
+     * Returned information: List of peer addresses.
+     * @see {@link IGetPeerAddressesRequest}, {@link IGetPeerAddressesResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetPeerAddressesRequest | null} [request]
+     * @returns {Promise<IGetPeerAddressesResponse>}
+     */
+    getPeerAddresses(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getPeerAddresses(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Submits a transaction to the Kaspa network.
+     * Returned information: Submitted Transaction Id.
+     * @see {@link ISubmitTransactionRequest}, {@link ISubmitTransactionResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {ISubmitTransactionRequest} request
+     * @returns {Promise<ISubmitTransactionResponse>}
+     */
+    submitTransaction(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_submitTransaction(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Retrieves the current network configuration.
+     * Returned information: Current network configuration.
+     * @see {@link IGetCurrentNetworkRequest}, {@link IGetCurrentNetworkResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetCurrentNetworkRequest | null} [request]
+     * @returns {Promise<IGetCurrentNetworkResponse>}
+     */
+    getCurrentNetwork(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getCurrentNetwork(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Retrieves mempool entries from the Kaspa node's mempool.
+     * Returned information: List of mempool entries.
+     * @see {@link IGetMempoolEntriesRequest}, {@link IGetMempoolEntriesResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetMempoolEntriesRequest} request
+     * @returns {Promise<IGetMempoolEntriesResponse>}
+     */
+    getMempoolEntries(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getMempoolEntries(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Returns the blue score of the current sink block, indicating
+     * the total amount of work that has been done on the main chain
+     * leading up to that block.
+     * Returned information: Blue score of the sink block.
+     * @see {@link IGetSinkBlueScoreRequest}, {@link IGetSinkBlueScoreResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetSinkBlueScoreRequest | null} [request]
+     * @returns {Promise<IGetSinkBlueScoreResponse>}
+     */
+    getSinkBlueScore(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getSinkBlueScore(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Manage subscription for a virtual DAA score changed notification event.
+     * Virtual DAA score changed notification event is produced when the virtual
+     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    subscribeVirtualDaaScoreChanged() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeVirtualDaaScoreChanged(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     *
+     * Unregister a single event listener callback from all events.
+     *
+     *
+     * @param {RpcEventCallback} callback
+     */
+    clearEventListener(callback) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_clearEventListener(this.__wbg_ptr, callback);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Retrieves reward information for a block.
+     * Returned information: block color, confirmation count, reward, merging chain block, and header.
+     * @see {@link IGetBlockRewardInfoRequest}, {@link IGetBlockRewardInfoResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBlockRewardInfoRequest} request
+     * @returns {Promise<IGetBlockRewardInfoResponse>}
+     */
+    getBlockRewardInfo(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBlockRewardInfo(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
      *
      * Unregister an event listener.
      * This function will remove the callback for the specified event.
@@ -8532,19 +8530,163 @@ export class RpcClient {
         }
     }
     /**
-     *
-     * Unregister a single event listener callback from all events.
-     *
-     *
-     * @param {RpcEventCallback} callback
+     * Manage subscription for a block added notification event.
+     * Block added notification event is produced when a new
+     * block is added to the Kaspa BlockDAG.
+     * @returns {Promise<void>}
      */
-    clearEventListener(callback) {
+    subscribeBlockAdded() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.rpcclient_clearEventListener(this.__wbg_ptr, callback);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
+        const ret = wasm.rpcclient_subscribeBlockAdded(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Manage subscription for a virtual DAA score changed notification event.
+     * Virtual DAA score changed notification event is produced when the virtual
+     * Difficulty Adjustment Algorithm (DAA) score changes in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    unsubscribeVirtualDaaScoreChanged() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeVirtualDaaScoreChanged(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Retrieves the balance of a specific address in the Kaspa BlockDAG.
+     * Returned information: Balance of the address.
+     * @see {@link IGetBalanceByAddressRequest}, {@link IGetBalanceByAddressResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBalanceByAddressRequest} request
+     * @returns {Promise<IGetBalanceByAddressResponse>}
+     */
+    getBalanceByAddress(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBalanceByAddress(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Retrieves unspent transaction outputs (UTXOs) associated with
+     * specific addresses.
+     * Returned information: List of UTXOs.
+     * @see {@link IGetUtxosByAddressesRequest}, {@link IGetUtxosByAddressesResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetUtxosByAddressesRequest | Address[] | string[]} request
+     * @returns {Promise<IGetUtxosByAddressesResponse>}
+     */
+    getUtxosByAddresses(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getUtxosByAddresses(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Retrieves information about the peers connected to the Kaspa node.
+     * Returned information: Peer ID, IP address and port, connection
+     * status, protocol version.
+     * @see {@link IGetConnectedPeerInfoRequest}, {@link IGetConnectedPeerInfoResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetConnectedPeerInfoRequest | null} [request]
+     * @returns {Promise<IGetConnectedPeerInfoResponse>}
+     */
+    getConnectedPeerInfo(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getConnectedPeerInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Checks if block is blue or not.
+     * Returned information: Block blueness.
+     * @see {@link IGetCurrentBlockColorRequest}, {@link IGetCurrentBlockColorResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetCurrentBlockColorRequest} request
+     * @returns {Promise<IGetCurrentBlockColorResponse>}
+     */
+    getCurrentBlockColor(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getCurrentBlockColor(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Get UTXO Return Addresses.
+     * @see {@link IGetUtxoReturnAddressRequest}, {@link IGetUtxoReturnAddressResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetUtxoReturnAddressRequest} request
+     * @returns {Promise<IGetUtxoReturnAddressResponse>}
+     */
+    getUtxoReturnAddress(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getUtxoReturnAddress(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Subscribe for a UTXOs changed notification event.
+     * UTXOs changed notification event is produced when the set
+     * of unspent transaction outputs (UTXOs) changes in the
+     * Kaspa BlockDAG. The event notification will be scoped to the
+     * provided list of addresses.
+     * @param {(Address | string)[]} addresses
+     * @returns {Promise<void>}
+     */
+    subscribeUtxosChanged(addresses) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeUtxosChanged(this.__wbg_ptr, addresses);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribeBlockAdded() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeBlockAdded(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Retrieves balances for multiple addresses in the Kaspa BlockDAG.
+     * Returned information: Balances of the addresses.
+     * @see {@link IGetBalancesByAddressesRequest}, {@link IGetBalancesByAddressesResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBalancesByAddressesRequest | Address[] | string[]} request
+     * @returns {Promise<IGetBalancesByAddressesResponse>}
+     */
+    getBalancesByAddresses(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBalancesByAddresses(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Resolves a finality conflict in the Kaspa BlockDAG.
+     * Returned information: None.
+     * @see {@link IResolveFinalityConflictRequest}, {@link IResolveFinalityConflictResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IResolveFinalityConflictRequest} request
+     * @returns {Promise<IResolveFinalityConflictResponse>}
+     */
+    resolveFinalityConflict(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_resolveFinalityConflict(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Unsubscribe from UTXOs changed notification event
+     * for a specific set of addresses.
+     * @param {(Address | string)[]} addresses
+     * @returns {Promise<void>}
+     */
+    unsubscribeUtxosChanged(addresses) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeUtxosChanged(this.__wbg_ptr, addresses);
+        return ret;
     }
     /**
      *
@@ -8556,6 +8698,489 @@ export class RpcClient {
         const ret = wasm.rpcclient_removeAllEventListeners(this.__wbg_ptr);
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Manage subscription for a finality conflict notification event.
+     * Finality conflict notification event is produced when a finality
+     * conflict occurs in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    subscribeFinalityConflict() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeFinalityConflict(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Retrieves the virtual chain corresponding to a specified block hash.
+     * Returned information: Virtual chain information.
+     * @see {@link IGetVirtualChainFromBlockRequest}, {@link IGetVirtualChainFromBlockResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetVirtualChainFromBlockRequest} request
+     * @returns {Promise<IGetVirtualChainFromBlockResponse>}
+     */
+    getVirtualChainFromBlock(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getVirtualChainFromBlock(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Manage subscription for a new block template notification event.
+     * New block template notification event is produced when a new block
+     * template is generated for mining in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    subscribeNewBlockTemplate() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeNewBlockTemplate(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Feerate estimates (experimental)
+     * @see {@link IGetFeeEstimateExperimentalRequest}, {@link IGetFeeEstimateExperimentalResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetFeeEstimateExperimentalRequest} request
+     * @returns {Promise<IGetFeeEstimateExperimentalResponse>}
+     */
+    getFeeEstimateExperimental(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getFeeEstimateExperimental(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribeFinalityConflict() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeFinalityConflict(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Submits an RBF transaction to the Kaspa network.
+     * Returned information: Submitted Transaction Id, Transaction that was replaced.
+     * @see {@link ISubmitTransactionReplacementRequest}, {@link ISubmitTransactionReplacementResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {ISubmitTransactionReplacementRequest} request
+     * @returns {Promise<ISubmitTransactionReplacementResponse>}
+     */
+    submitTransactionReplacement(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_submitTransactionReplacement(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribeNewBlockTemplate() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeNewBlockTemplate(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Retrieves the virtual chain corresponding to a specified block hash.
+     * Returned information: Virtual chain information. (Version 2)
+     * May be used to get fully populated transactions
+     * @see {@link IGetVirtualChainFromBlockV2Request}, {@link IGetVirtualChainFromBlockV2Response}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetVirtualChainFromBlockV2Request} request
+     * @returns {Promise<IGetVirtualChainFromBlockV2Response>}
+     */
+    getVirtualChainFromBlockV2(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getVirtualChainFromBlockV2(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Manage subscription for a virtual chain changed notification event.
+     * Virtual chain changed notification event is produced when the virtual
+     * chain changes in the Kaspa BlockDAG.
+     * @param {boolean} include_accepted_transaction_ids
+     * @returns {Promise<void>}
+     */
+    subscribeVirtualChainChanged(include_accepted_transaction_ids) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBoolean(include_accepted_transaction_ids);
+        const ret = wasm.rpcclient_subscribeVirtualChainChanged(this.__wbg_ptr, include_accepted_transaction_ids);
+        return ret;
+    }
+    /**
+     * Retrieves the estimated DAA (Difficulty Adjustment Algorithm)
+     * score timestamp estimate.
+     * Returned information: DAA score timestamp estimate.
+     * @see {@link IGetDaaScoreTimestampEstimateRequest}, {@link IGetDaaScoreTimestampEstimateResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetDaaScoreTimestampEstimateRequest} request
+     * @returns {Promise<IGetDaaScoreTimestampEstimateResponse>}
+     */
+    getDaaScoreTimestampEstimate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getDaaScoreTimestampEstimate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Retrieves mempool entries associated with specific addresses.
+     * Returned information: List of mempool entries.
+     * @see {@link IGetMempoolEntriesByAddressesRequest}, {@link IGetMempoolEntriesByAddressesResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetMempoolEntriesByAddressesRequest} request
+     * @returns {Promise<IGetMempoolEntriesByAddressesResponse>}
+     */
+    getMempoolEntriesByAddresses(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getMempoolEntriesByAddresses(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Manage subscription for a sink blue score changed notification event.
+     * Sink blue score changed notification event is produced when the blue
+     * score of the sink block changes in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    subscribeSinkBlueScoreChanged() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeSinkBlueScoreChanged(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Manage subscription for a virtual chain changed notification event.
+     * Virtual chain changed notification event is produced when the virtual
+     * chain changes in the Kaspa BlockDAG.
+     * @param {boolean} include_accepted_transaction_ids
+     * @returns {Promise<void>}
+     */
+    unsubscribeVirtualChainChanged(include_accepted_transaction_ids) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBoolean(include_accepted_transaction_ids);
+        const ret = wasm.rpcclient_unsubscribeVirtualChainChanged(this.__wbg_ptr, include_accepted_transaction_ids);
+        return ret;
+    }
+    /**
+     * Estimates the network's current hash rate in hashes per second.
+     * Returned information: Estimated network hashes per second.
+     * @see {@link IEstimateNetworkHashesPerSecondRequest}, {@link IEstimateNetworkHashesPerSecondResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IEstimateNetworkHashesPerSecondRequest} request
+     * @returns {Promise<IEstimateNetworkHashesPerSecondResponse>}
+     */
+    estimateNetworkHashesPerSecond(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_estimateNetworkHashesPerSecond(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribeSinkBlueScoreChanged() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeSinkBlueScoreChanged(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Manage subscription for a finality conflict resolved notification event.
+     * Finality conflict resolved notification event is produced when a finality
+     * conflict in the Kaspa BlockDAG is resolved.
+     * @returns {Promise<void>}
+     */
+    subscribeFinalityConflictResolved() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribeFinalityConflictResolved(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribeFinalityConflictResolved() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribeFinalityConflictResolved(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Bans a peer from connecting to the Kaspa node for a specified duration.
+     * Returned information: None.
+     * @see {@link IBanRequest}, {@link IBanResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IBanRequest} request
+     * @returns {Promise<IBanResponse>}
+     */
+    ban(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_ban(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * The current URL of the RPC client.
+     * @returns {string | undefined}
+     */
+    get url() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_url(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * Manage subscription for a pruning point UTXO set override notification event.
+     * Pruning point UTXO set override notification event is produced when the
+     * UTXO set override for the pruning point changes in the Kaspa BlockDAG.
+     * @returns {Promise<void>}
+     */
+    subscribePruningPointUtxoSetOverride() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_subscribePruningPointUtxoSetOverride(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    unsubscribePruningPointUtxoSetOverride() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unsubscribePruningPointUtxoSetOverride(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     *
+     * Create a new RPC client with optional {@link Encoding} and a `url`.
+     *
+     * @see {@link IRpcConfig} interface for more details.
+     * @param {IRpcConfig | null} [config]
+     */
+    constructor(config) {
+        const ret = wasm.rpcclient_ctor(isLikeNone(config) ? 0 : addToExternrefTable0(config));
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        RpcClientFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Tests the connection and responsiveness of a Kaspa node.
+     * Returned information: None.
+     * @see {@link IPingRequest}, {@link IPingResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IPingRequest | null} [request]
+     * @returns {Promise<IPingResponse>}
+     */
+    ping(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_ping(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Stop background RPC services (automatically stopped when invoking {@link RpcClient.disconnect}).
+     * @returns {Promise<void>}
+     */
+    stop() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_stop(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Start background RPC services (automatically started when invoking {@link RpcClient.connect}).
+     * @returns {Promise<void>}
+     */
+    start() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_start(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Unbans a previously banned peer, allowing it to connect
+     * to the Kaspa node again.
+     * Returned information: None.
+     * @see {@link IUnbanRequest}, {@link IUnbanResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IUnbanRequest} request
+     * @returns {Promise<IUnbanResponse>}
+     */
+    unban(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_unban(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Connect to the Kaspa RPC server. This function starts a background
+     * task that connects and reconnects to the server if the connection
+     * is terminated.  Use [`disconnect()`](Self::disconnect()) to
+     * terminate the connection.
+     * @see {@link IConnectOptions} interface for more details.
+     * @param {IConnectOptions | undefined | null} [args]
+     * @returns {Promise<void>}
+     */
+    connect(args) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_connect(this.__wbg_ptr, isLikeNone(args) ? 0 : addToExternrefTable0(args));
+        return ret;
+    }
+    /**
+     * Adds a peer to the Kaspa node's list of known peers.
+     * Returned information: None.
+     * @see {@link IAddPeerRequest}, {@link IAddPeerResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IAddPeerRequest} request
+     * @returns {Promise<IAddPeerResponse>}
+     */
+    addPeer(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_addPeer(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * The current protocol encoding.
+     * @returns {string}
+     */
+    get encoding() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.rpcclient_encoding(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Retrieves general information about the Kaspa node.
+     * Returned information: Version of the Kaspa node, protocol
+     * version, network identifier.
+     * This call is primarily used by gRPC clients.
+     * For wRPC clients, use {@link RpcClient.getServerInfo}.
+     * @see {@link IGetInfoRequest}, {@link IGetInfoResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetInfoRequest | null} [request]
+     * @returns {Promise<IGetInfoResponse>}
+     */
+    getInfo(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getInfo(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Retrieves the current sink block, which is the block with
+     * the highest cumulative difficulty in the Kaspa BlockDAG.
+     * Returned information: Sink block hash, sink block height.
+     * @see {@link IGetSinkRequest}, {@link IGetSinkResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IGetSinkRequest | null} [request]
+     * @returns {Promise<IGetSinkResponse>}
+     */
+    getSink(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getSink(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Current rpc resolver
+     * @returns {Resolver | undefined}
+     */
+    get resolver() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_resolver(this.__wbg_ptr);
+        return ret === 0 ? undefined : Resolver.__wrap(ret);
+    }
+    /**
+     * Gracefully shuts down the Kaspa node.
+     * Returned information: None.
+     * @see {@link IShutdownRequest}, {@link IShutdownResponse}
+     * @throws `string` on an RPC error or a server-side error.
+     * @param {IShutdownRequest | null} [request]
+     * @returns {Promise<IShutdownResponse>}
+     */
+    shutdown(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_shutdown(this.__wbg_ptr, isLikeNone(request) ? 0 : addToExternrefTable0(request));
+        return ret;
+    }
+    /**
+     * Retrieves a specific block from the Kaspa BlockDAG.
+     * Returned information: Block information.
+     * @see {@link IGetBlockRequest}, {@link IGetBlockResponse}
+     * @throws `string` on an RPC error, a server-side error or when supplying incorrect arguments.
+     * @param {IGetBlockRequest} request
+     * @returns {Promise<IGetBlockResponse>}
+     */
+    getBlock(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.rpcclient_getBlock(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Constructs an WebSocket RPC URL given the partial URL or an IP, RPC encoding
+     * and a network type.
+     *
+     * # Arguments
+     *
+     * * `url` - Partial URL or an IP address
+     * * `encoding` - RPC encoding
+     * * `network_type` - Network type
+     * @param {string} url
+     * @param {Encoding} encoding
+     * @param {NetworkId} network
+     * @returns {string}
+     */
+    static parseUrl(url, encoding, network) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(url, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            _assertNum(encoding);
+            _assertClass(network, NetworkId);
+            if (network.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            var ptr1 = network.__destroy_into_raw();
+            const ret = wasm.rpcclient_parseUrl(ptr0, len0, encoding, ptr1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
 }
@@ -8602,102 +9227,15 @@ export class ScriptBuilder {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_scriptbuilder_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.scriptbuilder_new();
-        this.__wbg_ptr = ret >>> 0;
-        ScriptBuilderFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
     /**
      * Creates a new ScriptBuilder over an existing script.
      * Supplied script can be represented as an `Uint8Array` or a `HexString`.
      * @param {HexString | Uint8Array} script
+     * @param {ScriptBuilderOptions | null} [options]
      * @returns {ScriptBuilder}
      */
-    static fromScript(script) {
-        const ret = wasm.scriptbuilder_fromScript(script);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ScriptBuilder.__wrap(ret[0]);
-    }
-    /**
-     * Pushes the passed opcode to the end of the script. The script will not
-     * be modified if pushing the opcode would cause the script to exceed the
-     * maximum allowed script engine size.
-     * @param {number} op
-     * @returns {ScriptBuilder}
-     */
-    addOp(op) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(op);
-        const ret = wasm.scriptbuilder_addOp(this.__wbg_ptr, op);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ScriptBuilder.__wrap(ret[0]);
-    }
-    /**
-     * Adds the passed opcodes to the end of the script.
-     * Supplied opcodes can be represented as an `Uint8Array` or a `HexString`.
-     * @param {HexString | Uint8Array} opcodes
-     * @returns {ScriptBuilder}
-     */
-    addOps(opcodes) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.scriptbuilder_addOps(this.__wbg_ptr, opcodes);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ScriptBuilder.__wrap(ret[0]);
-    }
-    /**
-     * AddData pushes the passed data to the end of the script. It automatically
-     * chooses canonical opcodes depending on the length of the data.
-     *
-     * A zero length buffer will lead to a push of empty data onto the stack (Op0 = OpFalse)
-     * and any push of data greater than [`MAX_SCRIPT_ELEMENT_SIZE`](kaspa_txscript::MAX_SCRIPT_ELEMENT_SIZE) will not modify
-     * the script since that is not allowed by the script engine.
-     *
-     * Also, the script will not be modified if pushing the data would cause the script to
-     * exceed the maximum allowed script engine size [`MAX_SCRIPTS_SIZE`](kaspa_txscript::MAX_SCRIPTS_SIZE).
-     * @param {HexString | Uint8Array} data
-     * @returns {ScriptBuilder}
-     */
-    addData(data) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.scriptbuilder_addData(this.__wbg_ptr, data);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ScriptBuilder.__wrap(ret[0]);
-    }
-    /**
-     * @param {bigint} value
-     * @returns {ScriptBuilder}
-     */
-    addI64(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(value);
-        const ret = wasm.scriptbuilder_addI64(this.__wbg_ptr, value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ScriptBuilder.__wrap(ret[0]);
-    }
-    /**
-     * @param {bigint} lock_time
-     * @returns {ScriptBuilder}
-     */
-    addLockTime(lock_time) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(lock_time);
-        const ret = wasm.scriptbuilder_addLockTime(this.__wbg_ptr, lock_time);
+    static fromScript(script, options) {
+        const ret = wasm.scriptbuilder_fromScript(script, isLikeNone(options) ? 0 : addToExternrefTable0(options));
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -8718,17 +9256,6 @@ export class ScriptBuilder {
         return ScriptBuilder.__wrap(ret[0]);
     }
     /**
-     * @param {HexString | Uint8Array} data
-     * @returns {number}
-     */
-    static canonicalDataSize(data) {
-        const ret = wasm.scriptbuilder_canonicalDataSize(data);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return ret[0] >>> 0;
-    }
-    /**
      * Get script bytes represented by a hex string.
      * @returns {HexString}
      */
@@ -8739,15 +9266,29 @@ export class ScriptBuilder {
         return ret;
     }
     /**
-     * Drains (empties) the script builder, returning the
-     * script bytes represented by a hex string.
-     * @returns {HexString}
+     * @param {bigint} lock_time
+     * @returns {ScriptBuilder}
      */
-    drain() {
+    addLockTime(lock_time) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.scriptbuilder_drain(this.__wbg_ptr);
-        return ret;
+        _assertBigInt(lock_time);
+        const ret = wasm.scriptbuilder_addLockTime(this.__wbg_ptr, lock_time);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ScriptBuilder.__wrap(ret[0]);
+    }
+    /**
+     * @param {HexString | Uint8Array} data
+     * @returns {number}
+     */
+    static canonicalDataSize(data) {
+        const ret = wasm.scriptbuilder_canonicalDataSize(data);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] >>> 0;
     }
     /**
      * Creates an equivalent pay-to-script-hash script.
@@ -8774,6 +9315,97 @@ export class ScriptBuilder {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * @param {ScriptBuilderOptions | null} [options]
+     */
+    constructor(options) {
+        const ret = wasm.scriptbuilder_new(isLikeNone(options) ? 0 : addToExternrefTable0(options));
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        ScriptBuilderFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Drains (empties) the script builder, returning the
+     * script bytes represented by a hex string.
+     * @returns {HexString}
+     */
+    drain() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.scriptbuilder_drain(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Pushes the passed opcode to the end of the script. The script will not
+     * be modified if pushing the opcode would cause the script to exceed the
+     * maximum allowed script engine size.
+     * @param {number} op
+     * @returns {ScriptBuilder}
+     */
+    addOp(op) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(op);
+        const ret = wasm.scriptbuilder_addOp(this.__wbg_ptr, op);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ScriptBuilder.__wrap(ret[0]);
+    }
+    /**
+     * @param {bigint} value
+     * @returns {ScriptBuilder}
+     */
+    addI64(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(value);
+        const ret = wasm.scriptbuilder_addI64(this.__wbg_ptr, value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ScriptBuilder.__wrap(ret[0]);
+    }
+    /**
+     * Adds the passed opcodes to the end of the script.
+     * Supplied opcodes can be represented as an `Uint8Array` or a `HexString`.
+     * @param {HexString | Uint8Array} opcodes
+     * @returns {ScriptBuilder}
+     */
+    addOps(opcodes) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.scriptbuilder_addOps(this.__wbg_ptr, opcodes);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ScriptBuilder.__wrap(ret[0]);
+    }
+    /**
+     * AddData pushes the passed data to the end of the script. It automatically
+     * chooses canonical opcodes depending on the length of the data.
+     *
+     * A zero length buffer will lead to a push of empty data onto the stack (Op0 = OpFalse)
+     * and any push of data greater than the maximum script element size will not modify
+     * the script since that is not allowed by the script engine.
+     *
+     * Also, the script will not be modified if pushing the data would cause the script to
+     * exceed the maximum allowed script engine size.
+     * @param {HexString | Uint8Array} data
+     * @returns {ScriptBuilder}
+     */
+    addData(data) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.scriptbuilder_addData(this.__wbg_ptr, data);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ScriptBuilder.__wrap(ret[0]);
     }
     /**
      * @param {IHexViewConfig | null} [args]
@@ -8820,8 +9452,8 @@ export class ScriptPublicKey {
 
     toJSON() {
         return {
-            version: this.version,
             script: this.script,
+            version: this.version,
         };
     }
 
@@ -8839,24 +9471,6 @@ export class ScriptPublicKey {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_scriptpublickey_free(ptr, 0);
-    }
-    /**
-     * @returns {number}
-     */
-    get version() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} arg0
-     */
-    set version(arg0) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(arg0);
-        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
     }
     /**
      * @param {number} version
@@ -8889,6 +9503,24 @@ export class ScriptPublicKey {
             wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
+    /**
+     * @returns {number}
+     */
+    get version() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} arg0
+     */
+    set version(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(arg0);
+        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
+    }
 }
 
 const SetAadOptionsFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -8907,6 +9539,31 @@ export class SetAadOptions {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_setaadoptions_free(ptr, 0);
+    }
+    /**
+     * @param {Function} value
+     */
+    set transform(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.setaadoptions_set_transform(this.__wbg_ptr, value);
+    }
+    /**
+     * @returns {number}
+     */
+    get plaintextLength() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.setaadoptions_plaintextLength(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} value
+     */
+    set plaintext_length(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.setaadoptions_set_plaintext_length(this.__wbg_ptr, value);
     }
     /**
      * @param {Function} flush
@@ -8937,23 +9594,6 @@ export class SetAadOptions {
         wasm.setaadoptions_set_flush(this.__wbg_ptr, value);
     }
     /**
-     * @returns {number}
-     */
-    get plaintextLength() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.setaadoptions_plaintextLength(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} value
-     */
-    set plaintext_length(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.setaadoptions_set_plaintext_length(this.__wbg_ptr, value);
-    }
-    /**
      * @returns {Function}
      */
     get transform() {
@@ -8961,14 +9601,6 @@ export class SetAadOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.setaadoptions_transform(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {Function} value
-     */
-    set transform(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.setaadoptions_set_transform(this.__wbg_ptr, value);
     }
 }
 
@@ -9066,6 +9698,14 @@ export class StreamTransformOptions {
         wasm.__wbg_streamtransformoptions_free(ptr, 0);
     }
     /**
+     * @param {Function} value
+     */
+    set transform(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.streamtransformoptions_set_transform(this.__wbg_ptr, value);
+    }
+    /**
      * @param {Function} flush
      * @param {Function} transform
      */
@@ -9101,14 +9741,6 @@ export class StreamTransformOptions {
         const ret = wasm.streamtransformoptions_transform(this.__wbg_ptr);
         return ret;
     }
-    /**
-     * @param {Function} value
-     */
-    set transform(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.streamtransformoptions_set_transform(this.__wbg_ptr, value);
-    }
 }
 
 const TransactionFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -9133,15 +9765,16 @@ export class Transaction {
 
     toJSON() {
         return {
-            id: this.id,
-            inputs: this.inputs,
-            outputs: this.outputs,
             version: this.version,
             lockTime: this.lockTime,
-            gas: this.gas,
+            storageMass: this.storageMass,
+            inputs: this.inputs,
+            outputs: this.outputs,
             subnetworkId: this.subnetworkId,
             payload: this.payload,
+            gas: this.gas,
             mass: this.mass,
+            id: this.id,
         };
     }
 
@@ -9161,50 +9794,6 @@ export class Transaction {
         wasm.__wbg_transaction_free(ptr, 0);
     }
     /**
-     * Determines whether or not a transaction is a coinbase transaction. A coinbase
-     * transaction is a special transaction created by miners that distributes fees and block subsidy
-     * to the previous blocks' miners, and specifies the script_pub_key that will be used to pay the current
-     * miner in future blocks.
-     * @returns {boolean}
-     */
-    is_coinbase() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_is_coinbase(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Recompute and finalize the tx id based on updated tx fields
-     * @returns {Hash}
-     */
-    finalize() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_finalize(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Hash.__wrap(ret[0]);
-    }
-    /**
-     * Returns the transaction ID
-     * @returns {string}
-     */
-    get id() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transaction_id(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @param {ITransaction | Transaction} js_value
      */
     constructor(js_value) {
@@ -9217,56 +9806,6 @@ export class Transaction {
         return this;
     }
     /**
-     * @returns {TransactionInput[]}
-     */
-    get inputs() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_get_inputs_as_js_array(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Returns a list of unique addresses used by transaction inputs.
-     * This method can be used to determine addresses used by transaction inputs
-     * in order to select private keys needed for transaction signing.
-     * @param {NetworkType | NetworkId | string} network_type
-     * @returns {Address[]}
-     */
-    addresses(network_type) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_addresses(this.__wbg_ptr, network_type);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * @param {(ITransactionInput | TransactionInput)[]} js_value
-     */
-    set inputs(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.transaction_set_inputs_from_js_array(this.__wbg_ptr, js_value);
-    }
-    /**
-     * @returns {TransactionOutput[]}
-     */
-    get outputs() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_get_outputs_as_js_array(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {(ITransactionOutput | TransactionOutput)[]} js_value
-     */
-    set outputs(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.transaction_set_outputs_from_js_array(this.__wbg_ptr, js_value);
-    }
-    /**
      * @returns {number}
      */
     get version() {
@@ -9274,6 +9813,19 @@ export class Transaction {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.transaction_version(this.__wbg_ptr);
         return ret;
+    }
+    /**
+     * Determines whether or not a transaction is a coinbase transaction. A coinbase
+     * transaction is a special transaction created by miners that distributes fees and block subsidy
+     * to the previous blocks' miners, and specifies the script_pub_key that will be used to pay the current
+     * miner in future blocks.
+     * @returns {boolean}
+     */
+    is_coinbase() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_is_coinbase(this.__wbg_ptr);
+        return ret !== 0;
     }
     /**
      * @param {number} v
@@ -9305,103 +9857,20 @@ export class Transaction {
     /**
      * @returns {bigint}
      */
-    get gas() {
+    get storageMass() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_gas(this.__wbg_ptr);
+        const ret = wasm.transaction_get_storage_mass(this.__wbg_ptr);
         return BigInt.asUintN(64, ret);
     }
     /**
      * @param {bigint} v
      */
-    set gas(v) {
+    set storageMass(v) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         _assertBigInt(v);
-        wasm.transaction_set_gas(this.__wbg_ptr, v);
-    }
-    /**
-     * @returns {string}
-     */
-    get subnetworkId() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transaction_get_subnetwork_id_as_hex(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {any} js_value
-     */
-    set subnetworkId(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.transaction_set_subnetwork_id_from_js_value(this.__wbg_ptr, js_value);
-    }
-    /**
-     * @returns {string}
-     */
-    get payload() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transaction_get_payload_as_hex_string(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {any} js_value
-     */
-    set payload(js_value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.transaction_set_payload_from_js_value(this.__wbg_ptr, js_value);
-    }
-    /**
-     * @returns {bigint}
-     */
-    get mass() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_get_mass(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
-     * @param {bigint} v
-     */
-    set mass(v) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(v);
-        wasm.transaction_set_mass(this.__wbg_ptr, v);
-    }
-    /**
-     * Serializes the transaction to a pure JavaScript Object.
-     * The schema of the JavaScript object is defined by {@link ISerializableTransaction}.
-     * @see {@link ISerializableTransaction}
-     * @returns {ISerializableTransaction}
-     */
-    serializeToObject() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transaction_serializeToObject(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
+        wasm.transaction_set_storage_mass(this.__wbg_ptr, v);
     }
     /**
      * Serializes the transaction to a JSON string.
@@ -9427,6 +9896,44 @@ export class Transaction {
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
+    }
+    /**
+     * Serializes the transaction to a pure JavaScript Object.
+     * The schema of the JavaScript object is defined by {@link ISerializableTransaction}.
+     * @see {@link ISerializableTransaction}
+     * @returns {ISerializableTransaction}
+     */
+    serializeToObject() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_serializeToObject(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Deserialize the {@link Transaction} Object from a JSON string.
+     * @param {string} json
+     * @returns {Transaction}
+     */
+    static deserializeFromJSON(json) {
+        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.transaction_deserializeFromJSON(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Transaction.__wrap(ret[0]);
+    }
+    /**
+     * @returns {TransactionInput[]}
+     */
+    get inputs() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_get_inputs_as_js_array(this.__wbg_ptr);
+        return ret;
     }
     /**
      * Serializes the transaction to a "Safe" JSON schema where it converts all `bigint` values to `string` to avoid potential client-side precision loss.
@@ -9465,18 +9972,71 @@ export class Transaction {
         return Transaction.__wrap(ret[0]);
     }
     /**
-     * Deserialize the {@link Transaction} Object from a JSON string.
-     * @param {string} json
-     * @returns {Transaction}
+     * @returns {TransactionOutput[]}
      */
-    static deserializeFromJSON(json) {
-        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.transaction_deserializeFromJSON(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
+    get outputs() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_get_outputs_as_js_array(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {string}
+     */
+    get subnetworkId() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transaction_get_subnetwork_id_as_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-        return Transaction.__wrap(ret[0]);
+    }
+    /**
+     * @param {(ITransactionInput | TransactionInput)[]} js_value
+     */
+    set inputs(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.transaction_set_inputs_from_js_array(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @returns {string}
+     */
+    get payload() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transaction_get_payload_as_hex_string(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @param {(ITransactionOutput | TransactionOutput)[]} js_value
+     */
+    set outputs(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.transaction_set_outputs_from_js_array(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @param {any} js_value
+     */
+    set payload(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.transaction_set_payload_from_js_value(this.__wbg_ptr, js_value);
     }
     /**
      * Deserialize the {@link Transaction} Object from a "Safe" JSON schema where all `bigint` values are represented as `string`.
@@ -9491,6 +10051,110 @@ export class Transaction {
             throw takeFromExternrefTable0(ret[1]);
         }
         return Transaction.__wrap(ret[0]);
+    }
+    /**
+     * @param {(IGenesisCovenantGroup | GenesisCovenantGroup)[]} groups
+     */
+    populateGenesisCovenants(groups) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_populateGenesisCovenants(this.__wbg_ptr, groups);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @param {any} js_value
+     */
+    set subnetworkId(js_value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.transaction_set_subnetwork_id_from_js_value(this.__wbg_ptr, js_value);
+    }
+    /**
+     * @returns {bigint}
+     */
+    get gas() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_gas(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @param {bigint} v
+     */
+    set gas(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(v);
+        wasm.transaction_set_gas(this.__wbg_ptr, v);
+    }
+    /**
+     * Recompute and finalize the tx id based on updated tx fields
+     * @returns {Hash}
+     */
+    finalize() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_finalize(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Hash.__wrap(ret[0]);
+    }
+    /**
+     * @deprecated Use `storageMass` instead
+     * @returns {bigint}
+     */
+    get mass() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_get_mass(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @deprecated Use `storageMass` instead
+     * @param {bigint} v
+     */
+    set mass(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(v);
+        wasm.transaction_set_mass(this.__wbg_ptr, v);
+    }
+    /**
+     * Returns a list of unique addresses used by transaction inputs.
+     * This method can be used to determine addresses used by transaction inputs
+     * in order to select private keys needed for transaction signing.
+     * @param {NetworkType | NetworkId | string} network_type
+     * @returns {Address[]}
+     */
+    addresses(network_type) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transaction_addresses(this.__wbg_ptr, network_type);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Returns the transaction ID
+     * @returns {string}
+     */
+    get id() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transaction_id(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
 }
 
@@ -9513,10 +10177,11 @@ export class TransactionInput {
 
     toJSON() {
         return {
-            previousOutpoint: this.previousOutpoint,
-            signatureScript: this.signatureScript,
             sequence: this.sequence,
             sigOpCount: this.sigOpCount,
+            computeBudget: this.computeBudget,
+            previousOutpoint: this.previousOutpoint,
+            signatureScript: this.signatureScript,
             utxo: this.utxo,
         };
     }
@@ -9547,6 +10212,60 @@ export class TransactionInput {
         this.__wbg_ptr = ret[0] >>> 0;
         TransactionInputFinalization.register(this, this.__wbg_ptr, this);
         return this;
+    }
+    /**
+     * @returns {bigint}
+     */
+    get sequence() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactioninput_get_sequence(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @param {bigint} sequence
+     */
+    set sequence(sequence) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(sequence);
+        wasm.transactioninput_set_sequence(this.__wbg_ptr, sequence);
+    }
+    /**
+     * @returns {number}
+     */
+    get sigOpCount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactioninput_get_sig_op_count(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} sig_op_count
+     */
+    set sigOpCount(sig_op_count) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(sig_op_count);
+        wasm.transactioninput_set_sig_op_count(this.__wbg_ptr, sig_op_count);
+    }
+    /**
+     * @returns {number}
+     */
+    get computeBudget() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactioninput_get_compute_budget(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} compute_budget
+     */
+    set computeBudget(compute_budget) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(compute_budget);
+        wasm.transactioninput_set_compute_budget(this.__wbg_ptr, compute_budget);
     }
     /**
      * @returns {TransactionOutpoint}
@@ -9592,42 +10311,6 @@ export class TransactionInput {
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
         }
-    }
-    /**
-     * @returns {bigint}
-     */
-    get sequence() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactioninput_get_sequence(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
-     * @param {bigint} sequence
-     */
-    set sequence(sequence) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(sequence);
-        wasm.transactioninput_set_sequence(this.__wbg_ptr, sequence);
-    }
-    /**
-     * @returns {number}
-     */
-    get sigOpCount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactioninput_get_sig_op_count(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} sig_op_count
-     */
-    set sigOpCount(sig_op_count) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(sig_op_count);
-        wasm.transactioninput_set_sig_op_count(this.__wbg_ptr, sig_op_count);
     }
     /**
      * @returns {UtxoEntryReference | undefined}
@@ -9683,39 +10366,6 @@ export class TransactionOutpoint {
         wasm.__wbg_transactionoutpoint_free(ptr, 0);
     }
     /**
-     * @param {Hash} transaction_id
-     * @param {number} index
-     */
-    constructor(transaction_id, index) {
-        _assertClass(transaction_id, Hash);
-        if (transaction_id.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        var ptr0 = transaction_id.__destroy_into_raw();
-        _assertNum(index);
-        const ret = wasm.transactionoutpoint_ctor(ptr0, index);
-        this.__wbg_ptr = ret >>> 0;
-        TransactionOutpointFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    getId() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transactionoutpoint_getId(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {string}
      */
     get transactionId() {
@@ -9733,6 +10383,22 @@ export class TransactionOutpoint {
         }
     }
     /**
+     * @param {Hash} transaction_id
+     * @param {number} index
+     */
+    constructor(transaction_id, index) {
+        _assertClass(transaction_id, Hash);
+        if (transaction_id.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        var ptr0 = transaction_id.__destroy_into_raw();
+        _assertNum(index);
+        const ret = wasm.transactionoutpoint_ctor(ptr0, index);
+        this.__wbg_ptr = ret >>> 0;
+        TransactionOutpointFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
      * @returns {number}
      */
     get index() {
@@ -9740,6 +10406,23 @@ export class TransactionOutpoint {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.transactionoutpoint_index(this.__wbg_ptr);
         return ret >>> 0;
+    }
+    /**
+     * @returns {string}
+     */
+    getId() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transactionoutpoint_getId(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
 }
 
@@ -9762,8 +10445,9 @@ export class TransactionOutput {
 
     toJSON() {
         return {
-            value: this.value,
+            covenant: this.covenant,
             scriptPublicKey: this.scriptPublicKey,
+            value: this.value,
         };
     }
 
@@ -9783,38 +10467,26 @@ export class TransactionOutput {
         wasm.__wbg_transactionoutput_free(ptr, 0);
     }
     /**
-     * TransactionOutput constructor
-     * @param {bigint} value
-     * @param {ScriptPublicKey} script_public_key
+     * @returns {CovenantBinding | undefined}
      */
-    constructor(value, script_public_key) {
-        _assertBigInt(value);
-        _assertClass(script_public_key, ScriptPublicKey);
-        if (script_public_key.__wbg_ptr === 0) {
+    get covenant() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionoutput_covenant(this.__wbg_ptr);
+        return ret === 0 ? undefined : CovenantBinding.__wrap(ret);
+    }
+    /**
+     * @param {CovenantBinding} v
+     */
+    set covenant(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertClass(v, CovenantBinding);
+        if (v.__wbg_ptr === 0) {
             throw new Error('Attempt to use a moved value');
         }
-        const ret = wasm.transactionoutput_ctor(value, script_public_key.__wbg_ptr);
-        this.__wbg_ptr = ret >>> 0;
-        TransactionOutputFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {bigint}
-     */
-    get value() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionoutput_value(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
-     * @param {bigint} v
-     */
-    set value(v) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertBigInt(v);
-        wasm.transactionoutput_set_value(this.__wbg_ptr, v);
+        var ptr0 = v.__destroy_into_raw();
+        wasm.transactionoutput_set_covenant(this.__wbg_ptr, ptr0);
     }
     /**
      * @returns {ScriptPublicKey}
@@ -9836,6 +10508,49 @@ export class TransactionOutput {
             throw new Error('Attempt to use a moved value');
         }
         wasm.transactionoutput_set_scriptPublicKey(this.__wbg_ptr, v.__wbg_ptr);
+    }
+    /**
+     * TransactionOutput constructor
+     * @param {bigint} value
+     * @param {ScriptPublicKey} script_public_key
+     * @param {CovenantBinding | null} [covenant]
+     */
+    constructor(value, script_public_key, covenant) {
+        _assertBigInt(value);
+        _assertClass(script_public_key, ScriptPublicKey);
+        if (script_public_key.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        let ptr0 = 0;
+        if (!isLikeNone(covenant)) {
+            _assertClass(covenant, CovenantBinding);
+            if (covenant.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            ptr0 = covenant.__destroy_into_raw();
+        }
+        const ret = wasm.transactionoutput_ctor(value, script_public_key.__wbg_ptr, ptr0);
+        this.__wbg_ptr = ret >>> 0;
+        TransactionOutputFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @returns {bigint}
+     */
+    get value() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionoutput_value(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @param {bigint} v
+     */
+    set value(v) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertBigInt(v);
+        wasm.transactionoutput_set_value(this.__wbg_ptr, v);
     }
 }
 
@@ -9861,16 +10576,16 @@ export class TransactionRecord {
 
     toJSON() {
         return {
+            data: this.data,
+            value: this.value,
+            binding: this.binding,
+            blockDaaScore: this.blockDaaScore,
+            type: this.type,
             id: this.id,
             unixtimeMsec: this.unixtimeMsec,
             network: this.network,
             note: this.note,
             metadata: this.metadata,
-            value: this.value,
-            blockDaaScore: this.blockDaaScore,
-            binding: this.binding,
-            data: this.data,
-            type: this.type,
         };
     }
 
@@ -9888,6 +10603,102 @@ export class TransactionRecord {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_transactionrecord_free(ptr, 0);
+    }
+    /**
+     * Check if the transaction record has the given address within the associated UTXO set.
+     * @param {Address} address
+     * @returns {boolean}
+     */
+    hasAddress(address) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertClass(address, Address);
+        if (address.__wbg_ptr === 0) {
+            throw new Error('Attempt to use a moved value');
+        }
+        const ret = wasm.transactionrecord_hasAddress(this.__wbg_ptr, address.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {ITransactionData}
+     */
+    get data() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionrecord_data(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {bigint}
+     */
+    get value() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionrecord_value(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {IBinding}
+     */
+    get binding() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionrecord_binding(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {bigint} currentDaaScore
+     * @returns {string}
+     */
+    maturityProgress(currentDaaScore) {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transactionrecord_maturityProgress(this.__wbg_ptr, currentDaaScore);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {bigint}
+     */
+    get blockDaaScore() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionrecord_blockDaaScore(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {string}
+     */
+    get type() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.transactionrecord_type(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Serialize the transaction record to a JavaScript object.
+     * @returns {any}
+     */
+    serialize() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.transactionrecord_serialize(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {Hash}
@@ -10002,102 +10813,6 @@ export class TransactionRecord {
         var ptr0 = isLikeNone(arg0) ? 0 : passStringToWasm0(arg0, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         var len0 = WASM_VECTOR_LEN;
         wasm.__wbg_set_transactionrecord_metadata(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {bigint} currentDaaScore
-     * @returns {string}
-     */
-    maturityProgress(currentDaaScore) {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transactionrecord_maturityProgress(this.__wbg_ptr, currentDaaScore);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {bigint}
-     */
-    get value() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionrecord_value(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {bigint}
-     */
-    get blockDaaScore() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionrecord_blockDaaScore(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {IBinding}
-     */
-    get binding() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionrecord_binding(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {ITransactionData}
-     */
-    get data() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionrecord_data(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {string}
-     */
-    get type() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.transactionrecord_type(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * Check if the transaction record has the given address within the associated UTXO set.
-     * @param {Address} address
-     * @returns {boolean}
-     */
-    hasAddress(address) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertClass(address, Address);
-        if (address.__wbg_ptr === 0) {
-            throw new Error('Attempt to use a moved value');
-        }
-        const ret = wasm.transactionrecord_hasAddress(this.__wbg_ptr, address.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Serialize the transaction record to a JavaScript object.
-     * @returns {any}
-     */
-    serialize() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.transactionrecord_serialize(this.__wbg_ptr);
-        return ret;
     }
 }
 
@@ -10324,6 +11039,7 @@ export class TransactionUtxoEntry {
             scriptPublicKey: this.scriptPublicKey,
             blockDaaScore: this.blockDaaScore,
             isCoinbase: this.isCoinbase,
+            covenantId: this.covenantId,
         };
     }
 
@@ -10418,6 +11134,31 @@ export class TransactionUtxoEntry {
         _assertBoolean(arg0);
         wasm.__wbg_set_transactionutxoentry_isCoinbase(this.__wbg_ptr, arg0);
     }
+    /**
+     * @returns {Hash | undefined}
+     */
+    get covenantId() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_transactionutxoentry_covenantId(this.__wbg_ptr);
+        return ret === 0 ? undefined : Hash.__wrap(ret);
+    }
+    /**
+     * @param {Hash | null} [arg0]
+     */
+    set covenantId(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(arg0)) {
+            _assertClass(arg0, Hash);
+            if (arg0.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            ptr0 = arg0.__destroy_into_raw();
+        }
+        wasm.__wbg_set_transactionutxoentry_covenantId(this.__wbg_ptr, ptr0);
+    }
 }
 
 const UserInfoOptionsFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -10446,6 +11187,14 @@ export class UserInfoOptions {
         wasm.__wbg_userinfooptions_free(ptr, 0);
     }
     /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.userinfooptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
      * @param {string | null} [encoding]
      */
     constructor(encoding) {
@@ -10469,14 +11218,6 @@ export class UserInfoOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.userinfooptions_encoding(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.userinfooptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
 }
 
@@ -10543,10 +11284,10 @@ export class UtxoContext {
 
     toJSON() {
         return {
-            isActive: this.isActive,
             matureLength: this.matureLength,
-            balance: this.balance,
             balanceStrings: this.balanceStrings,
+            isActive: this.isActive,
+            balance: this.balance,
         };
     }
 
@@ -10564,62 +11305,6 @@ export class UtxoContext {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_utxocontext_free(ptr, 0);
-    }
-    /**
-     * @param {IUtxoContextArgs} js_value
-     */
-    constructor(js_value) {
-        const ret = wasm.utxocontext_ctor(js_value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        UtxoContextFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Performs a scan of the given addresses and registers them in the context for event notifications.
-     * @param {(Address | string)[]} addresses
-     * @param {bigint | null} [optional_current_daa_score]
-     * @returns {Promise<void>}
-     */
-    trackAddresses(addresses, optional_current_daa_score) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_trackAddresses(this.__wbg_ptr, addresses, isLikeNone(optional_current_daa_score) ? 0 : addToExternrefTable0(optional_current_daa_score));
-        return ret;
-    }
-    /**
-     * Unregister a list of addresses from the context. This will stop tracking of these addresses.
-     * @param {(Address | string)[]} addresses
-     * @returns {Promise<void>}
-     */
-    unregisterAddresses(addresses) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_unregisterAddresses(this.__wbg_ptr, addresses);
-        return ret;
-    }
-    /**
-     * Clear the UtxoContext.  Unregister all addresses and clear all UTXO entries.
-     * IMPORTANT: This function must be manually called when disconnecting or re-connecting to the node
-     * (followed by address re-registration).
-     * @returns {Promise<void>}
-     */
-    clear() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_clear(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {boolean}
-     */
-    get isActive() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_isActive(this.__wbg_ptr);
-        return ret !== 0;
     }
     /**
      *
@@ -10662,17 +11347,73 @@ export class UtxoContext {
         return ret >>> 0;
     }
     /**
-     * Returns pending UTXO entries that are currently managed by the UtxoContext.
-     * @returns {UtxoEntryReference[]}
+     * Current {@link BalanceStrings} of the UtxoContext.
+     * @returns {BalanceStrings | undefined}
      */
-    getPending() {
+    get balanceStrings() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_getPending(this.__wbg_ptr);
+        const ret = wasm.utxocontext_balanceStrings(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return takeFromExternrefTable0(ret[0]);
+        return ret[0] === 0 ? undefined : BalanceStrings.__wrap(ret[0]);
+    }
+    /**
+     * Performs a scan of the given addresses and registers them in the context for event notifications.
+     * @param {(Address | string)[]} addresses
+     * @param {bigint | null} [optional_current_daa_score]
+     * @returns {Promise<void>}
+     */
+    trackAddresses(addresses, optional_current_daa_score) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxocontext_trackAddresses(this.__wbg_ptr, addresses, isLikeNone(optional_current_daa_score) ? 0 : addToExternrefTable0(optional_current_daa_score));
+        return ret;
+    }
+    /**
+     * Unregister a list of addresses from the context. This will stop tracking of these addresses.
+     * @param {(Address | string)[]} addresses
+     * @returns {Promise<void>}
+     */
+    unregisterAddresses(addresses) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxocontext_unregisterAddresses(this.__wbg_ptr, addresses);
+        return ret;
+    }
+    /**
+     * @param {IUtxoContextArgs} js_value
+     */
+    constructor(js_value) {
+        const ret = wasm.utxocontext_ctor(js_value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        UtxoContextFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Clear the UtxoContext.  Unregister all addresses and clear all UTXO entries.
+     * IMPORTANT: This function must be manually called when disconnecting or re-connecting to the node
+     * (followed by address re-registration).
+     * @returns {Promise<void>}
+     */
+    clear() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxocontext_clear(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {boolean}
+     */
+    get isActive() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxocontext_isActive(this.__wbg_ptr);
+        return ret !== 0;
     }
     /**
      * Current {@link Balance} of the UtxoContext.
@@ -10685,17 +11426,17 @@ export class UtxoContext {
         return ret === 0 ? undefined : Balance.__wrap(ret);
     }
     /**
-     * Current {@link BalanceStrings} of the UtxoContext.
-     * @returns {BalanceStrings | undefined}
+     * Returns pending UTXO entries that are currently managed by the UtxoContext.
+     * @returns {UtxoEntryReference[]}
      */
-    get balanceStrings() {
+    getPending() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxocontext_balanceStrings(this.__wbg_ptr);
+        const ret = wasm.utxocontext_getPending(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return ret[0] === 0 ? undefined : BalanceStrings.__wrap(ret[0]);
+        return takeFromExternrefTable0(ret[0]);
     }
 }
 
@@ -10735,19 +11476,6 @@ export class UtxoEntries {
         wasm.__wbg_utxoentries_free(ptr, 0);
     }
     /**
-     * Create a new `UtxoEntries` struct with a set of entries.
-     * @param {any} js_value
-     */
-    constructor(js_value) {
-        const ret = wasm.utxoentries_js_ctor(js_value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        UtxoEntriesFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
      * @returns {any}
      */
     get items() {
@@ -10783,6 +11511,19 @@ export class UtxoEntries {
         const ret = wasm.utxoentries_amount(this.__wbg_ptr);
         return BigInt.asUintN(64, ret);
     }
+    /**
+     * Create a new `UtxoEntries` struct with a set of entries.
+     * @param {any} js_value
+     */
+    constructor(js_value) {
+        const ret = wasm.utxoentries_js_ctor(js_value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        UtxoEntriesFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
 }
 
 const UtxoEntryFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -10815,6 +11556,7 @@ export class UtxoEntry {
             scriptPublicKey: this.scriptPublicKey,
             blockDaaScore: this.blockDaaScore,
             isCoinbase: this.isCoinbase,
+            covenantId: this.covenantId,
         };
     }
 
@@ -10957,6 +11699,31 @@ export class UtxoEntry {
         wasm.__wbg_set_utxoentry_isCoinbase(this.__wbg_ptr, arg0);
     }
     /**
+     * @returns {Hash | undefined}
+     */
+    get covenantId() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.__wbg_get_utxoentry_covenantId(this.__wbg_ptr);
+        return ret === 0 ? undefined : Hash.__wrap(ret);
+    }
+    /**
+     * @param {Hash | null} [arg0]
+     */
+    set covenantId(arg0) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        let ptr0 = 0;
+        if (!isLikeNone(arg0)) {
+            _assertClass(arg0, Hash);
+            if (arg0.__wbg_ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            ptr0 = arg0.__destroy_into_raw();
+        }
+        wasm.__wbg_set_utxoentry_covenantId(this.__wbg_ptr, ptr0);
+    }
+    /**
      * @returns {string}
      */
     toString() {
@@ -10994,13 +11761,13 @@ export class UtxoEntryReference {
 
     toJSON() {
         return {
-            entry: this.entry,
-            outpoint: this.outpoint,
-            address: this.address,
-            amount: this.amount,
             isCoinbase: this.isCoinbase,
             blockDaaScore: this.blockDaaScore,
             scriptPublicKey: this.scriptPublicKey,
+            entry: this.entry,
+            amount: this.amount,
+            address: this.address,
+            outpoint: this.outpoint,
         };
     }
 
@@ -11020,6 +11787,15 @@ export class UtxoEntryReference {
         wasm.__wbg_utxoentryreference_free(ptr, 0);
     }
     /**
+     * @returns {boolean}
+     */
+    get isCoinbase() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoentryreference_isCoinbase(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
      * @returns {string}
      */
     toString() {
@@ -11030,51 +11806,6 @@ export class UtxoEntryReference {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * @returns {UtxoEntry}
-     */
-    get entry() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoentryreference_entry(this.__wbg_ptr);
-        return UtxoEntry.__wrap(ret);
-    }
-    /**
-     * @returns {TransactionOutpoint}
-     */
-    get outpoint() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoentryreference_outpoint(this.__wbg_ptr);
-        return TransactionOutpoint.__wrap(ret);
-    }
-    /**
-     * @returns {Address | undefined}
-     */
-    get address() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoentryreference_address(this.__wbg_ptr);
-        return ret === 0 ? undefined : Address.__wrap(ret);
-    }
-    /**
-     * @returns {bigint}
-     */
-    get amount() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoentryreference_amount(this.__wbg_ptr);
-        return BigInt.asUintN(64, ret);
-    }
-    /**
-     * @returns {boolean}
-     */
-    get isCoinbase() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoentryreference_isCoinbase(this.__wbg_ptr);
-        return ret !== 0;
     }
     /**
      * @returns {bigint}
@@ -11093,6 +11824,42 @@ export class UtxoEntryReference {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.utxoentryreference_scriptPublicKey(this.__wbg_ptr);
         return ScriptPublicKey.__wrap(ret);
+    }
+    /**
+     * @returns {UtxoEntry}
+     */
+    get entry() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoentryreference_entry(this.__wbg_ptr);
+        return UtxoEntry.__wrap(ret);
+    }
+    /**
+     * @returns {bigint}
+     */
+    get amount() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoentryreference_amount(this.__wbg_ptr);
+        return BigInt.asUintN(64, ret);
+    }
+    /**
+     * @returns {Address | undefined}
+     */
+    get address() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoentryreference_address(this.__wbg_ptr);
+        return ret === 0 ? undefined : Address.__wrap(ret);
+    }
+    /**
+     * @returns {TransactionOutpoint}
+     */
+    get outpoint() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoentryreference_outpoint(this.__wbg_ptr);
+        return TransactionOutpoint.__wrap(ret);
     }
 }
 
@@ -11117,8 +11884,8 @@ export class UtxoProcessor {
 
     toJSON() {
         return {
-            rpc: this.rpc,
             networkId: this.networkId,
+            rpc: this.rpc,
             isActive: this.isActive,
         };
     }
@@ -11137,76 +11904,6 @@ export class UtxoProcessor {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_utxoprocessor_free(ptr, 0);
-    }
-    /**
-     * @param {string | UtxoProcessorNotificationCallback} event
-     * @param {UtxoProcessorNotificationCallback | null} [callback]
-     */
-    addEventListener(event, callback) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_addEventListener(this.__wbg_ptr, event, isLikeNone(callback) ? 0 : addToExternrefTable0(callback));
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * @param {UtxoProcessorEventType | UtxoProcessorEventType[] | string | string[]} event
-     * @param {UtxoProcessorNotificationCallback | null} [callback]
-     */
-    removeEventListener(event, callback) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_removeEventListener(this.__wbg_ptr, event, isLikeNone(callback) ? 0 : addToExternrefTable0(callback));
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * UtxoProcessor constructor.
-     *
-     *
-     *
-     * @see {@link IUtxoProcessorArgs}
-     * @param {IUtxoProcessorArgs} js_value
-     */
-    constructor(js_value) {
-        const ret = wasm.utxoprocessor_ctor(js_value);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        UtxoProcessorFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Starts the UtxoProcessor and begins processing UTXO and other notifications.
-     * @returns {Promise<void>}
-     */
-    start() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_start(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Stops the UtxoProcessor and ends processing UTXO and other notifications.
-     * @returns {Promise<void>}
-     */
-    stop() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_stop(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {RpcClient}
-     */
-    get rpc() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_rpc(this.__wbg_ptr);
-        return RpcClient.__wrap(ret);
     }
     /**
      * @returns {string | undefined}
@@ -11234,13 +11931,57 @@ export class UtxoProcessor {
         }
     }
     /**
-     * @returns {boolean}
+     * @param {string | UtxoProcessorNotificationCallback} event
+     * @param {UtxoProcessorNotificationCallback | null} [callback]
      */
-    get isActive() {
+    addEventListener(event, callback) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.utxoprocessor_isActive(this.__wbg_ptr);
-        return ret !== 0;
+        const ret = wasm.utxoprocessor_addEventListener(this.__wbg_ptr, event, isLikeNone(callback) ? 0 : addToExternrefTable0(callback));
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @param {UtxoProcessorEventType | UtxoProcessorEventType[] | string | string[]} event
+     * @param {UtxoProcessorNotificationCallback | null} [callback]
+     */
+    removeEventListener(event, callback) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoprocessor_removeEventListener(this.__wbg_ptr, event, isLikeNone(callback) ? 0 : addToExternrefTable0(callback));
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @returns {RpcClient}
+     */
+    get rpc() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoprocessor_rpc(this.__wbg_ptr);
+        return RpcClient.__wrap(ret);
+    }
+    /**
+     *
+     * Set the user transaction maturity period DAA score for a given network.
+     * This controls the DAA period after which the user transactions are considered mature
+     * and the wallet subsystem emits the transaction maturity event.
+     *
+     * @see {@link TransactionRecord}
+     * @see {@link IUtxoProcessorEvent}
+     *
+     * @category Wallet SDK
+     * @param {NetworkId | string} network_id
+     * @param {bigint} value
+     */
+    static setUserTransactionMaturityDAA(network_id, value) {
+        _assertBigInt(value);
+        const ret = wasm.utxoprocessor_setUserTransactionMaturityDAA(network_id, value);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
     }
     /**
      *
@@ -11263,24 +12004,50 @@ export class UtxoProcessor {
         }
     }
     /**
+     * UtxoProcessor constructor.
      *
-     * Set the user transaction maturity period DAA score for a given network.
-     * This controls the DAA period after which the user transactions are considered mature
-     * and the wallet subsystem emits the transaction maturity event.
      *
-     * @see {@link TransactionRecord}
-     * @see {@link IUtxoProcessorEvent}
      *
-     * @category Wallet SDK
-     * @param {NetworkId | string} network_id
-     * @param {bigint} value
+     * @see {@link IUtxoProcessorArgs}
+     * @param {IUtxoProcessorArgs} js_value
      */
-    static setUserTransactionMaturityDAA(network_id, value) {
-        _assertBigInt(value);
-        const ret = wasm.utxoprocessor_setUserTransactionMaturityDAA(network_id, value);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
+    constructor(js_value) {
+        const ret = wasm.utxoprocessor_ctor(js_value);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        this.__wbg_ptr = ret[0] >>> 0;
+        UtxoProcessorFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Stops the UtxoProcessor and ends processing UTXO and other notifications.
+     * @returns {Promise<void>}
+     */
+    stop() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoprocessor_stop(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Starts the UtxoProcessor and begins processing UTXO and other notifications.
+     * @returns {Promise<void>}
+     */
+    start() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoprocessor_start(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {boolean}
+     */
+    get isActive() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.utxoprocessor_isActive(this.__wbg_ptr);
+        return ret !== 0;
     }
 }
 
@@ -11326,10 +12093,10 @@ export class Wallet {
 
     toJSON() {
         return {
+            descriptor: this.descriptor,
             rpc: this.rpc,
             isOpen: this.isOpen,
             isSynced: this.isSynced,
-            descriptor: this.descriptor,
         };
     }
 
@@ -11349,6 +12116,24 @@ export class Wallet {
         wasm.__wbg_wallet_free(ptr, 0);
     }
     /**
+     * @returns {WalletDescriptor | undefined}
+     */
+    get descriptor() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_descriptor(this.__wbg_ptr);
+        return ret === 0 ? undefined : WalletDescriptor.__wrap(ret);
+    }
+    /**
+     * @returns {Promise<void>}
+     */
+    disconnect() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_disconnect(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * @param {IWalletConfig} config
      */
     constructor(config) {
@@ -11361,94 +12146,15 @@ export class Wallet {
         return this;
     }
     /**
-     * @returns {RpcClient}
+     * @param {NetworkId | string} network_id
      */
-    get rpc() {
+    setNetworkId(network_id) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_rpc(this.__wbg_ptr);
-        return RpcClient.__wrap(ret);
-    }
-    /**
-     * @remarks This is a local property indicating
-     * if the wallet is currently open.
-     * @returns {boolean}
-     */
-    get isOpen() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_isOpen(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * @remarks This is a local property indicating
-     * if the node is currently synced.
-     * @returns {boolean}
-     */
-    get isSynced() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_isSynced(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * @returns {WalletDescriptor | undefined}
-     */
-    get descriptor() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_descriptor(this.__wbg_ptr);
-        return ret === 0 ? undefined : WalletDescriptor.__wrap(ret);
-    }
-    /**
-     * Check if a wallet with a given name exists.
-     * @param {string | null} [name]
-     * @returns {Promise<boolean>}
-     */
-    exists(name) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        var ptr0 = isLikeNone(name) ? 0 : passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        var len0 = WASM_VECTOR_LEN;
-        const ret = wasm.wallet_exists(this.__wbg_ptr, ptr0, len0);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    start() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_start(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    stop() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_stop(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {IConnectOptions | undefined | null} [args]
-     * @returns {Promise<void>}
-     */
-    connect(args) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_connect(this.__wbg_ptr, isLikeNone(args) ? 0 : addToExternrefTable0(args));
-        return ret;
-    }
-    /**
-     * @returns {Promise<void>}
-     */
-    disconnect() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_disconnect(this.__wbg_ptr);
-        return ret;
+        const ret = wasm.wallet_setNetworkId(this.__wbg_ptr, network_id);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
     }
     /**
      * @param {string | WalletNotificationCallback} event
@@ -11475,52 +12181,76 @@ export class Wallet {
         }
     }
     /**
-     * @param {NetworkId | string} network_id
+     * @returns {RpcClient}
      */
-    setNetworkId(network_id) {
+    get rpc() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_setNetworkId(this.__wbg_ptr, network_id);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
+        const ret = wasm.wallet_rpc(this.__wbg_ptr);
+        return RpcClient.__wrap(ret);
     }
     /**
-     * Ping backend
-     * @see {@link IBatchRequest} {@link IBatchResponse}
-     * @throws `string` in case of an error.
-     * @param {IBatchRequest} request
-     * @returns {Promise<IBatchResponse>}
+     * @returns {Promise<void>}
      */
-    batch(request) {
+    stop() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_batch(this.__wbg_ptr, request);
+        const ret = wasm.wallet_stop(this.__wbg_ptr);
         return ret;
     }
     /**
-     * @see {@link IFlushRequest} {@link IFlushResponse}
-     * @throws `string` in case of an error.
-     * @param {IFlushRequest} request
-     * @returns {Promise<IFlushResponse>}
+     * @returns {Promise<void>}
      */
-    flush(request) {
+    start() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_flush(this.__wbg_ptr, request);
+        const ret = wasm.wallet_start(this.__wbg_ptr);
         return ret;
     }
     /**
-     * @see {@link IRetainContextRequest} {@link IRetainContextResponse}
-     * @throws `string` in case of an error.
-     * @param {IRetainContextRequest} request
-     * @returns {Promise<IRetainContextResponse>}
+     * Check if a wallet with a given name exists.
+     * @param {string | null} [name]
+     * @returns {Promise<boolean>}
      */
-    retainContext(request) {
+    exists(name) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_retainContext(this.__wbg_ptr, request);
+        var ptr0 = isLikeNone(name) ? 0 : passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wallet_exists(this.__wbg_ptr, ptr0, len0);
         return ret;
+    }
+    /**
+     * @param {IConnectOptions | undefined | null} [args]
+     * @returns {Promise<void>}
+     */
+    connect(args) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_connect(this.__wbg_ptr, isLikeNone(args) ? 0 : addToExternrefTable0(args));
+        return ret;
+    }
+    /**
+     * @remarks This is a local property indicating
+     * if the wallet is currently open.
+     * @returns {boolean}
+     */
+    get isOpen() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_isOpen(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @remarks This is a local property indicating
+     * if the node is currently synced.
+     * @returns {boolean}
+     */
+    get isSynced() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_isSynced(this.__wbg_ptr);
+        return ret !== 0;
     }
     /**
      * @see {@link IGetStatusRequest} {@link IGetStatusResponse}
@@ -11532,30 +12262,6 @@ export class Wallet {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.wallet_getStatus(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IWalletEnumerateRequest} {@link IWalletEnumerateResponse}
-     * @throws `string` in case of an error.
-     * @param {IWalletEnumerateRequest} request
-     * @returns {Promise<IWalletEnumerateResponse>}
-     */
-    walletEnumerate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_walletEnumerate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IWalletCreateRequest} {@link IWalletCreateResponse}
-     * @throws `string` in case of an error.
-     * @param {IWalletCreateRequest} request
-     * @returns {Promise<IWalletCreateResponse>}
-     */
-    walletCreate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_walletCreate(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11571,15 +12277,15 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IWalletReloadRequest} {@link IWalletReloadResponse}
+     * @see {@link IAccountsGetRequest} {@link IAccountsGetResponse}
      * @throws `string` in case of an error.
-     * @param {IWalletReloadRequest} request
-     * @returns {Promise<IWalletReloadResponse>}
+     * @param {IAccountsGetRequest} request
+     * @returns {Promise<IAccountsGetResponse>}
      */
-    walletReload(request) {
+    accountsGet(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_walletReload(this.__wbg_ptr, request);
+        const ret = wasm.wallet_accountsGet(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11595,15 +12301,27 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IWalletChangeSecretRequest} {@link IWalletChangeSecretResponse}
+     * @see {@link IAccountsSendRequest} {@link IAccountsSendResponse}
      * @throws `string` in case of an error.
-     * @param {IWalletChangeSecretRequest} request
-     * @returns {Promise<IWalletChangeSecretResponse>}
+     * @param {IAccountsSendRequest} request
+     * @returns {Promise<IAccountsSendResponse>}
      */
-    walletChangeSecret(request) {
+    accountsSend(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_walletChangeSecret(this.__wbg_ptr, request);
+        const ret = wasm.wallet_accountsSend(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IWalletCreateRequest} {@link IWalletCreateResponse}
+     * @throws `string` in case of an error.
+     * @param {IWalletCreateRequest} request
+     * @returns {Promise<IWalletCreateResponse>}
+     */
+    walletCreate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_walletCreate(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11631,15 +12349,207 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IPrvKeyDataEnumerateRequest} {@link IPrvKeyDataEnumerateResponse}
+     * @see {@link IWalletReloadRequest} {@link IWalletReloadResponse}
      * @throws `string` in case of an error.
-     * @param {IPrvKeyDataEnumerateRequest} request
-     * @returns {Promise<IPrvKeyDataEnumerateResponse>}
+     * @param {IWalletReloadRequest} request
+     * @returns {Promise<IWalletReloadResponse>}
      */
-    prvKeyDataEnumerate(request) {
+    walletReload(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_prvKeyDataEnumerate(this.__wbg_ptr, request);
+        const ret = wasm.wallet_walletReload(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IRetainContextRequest} {@link IRetainContextResponse}
+     * @throws `string` in case of an error.
+     * @param {IRetainContextRequest} request
+     * @returns {Promise<IRetainContextResponse>}
+     */
+    retainContext(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_retainContext(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsCreateRequest} {@link IAccountsCreateResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsCreateRequest} request
+     * @returns {Promise<IAccountsCreateResponse>}
+     */
+    accountsCreate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsCreate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsImportRequest} {@link IAccountsImportResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsImportRequest} request
+     * @returns {Promise<IAccountsImportResponse>}
+     */
+    accountsImport(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsImport(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsRenameRequest} {@link IAccountsRenameResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsRenameRequest} request
+     * @returns {Promise<IAccountsRenameResponse>}
+     */
+    accountsRename(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsRename(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IPrvKeyDataGetRequest} {@link IPrvKeyDataGetResponse}
+     * @throws `string` in case of an error.
+     * @param {IPrvKeyDataGetRequest} request
+     * @returns {Promise<IPrvKeyDataGetResponse>}
+     */
+    prvKeyDataGet(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_prvKeyDataGet(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IWalletEnumerateRequest} {@link IWalletEnumerateResponse}
+     * @throws `string` in case of an error.
+     * @param {IWalletEnumerateRequest} request
+     * @returns {Promise<IWalletEnumerateResponse>}
+     */
+    walletEnumerate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_walletEnumerate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsActivateRequest} {@link IAccountsActivateResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsActivateRequest} request
+     * @returns {Promise<IAccountsActivateResponse>}
+     */
+    accountsActivate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsActivate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsEstimateRequest} {@link IAccountsEstimateResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsEstimateRequest} request
+     * @returns {Promise<IAccountsEstimateResponse>}
+     */
+    accountsEstimate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsEstimate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsTransferRequest} {@link IAccountsTransferResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsTransferRequest} request
+     * @returns {Promise<IAccountsTransferResponse>}
+     */
+    accountsTransfer(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsTransfer(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IFeeRateEstimateRequest} {@link IFeeRateEstimateResponse}
+     * @throws `string` in case of an error.
+     * @param {IFeeRateEstimateRequest} request
+     * @returns {Promise<IFeeRateEstimateResponse>}
+     */
+    feeRateEstimate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_feeRateEstimate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsDiscoveryRequest} {@link IAccountsDiscoveryResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsDiscoveryRequest} request
+     * @returns {Promise<IAccountsDiscoveryResponse>}
+     */
+    accountsDiscovery(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsDiscovery(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsEnumerateRequest} {@link IAccountsEnumerateResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsEnumerateRequest} request
+     * @returns {Promise<IAccountsEnumerateResponse>}
+     */
+    accountsEnumerate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsEnumerate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsGetUtxosRequest} {@link IAccountsGetUtxosResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsGetUtxosRequest} request
+     * @returns {Promise<IAccountsGetUtxosResponse>}
+     */
+    accountsGetUtxos(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsGetUtxos(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsPskbSendRequest} {@link IAccountsPskbSendResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsPskbSendRequest} request
+     * @returns {Promise<IAccountsPskbSendResponse>}
+     */
+    accountsPskbSend(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsPskbSend(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsPskbSignRequest} {@link IAccountsPskbSignResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsPskbSignRequest} request
+     * @returns {Promise<IAccountsPskbSignResponse>}
+     */
+    accountsPskbSign(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsPskbSign(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsDeactivateRequest} {@link IAccountsDeactivateResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsDeactivateRequest} request
+     * @returns {Promise<IAccountsDeactivateResponse>}
+     */
+    accountsDeactivate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsDeactivate(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11667,219 +12577,15 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IPrvKeyDataGetRequest} {@link IPrvKeyDataGetResponse}
+     * @see {@link IWalletChangeSecretRequest} {@link IWalletChangeSecretResponse}
      * @throws `string` in case of an error.
-     * @param {IPrvKeyDataGetRequest} request
-     * @returns {Promise<IPrvKeyDataGetResponse>}
+     * @param {IWalletChangeSecretRequest} request
+     * @returns {Promise<IWalletChangeSecretResponse>}
      */
-    prvKeyDataGet(request) {
+    walletChangeSecret(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_prvKeyDataGet(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsEnumerateRequest} {@link IAccountsEnumerateResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsEnumerateRequest} request
-     * @returns {Promise<IAccountsEnumerateResponse>}
-     */
-    accountsEnumerate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsEnumerate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsRenameRequest} {@link IAccountsRenameResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsRenameRequest} request
-     * @returns {Promise<IAccountsRenameResponse>}
-     */
-    accountsRename(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsRename(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsDiscoveryRequest} {@link IAccountsDiscoveryResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsDiscoveryRequest} request
-     * @returns {Promise<IAccountsDiscoveryResponse>}
-     */
-    accountsDiscovery(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsDiscovery(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsCreateRequest} {@link IAccountsCreateResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsCreateRequest} request
-     * @returns {Promise<IAccountsCreateResponse>}
-     */
-    accountsCreate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsCreate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsEnsureDefaultRequest} {@link IAccountsEnsureDefaultResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsEnsureDefaultRequest} request
-     * @returns {Promise<IAccountsEnsureDefaultResponse>}
-     */
-    accountsEnsureDefault(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsEnsureDefault(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsImportRequest} {@link IAccountsImportResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsImportRequest} request
-     * @returns {Promise<IAccountsImportResponse>}
-     */
-    accountsImport(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsImport(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsActivateRequest} {@link IAccountsActivateResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsActivateRequest} request
-     * @returns {Promise<IAccountsActivateResponse>}
-     */
-    accountsActivate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsActivate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsDeactivateRequest} {@link IAccountsDeactivateResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsDeactivateRequest} request
-     * @returns {Promise<IAccountsDeactivateResponse>}
-     */
-    accountsDeactivate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsDeactivate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsGetRequest} {@link IAccountsGetResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsGetRequest} request
-     * @returns {Promise<IAccountsGetResponse>}
-     */
-    accountsGet(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsGet(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsCreateNewAddressRequest} {@link IAccountsCreateNewAddressResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsCreateNewAddressRequest} request
-     * @returns {Promise<IAccountsCreateNewAddressResponse>}
-     */
-    accountsCreateNewAddress(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsCreateNewAddress(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsSendRequest} {@link IAccountsSendResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsSendRequest} request
-     * @returns {Promise<IAccountsSendResponse>}
-     */
-    accountsSend(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsSend(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsPskbSignRequest} {@link IAccountsPskbSignResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsPskbSignRequest} request
-     * @returns {Promise<IAccountsPskbSignResponse>}
-     */
-    accountsPskbSign(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsPskbSign(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsPskbBroadcastRequest} {@link IAccountsPskbBroadcastResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsPskbBroadcastRequest} request
-     * @returns {Promise<IAccountsPskbBroadcastResponse>}
-     */
-    accountsPskbBroadcast(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsPskbBroadcast(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsPskbSendRequest} {@link IAccountsPskbSendResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsPskbSendRequest} request
-     * @returns {Promise<IAccountsPskbSendResponse>}
-     */
-    accountsPskbSend(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsPskbSend(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsGetUtxosRequest} {@link IAccountsGetUtxosResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsGetUtxosRequest} request
-     * @returns {Promise<IAccountsGetUtxosResponse>}
-     */
-    accountsGetUtxos(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsGetUtxos(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsTransferRequest} {@link IAccountsTransferResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsTransferRequest} request
-     * @returns {Promise<IAccountsTransferResponse>}
-     */
-    accountsTransfer(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsTransfer(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link IAccountsEstimateRequest} {@link IAccountsEstimateResponse}
-     * @throws `string` in case of an error.
-     * @param {IAccountsEstimateRequest} request
-     * @returns {Promise<IAccountsEstimateResponse>}
-     */
-    accountsEstimate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsEstimate(this.__wbg_ptr, request);
+        const ret = wasm.wallet_walletChangeSecret(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11895,27 +12601,15 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link ITransactionsReplaceNoteRequest} {@link ITransactionsReplaceNoteResponse}
+     * @see {@link IAccountsCommitRevealRequest} {@link IAccountsCommitRevealResponse}
      * @throws `string` in case of an error.
-     * @param {ITransactionsReplaceNoteRequest} request
-     * @returns {Promise<ITransactionsReplaceNoteResponse>}
+     * @param {IAccountsCommitRevealRequest} request
+     * @returns {Promise<IAccountsCommitRevealResponse>}
      */
-    transactionsReplaceNote(request) {
+    accountsCommitReveal(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_transactionsReplaceNote(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
-     * @see {@link ITransactionsReplaceMetadataRequest} {@link ITransactionsReplaceMetadataResponse}
-     * @throws `string` in case of an error.
-     * @param {ITransactionsReplaceMetadataRequest} request
-     * @returns {Promise<ITransactionsReplaceMetadataResponse>}
-     */
-    transactionsReplaceMetadata(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_transactionsReplaceMetadata(this.__wbg_ptr, request);
+        const ret = wasm.wallet_accountsCommitReveal(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11931,18 +12625,6 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IFeeRateEstimateRequest} {@link IFeeRateEstimateResponse}
-     * @throws `string` in case of an error.
-     * @param {IFeeRateEstimateRequest} request
-     * @returns {Promise<IFeeRateEstimateResponse>}
-     */
-    feeRateEstimate(request) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_feeRateEstimate(this.__wbg_ptr, request);
-        return ret;
-    }
-    /**
      * @see {@link IFeeRatePollerEnableRequest} {@link IFeeRatePollerEnableResponse}
      * @throws `string` in case of an error.
      * @param {IFeeRatePollerEnableRequest} request
@@ -11952,6 +12634,42 @@ export class Wallet {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.wallet_feeRatePollerEnable(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IPrvKeyDataEnumerateRequest} {@link IPrvKeyDataEnumerateResponse}
+     * @throws `string` in case of an error.
+     * @param {IPrvKeyDataEnumerateRequest} request
+     * @returns {Promise<IPrvKeyDataEnumerateResponse>}
+     */
+    prvKeyDataEnumerate(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_prvKeyDataEnumerate(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsEnsureDefaultRequest} {@link IAccountsEnsureDefaultResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsEnsureDefaultRequest} request
+     * @returns {Promise<IAccountsEnsureDefaultResponse>}
+     */
+    accountsEnsureDefault(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsEnsureDefault(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsPskbBroadcastRequest} {@link IAccountsPskbBroadcastResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsPskbBroadcastRequest} request
+     * @returns {Promise<IAccountsPskbBroadcastResponse>}
+     */
+    accountsPskbBroadcast(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsPskbBroadcast(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11967,15 +12685,27 @@ export class Wallet {
         return ret;
     }
     /**
-     * @see {@link IAccountsCommitRevealRequest} {@link IAccountsCommitRevealResponse}
+     * @see {@link ITransactionsReplaceNoteRequest} {@link ITransactionsReplaceNoteResponse}
      * @throws `string` in case of an error.
-     * @param {IAccountsCommitRevealRequest} request
-     * @returns {Promise<IAccountsCommitRevealResponse>}
+     * @param {ITransactionsReplaceNoteRequest} request
+     * @returns {Promise<ITransactionsReplaceNoteResponse>}
      */
-    accountsCommitReveal(request) {
+    transactionsReplaceNote(request) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.wallet_accountsCommitReveal(this.__wbg_ptr, request);
+        const ret = wasm.wallet_transactionsReplaceNote(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IAccountsCreateNewAddressRequest} {@link IAccountsCreateNewAddressResponse}
+     * @throws `string` in case of an error.
+     * @param {IAccountsCreateNewAddressRequest} request
+     * @returns {Promise<IAccountsCreateNewAddressResponse>}
+     */
+    accountsCreateNewAddress(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_accountsCreateNewAddress(this.__wbg_ptr, request);
         return ret;
     }
     /**
@@ -11988,6 +12718,43 @@ export class Wallet {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.wallet_accountsCommitRevealManual(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link ITransactionsReplaceMetadataRequest} {@link ITransactionsReplaceMetadataResponse}
+     * @throws `string` in case of an error.
+     * @param {ITransactionsReplaceMetadataRequest} request
+     * @returns {Promise<ITransactionsReplaceMetadataResponse>}
+     */
+    transactionsReplaceMetadata(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_transactionsReplaceMetadata(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * Ping backend
+     * @see {@link IBatchRequest} {@link IBatchResponse}
+     * @throws `string` in case of an error.
+     * @param {IBatchRequest} request
+     * @returns {Promise<IBatchResponse>}
+     */
+    batch(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_batch(this.__wbg_ptr, request);
+        return ret;
+    }
+    /**
+     * @see {@link IFlushRequest} {@link IFlushResponse}
+     * @throws `string` in case of an error.
+     * @param {IFlushRequest} request
+     * @returns {Promise<IFlushResponse>}
+     */
+    flush(request) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wallet_flush(this.__wbg_ptr, request);
         return ret;
     }
 }
@@ -12113,6 +12880,14 @@ export class WasiOptions {
         wasm.__wbg_wasioptions_free(ptr, 0);
     }
     /**
+     * @param {object} value
+     */
+    set preopens(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.wasioptions_set_preopens(this.__wbg_ptr, value);
+    }
+    /**
      * @param {any[] | null | undefined} args
      * @param {object | null | undefined} env
      * @param {object} preopens
@@ -12124,6 +12899,15 @@ export class WasiOptions {
         this.__wbg_ptr = ret >>> 0;
         WasiOptionsFinalization.register(this, this.__wbg_ptr, this);
         return this;
+    }
+    /**
+     * @returns {object | undefined}
+     */
+    get env() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.wasioptions_env(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @param {object} preopens
@@ -12148,25 +12932,6 @@ export class WasiOptions {
         return v1;
     }
     /**
-     * @param {any[] | null} [value]
-     */
-    set args(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        var ptr0 = isLikeNone(value) ? 0 : passArrayJsValueToWasm0(value, wasm.__wbindgen_malloc);
-        var len0 = WASM_VECTOR_LEN;
-        wasm.wasioptions_set_args(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @returns {object | undefined}
-     */
-    get env() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.wasioptions_env(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @param {object | null} [value]
      */
     set env(value) {
@@ -12184,12 +12949,14 @@ export class WasiOptions {
         return ret;
     }
     /**
-     * @param {object} value
+     * @param {any[] | null} [value]
      */
-    set preopens(value) {
+    set args(value) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        wasm.wasioptions_set_preopens(this.__wbg_ptr, value);
+        var ptr0 = isLikeNone(value) ? 0 : passArrayJsValueToWasm0(value, wasm.__wbindgen_malloc);
+        var len0 = WASM_VECTOR_LEN;
+        wasm.wasioptions_set_args(this.__wbg_ptr, ptr0, len0);
     }
 }
 
@@ -12211,6 +12978,14 @@ export class WriteFileSyncOptions {
         wasm.__wbg_writefilesyncoptions_free(ptr, 0);
     }
     /**
+     * @param {string | null} [value]
+     */
+    set encoding(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.writefilesyncoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
+    }
+    /**
      * @param {string | null} [encoding]
      * @param {string | null} [flag]
      * @param {number | null} [mode]
@@ -12227,36 +13002,11 @@ export class WriteFileSyncOptions {
     /**
      * @returns {string | undefined}
      */
-    get encoding() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.writefilesyncoptions_encoding(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set encoding(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.writefilesyncoptions_set_encoding(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
-    }
-    /**
-     * @returns {string | undefined}
-     */
     get flag() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.writefilesyncoptions_flag(this.__wbg_ptr);
         return ret;
-    }
-    /**
-     * @param {string | null} [value]
-     */
-    set flag(value) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        wasm.writefilesyncoptions_set_flag(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @returns {number | undefined}
@@ -12266,6 +13016,23 @@ export class WriteFileSyncOptions {
         _assertNum(this.__wbg_ptr);
         const ret = wasm.writefilesyncoptions_mode(this.__wbg_ptr);
         return ret === 0x100000001 ? undefined : ret;
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    get encoding() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.writefilesyncoptions_encoding(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {string | null} [value]
+     */
+    set flag(value) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        wasm.writefilesyncoptions_set_flag(this.__wbg_ptr, isLikeNone(value) ? 0 : addToExternrefTable0(value));
     }
     /**
      * @param {number | null} [value]
@@ -12305,26 +13072,6 @@ export class WriteStream {
      * @param {Function} listener
      * @returns {any}
      */
-    add_listener_with_open(listener) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.writestream_add_listener_with_open(this.__wbg_ptr, listener);
-        return ret;
-    }
-    /**
-     * @param {Function} listener
-     * @returns {any}
-     */
-    add_listener_with_close(listener) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.writestream_add_listener_with_close(this.__wbg_ptr, listener);
-        return ret;
-    }
-    /**
-     * @param {Function} listener
-     * @returns {any}
-     */
     on_with_open(listener) {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
@@ -12359,6 +13106,26 @@ export class WriteStream {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.writestream_once_with_close(this.__wbg_ptr, listener);
+        return ret;
+    }
+    /**
+     * @param {Function} listener
+     * @returns {any}
+     */
+    add_listener_with_open(listener) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.writestream_add_listener_with_open(this.__wbg_ptr, listener);
+        return ret;
+    }
+    /**
+     * @param {Function} listener
+     * @returns {any}
+     */
+    add_listener_with_close(listener) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.writestream_add_listener_with_close(this.__wbg_ptr, listener);
         return ret;
     }
     /**
@@ -12437,37 +13204,6 @@ export class XOnlyPublicKey {
         wasm.__wbg_xonlypublickey_free(ptr, 0);
     }
     /**
-     * @param {string} key
-     */
-    constructor(key) {
-        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xonlypublickey_try_new(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xonlypublickey_toString(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * Get the [`Address`] of this XOnlyPublicKey.
      * Receives a [`NetworkType`] to determine the prefix of the address.
      * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
@@ -12478,22 +13214,6 @@ export class XOnlyPublicKey {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
         const ret = wasm.xonlypublickey_toAddress(this.__wbg_ptr, network);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return Address.__wrap(ret[0]);
-    }
-    /**
-     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
-     * Receives a [`NetworkType`] to determine the prefix of the address.
-     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddressECDSA(network) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xonlypublickey_toAddressECDSA(this.__wbg_ptr, network);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -12513,6 +13233,53 @@ export class XOnlyPublicKey {
             throw takeFromExternrefTable0(ret[1]);
         }
         return XOnlyPublicKey.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xonlypublickey_toString(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
+     * Receives a [`NetworkType`] to determine the prefix of the address.
+     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddressECDSA(network) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xonlypublickey_toAddressECDSA(this.__wbg_ptr, network);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return Address.__wrap(ret[0]);
+    }
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        const ptr0 = passStringToWasm0(key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xonlypublickey_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -12543,12 +13310,12 @@ export class XPrv {
 
     toJSON() {
         return {
-            xprv: this.xprv,
-            privateKey: this.privateKey,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            privateKey: this.privateKey,
+            parentFingerprint: this.parentFingerprint,
+            xprv: this.xprv,
+            depth: this.depth,
         };
     }
 
@@ -12566,50 +13333,6 @@ export class XPrv {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_xprv_free(ptr, 0);
-    }
-    /**
-     * @param {HexString} seed
-     */
-    constructor(seed) {
-        const ret = wasm.xprv_try_new(seed);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XPrvFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Create {@link XPrv} from `xprvxxxx..` string
-     * @param {string} xprv
-     * @returns {XPrv}
-     */
-    static fromXPrv(xprv) {
-        const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xprv_fromXPrv(ptr0, len0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPrv.__wrap(ret[0]);
-    }
-    /**
-     * @param {number} child_number
-     * @param {boolean | null} [hardened]
-     * @returns {XPrv}
-     */
-    deriveChild(child_number, hardened) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        _assertNum(child_number);
-        if (!isLikeNone(hardened)) {
-            _assertBoolean(hardened);
-        }
-        const ret = wasm.xprv_deriveChild(this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPrv.__wrap(ret[0]);
     }
     /**
      * @param {any} path
@@ -12651,39 +13374,45 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
+     * @returns {number}
      */
-    toString() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_toString(this.__wbg_ptr);
-            var ptr1 = ret[0];
-            var len1 = ret[1];
-            if (ret[3]) {
-                ptr1 = 0; len1 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * @returns {XPub}
-     */
-    toXPub() {
+    get childNumber() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.xprv_toXPub(this.__wbg_ptr);
+        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @param {number} child_number
+     * @param {boolean | null} [hardened]
+     * @returns {XPrv}
+     */
+    deriveChild(child_number, hardened) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        _assertNum(child_number);
+        if (!isLikeNone(hardened)) {
+            _assertBoolean(hardened);
+        }
+        const ret = wasm.xprv_deriveChild(this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        return XPub.__wrap(ret[0]);
+        return XPrv.__wrap(ret[0]);
+    }
+    /**
+     * Create {@link XPrv} from `xprvxxxx..` string
+     * @param {string} xprv
+     * @returns {XPrv}
+     */
+    static fromXPrv(xprv) {
+        const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xprv_fromXPrv(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return XPrv.__wrap(ret[0]);
     }
     /**
      * @returns {PrivateKey}
@@ -12696,6 +13425,57 @@ export class XPrv {
             throw takeFromExternrefTable0(ret[1]);
         }
         return PrivateKey.__wrap(ret[0]);
+    }
+    /**
+     * @returns {string}
+     */
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_chainCode(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get privateKey() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_privateKey(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xprv_parentFingerprint(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -12721,23 +13501,6 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
-     */
-    get privateKey() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_privateKey(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {number}
      */
     get depth() {
@@ -12747,46 +13510,50 @@ export class XPrv {
         return ret;
     }
     /**
-     * @returns {string}
+     * @returns {XPub}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_parentFingerprint(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {number}
-     */
-    get childNumber() {
+    toXPub() {
         if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
         _assertNum(this.__wbg_ptr);
-        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
+        const ret = wasm.xprv_toXPub(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return XPub.__wrap(ret[0]);
+    }
+    /**
+     * @param {HexString} seed
+     */
+    constructor(seed) {
+        const ret = wasm.xprv_try_new(seed);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XPrvFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     /**
      * @returns {string}
      */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
+    toString() {
+        let deferred2_0;
+        let deferred2_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.xprv_chainCode(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            const ret = wasm.xprv_toString(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
         } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
         }
     }
 }
@@ -12818,11 +13585,11 @@ export class XPub {
 
     toJSON() {
         return {
-            xpub: this.xpub,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            parentFingerprint: this.parentFingerprint,
+            xpub: this.xpub,
+            depth: this.depth,
         };
     }
 
@@ -12842,18 +13609,35 @@ export class XPub {
         wasm.__wbg_xpub_free(ptr, 0);
     }
     /**
-     * @param {string} xpub
+     * @returns {PublicKey}
      */
-    constructor(xpub) {
-        const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.xpub_try_new(ptr0, len0);
+    toPublicKey() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
+        return PublicKey.__wrap(ret);
+    }
+    /**
+     * @param {any} path
+     * @returns {XPub}
+     */
+    derivePath(path) {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_derivePath(this.__wbg_ptr, path);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
-        this.__wbg_ptr = ret[0] >>> 0;
-        XPubFinalization.register(this, this.__wbg_ptr, this);
-        return this;
+        return XPub.__wrap(ret[0]);
+    }
+    /**
+     * @returns {number}
+     */
+    get childNumber() {
+        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+        _assertNum(this.__wbg_ptr);
+        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
     }
     /**
      * @param {number} child_number
@@ -12874,52 +13658,38 @@ export class XPub {
         return XPub.__wrap(ret[0]);
     }
     /**
-     * @param {any} path
-     * @returns {XPub}
-     */
-    derivePath(path) {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_derivePath(this.__wbg_ptr, path);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return XPub.__wrap(ret[0]);
-    }
-    /**
-     * @param {string} prefix
      * @returns {string}
      */
-    intoString(prefix) {
-        let deferred3_0;
-        let deferred3_1;
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            const len0 = WASM_VECTOR_LEN;
-            const ret = wasm.xpub_intoString(this.__wbg_ptr, ptr0, len0);
-            var ptr2 = ret[0];
-            var len2 = ret[1];
-            if (ret[3]) {
-                ptr2 = 0; len2 = 0;
-                throw takeFromExternrefTable0(ret[2]);
-            }
-            deferred3_0 = ptr2;
-            deferred3_1 = len2;
-            return getStringFromWasm0(ptr2, len2);
+            const ret = wasm.xpub_chainCode(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
         } finally {
-            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
     }
     /**
-     * @returns {PublicKey}
+     * @returns {string}
      */
-    toPublicKey() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
-        return PublicKey.__wrap(ret);
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
+            _assertNum(this.__wbg_ptr);
+            const ret = wasm.xpub_parentFingerprint(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -12954,47 +13724,44 @@ export class XPub {
         return ret;
     }
     /**
+     * @param {string} prefix
      * @returns {string}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
+    intoString(prefix) {
+        let deferred3_0;
+        let deferred3_1;
         try {
             if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
             _assertNum(this.__wbg_ptr);
-            const ret = wasm.xpub_parentFingerprint(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
+            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.xpub_intoString(this.__wbg_ptr, ptr0, len0);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
         } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
-     * @returns {number}
+     * @param {string} xpub
      */
-    get childNumber() {
-        if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-        _assertNum(this.__wbg_ptr);
-        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * @returns {string}
-     */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            if (this.__wbg_ptr == 0) throw new Error('Attempt to use a moved value');
-            _assertNum(this.__wbg_ptr);
-            const ret = wasm.xpub_chainCode(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    constructor(xpub) {
+        const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.xpub_try_new(ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
         }
+        this.__wbg_ptr = ret[0] >>> 0;
+        XPubFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
 }
 
@@ -13461,7 +14228,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_398(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_395(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -13574,6 +14341,10 @@ function __wbg_get_imports() {
     }, arguments) };
     imports.wbg.__wbg_open_e0c0b2993eb596e1 = function() { return handleError(function (arg0, arg1, arg2, arg3) {
         const ret = arg0.open(getStringFromWasm0(arg1, arg2), arg3 >>> 0);
+        return ret;
+    }, arguments) };
+    imports.wbg.__wbg_optionalheader_new = function() { return logError(function (arg0) {
+        const ret = OptionalHeader.__wrap(arg0);
         return ret;
     }, arguments) };
     imports.wbg.__wbg_pendingtransaction_new = function() { return logError(function (arg0) {
@@ -13991,44 +14762,44 @@ function __wbg_get_imports() {
         _assertBoolean(ret);
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper1471 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 79, __wbg_adapter_68);
+    imports.wbg.__wbindgen_closure_wrapper1254 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 74, __wbg_adapter_68);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper1473 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 81, __wbg_adapter_71);
+    imports.wbg.__wbindgen_closure_wrapper1256 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 76, __wbg_adapter_71);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper1475 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 83, __wbg_adapter_74);
+    imports.wbg.__wbindgen_closure_wrapper1258 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 78, __wbg_adapter_74);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper31437 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 980, __wbg_adapter_83);
+    imports.wbg.__wbindgen_closure_wrapper25984 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 928, __wbg_adapter_83);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper31439 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 982, __wbg_adapter_86);
+    imports.wbg.__wbindgen_closure_wrapper25986 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 930, __wbg_adapter_86);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper3393 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 170, __wbg_adapter_77);
+    imports.wbg.__wbindgen_closure_wrapper3373 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 173, __wbg_adapter_77);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper3755 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 197, __wbg_adapter_80);
+    imports.wbg.__wbindgen_closure_wrapper3752 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 201, __wbg_adapter_80);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper58981 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeClosure(arg0, arg1, 3138, __wbg_adapter_89);
+    imports.wbg.__wbindgen_closure_wrapper71694 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeClosure(arg0, arg1, 7033, __wbg_adapter_89);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper58983 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeClosure(arg0, arg1, 3134, __wbg_adapter_92);
+    imports.wbg.__wbindgen_closure_wrapper71696 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeClosure(arg0, arg1, 7029, __wbg_adapter_92);
         return ret;
     }, arguments) };
-    imports.wbg.__wbindgen_closure_wrapper73421 = function() { return logError(function (arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 7533, __wbg_adapter_95);
+    imports.wbg.__wbindgen_closure_wrapper84570 = function() { return logError(function (arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 8944, __wbg_adapter_95);
         return ret;
     }, arguments) };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {

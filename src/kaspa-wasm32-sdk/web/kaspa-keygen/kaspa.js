@@ -255,17 +255,6 @@ export function initWASM32Bindings(config) {
 }
 
 /**
- * Initialize Rust panic handler in console mode.
- *
- * This will output additional debug information during a panic to the console.
- * This function should be called right after loading WASM libraries.
- * @category General
- */
-export function initConsolePanicHook() {
-    wasm.initConsolePanicHook();
-}
-
-/**
  * Initialize Rust panic handler in browser mode.
  *
  * This will output additional debug information during a panic in the browser
@@ -278,6 +267,17 @@ export function initConsolePanicHook() {
  */
 export function initBrowserPanicHook() {
     wasm.initBrowserPanicHook();
+}
+
+/**
+ * Initialize Rust panic handler in console mode.
+ *
+ * This will output additional debug information during a panic to the console.
+ * This function should be called right after loading WASM libraries.
+ * @category General
+ */
+export function initConsolePanicHook() {
+    wasm.initConsolePanicHook();
 }
 
 /**
@@ -399,18 +399,18 @@ export class Abortable {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_abortable_free(ptr, 0);
     }
-    constructor() {
-        const ret = wasm.abortable_new();
-        this.__wbg_ptr = ret >>> 0;
-        AbortableFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
     /**
      * @returns {boolean}
      */
     isAborted() {
         const ret = wasm.abortable_isAborted(this.__wbg_ptr);
         return ret !== 0;
+    }
+    constructor() {
+        const ret = wasm.abortable_new();
+        this.__wbg_ptr = ret >>> 0;
+        AbortableFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
     abort() {
         wasm.abortable_abort(this.__wbg_ptr);
@@ -483,9 +483,9 @@ export class Address {
 
     toJSON() {
         return {
-            version: this.version,
             prefix: this.prefix,
             payload: this.payload,
+            version: this.version,
         };
     }
 
@@ -516,14 +516,23 @@ export class Address {
         return this;
     }
     /**
-     * @param {string} address
-     * @returns {boolean}
+     * @returns {string}
      */
-    static validate(address) {
-        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.address_validate(ptr0, len0);
-        return ret !== 0;
+    get prefix() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_prefix(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * Convert an address to a string.
@@ -535,6 +544,25 @@ export class Address {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.address_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get payload() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.address_payload(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             deferred1_0 = r0;
@@ -565,25 +593,6 @@ export class Address {
         }
     }
     /**
-     * @returns {string}
-     */
-    get prefix() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.address_prefix(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @param {string} prefix
      */
     set setPrefix(prefix) {
@@ -592,43 +601,14 @@ export class Address {
         wasm.address_set_setPrefix(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @returns {string}
+     * @param {string} address
+     * @returns {boolean}
      */
-    get payload() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.address_payload(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @param {number} n
-     * @returns {string}
-     */
-    short(n) {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.address_short(retptr, this.__wbg_ptr, n);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
+    static validate(address) {
+        const ptr0 = passStringToWasm0(address, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.address_validate(ptr0, len0);
+        return ret !== 0;
     }
 }
 
@@ -663,6 +643,14 @@ export class DerivationPath {
         wasm.__wbg_derivationpath_free(ptr, 0);
     }
     /**
+     * Get the count of [`ChildNumber`] values in this derivation path.
+     * @returns {number}
+     */
+    length() {
+        const ret = wasm.derivationpath_length(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
      * @param {string} path
      */
     constructor(path) {
@@ -685,32 +673,6 @@ export class DerivationPath {
         }
     }
     /**
-     * Is this derivation path empty? (i.e. the root)
-     * @returns {boolean}
-     */
-    isEmpty() {
-        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
-        return ret !== 0;
-    }
-    /**
-     * Get the count of [`ChildNumber`] values in this derivation path.
-     * @returns {number}
-     */
-    length() {
-        const ret = wasm.derivationpath_length(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Get the parent [`DerivationPath`] for the current one.
-     *
-     * Returns `Undefined` if this is already the root path.
-     * @returns {DerivationPath | undefined}
-     */
-    parent() {
-        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
-        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
-    }
-    /**
      * Push a [`ChildNumber`] onto an existing derivation path.
      * @param {number} child_number
      * @param {boolean | null} [hardened]
@@ -727,6 +689,16 @@ export class DerivationPath {
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
+    }
+    /**
+     * Get the parent [`DerivationPath`] for the current one.
+     *
+     * Returns `Undefined` if this is already the root path.
+     * @returns {DerivationPath | undefined}
+     */
+    parent() {
+        const ret = wasm.derivationpath_parent(this.__wbg_ptr);
+        return ret === 0 ? undefined : DerivationPath.__wrap(ret);
     }
     /**
      * @returns {string}
@@ -747,6 +719,14 @@ export class DerivationPath {
             wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
+    /**
+     * Is this derivation path empty? (i.e. the root)
+     * @returns {boolean}
+     */
+    isEmpty() {
+        const ret = wasm.derivationpath_isEmpty(this.__wbg_ptr);
+        return ret !== 0;
+    }
 }
 
 const HashFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -756,6 +736,14 @@ const HashFinalization = (typeof FinalizationRegistry === 'undefined')
  * @category General
  */
 export class Hash {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(Hash.prototype);
+        obj.__wbg_ptr = ptr;
+        HashFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
 
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
@@ -841,6 +829,30 @@ export class Keypair {
         wasm.__wbg_keypair_free(ptr, 0);
     }
     /**
+     * Get the [`Address`] of this Keypair's [`PublicKey`].
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddress(network) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.keypair_toAddress(retptr, this.__wbg_ptr, addBorrowedObject(network));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
      * Get the [`PublicKey`] of this [`Keypair`].
      * @returns {string}
      */
@@ -881,35 +893,25 @@ export class Keypair {
         }
     }
     /**
-     * Get the `XOnlyPublicKey` of this [`Keypair`].
-     * @returns {any}
+     * Create a new [`Keypair`] from a [`PrivateKey`].
+     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
+     * @param {PrivateKey} secret_key
+     * @returns {Keypair}
      */
-    get xOnlyPublicKey() {
-        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
-        return takeObject(ret);
-    }
-    /**
-     * Get the [`Address`] of this Keypair's [`PublicKey`].
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = keypair.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
+    static fromPrivateKey(secret_key) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.keypair_toAddress(retptr, this.__wbg_ptr, addBorrowedObject(network));
+            _assertClass(secret_key, PrivateKey);
+            wasm.keypair_fromPrivateKey(retptr, secret_key.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            return Address.__wrap(r0);
+            return Keypair.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -937,6 +939,14 @@ export class Keypair {
         }
     }
     /**
+     * Get the `XOnlyPublicKey` of this [`Keypair`].
+     * @returns {any}
+     */
+    get xOnlyPublicKey() {
+        const ret = wasm.keypair_get_xonly_public_key(this.__wbg_ptr);
+        return takeObject(ret);
+    }
+    /**
      * Create a new random [`Keypair`].
      * JavaScript: `let keypair = Keypair::random();`.
      * @returns {Keypair}
@@ -945,28 +955,6 @@ export class Keypair {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.keypair_random(retptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Keypair.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Create a new [`Keypair`] from a [`PrivateKey`].
-     * JavaScript: `let privkey = new PrivateKey(hexString); let keypair = privkey.toKeypair();`.
-     * @param {PrivateKey} secret_key
-     * @returns {Keypair}
-     */
-    static fromPrivateKey(secret_key) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            _assertClass(secret_key, PrivateKey);
-            wasm.keypair_fromPrivateKey(retptr, secret_key.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -1021,6 +1009,14 @@ export class Mnemonic {
     }
     /**
      * @param {string} phrase
+     */
+    set phrase(phrase) {
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {string} phrase
      * @param {Language | null} [language]
      */
     constructor(phrase, language) {
@@ -1043,16 +1039,26 @@ export class Mnemonic {
         }
     }
     /**
-     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
-     * @param {string} phrase
-     * @param {Language | null} [language]
-     * @returns {boolean}
+     * @param {string | null} [password]
+     * @returns {string}
      */
-    static validate(phrase, language) {
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
-        return ret !== 0;
+    toSeed(password) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            var len0 = WASM_VECTOR_LEN;
+            wasm.mnemonic_toSeed(retptr, this.__wbg_ptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred2_0 = r0;
+            deferred2_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -1082,25 +1088,6 @@ export class Mnemonic {
         wasm.mnemonic_set_entropy(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {number | null} [word_count]
-     * @returns {Mnemonic}
-     */
-    static random(word_count) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.mnemonic_random(retptr, isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Mnemonic.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
      * @returns {string}
      */
     get phrase() {
@@ -1120,34 +1107,35 @@ export class Mnemonic {
         }
     }
     /**
-     * @param {string} phrase
+     * @param {number | null} [word_count]
+     * @returns {Mnemonic}
      */
-    set phrase(phrase) {
-        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.mnemonic_set_phrase(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {string | null} [password]
-     * @returns {string}
-     */
-    toSeed(password) {
-        let deferred2_0;
-        let deferred2_1;
+    static random(word_count) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            var ptr0 = isLikeNone(password) ? 0 : passStringToWasm0(password, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            var len0 = WASM_VECTOR_LEN;
-            wasm.mnemonic_toSeed(retptr, this.__wbg_ptr, ptr0, len0);
+            wasm.mnemonic_random(retptr, isLikeNone(word_count) ? 0x100000001 : (word_count) >>> 0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred2_0 = r0;
-            deferred2_1 = r1;
-            return getStringFromWasm0(r0, r1);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Mnemonic.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
         }
+    }
+    /**
+     * Validate mnemonic phrase. Returns `true` if the phrase is valid, `false` otherwise.
+     * @param {string} phrase
+     * @param {Language | null} [language]
+     * @returns {boolean}
+     */
+    static validate(phrase, language) {
+        const ptr0 = passStringToWasm0(phrase, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.mnemonic_validate(ptr0, len0, isLikeNone(language) ? 1 : language);
+        return ret !== 0;
     }
 }
 
@@ -1213,6 +1201,44 @@ export class NetworkId {
         wasm.__wbg_set_networkid_suffix(this.__wbg_ptr, isLikeNone(arg0) ? 0x100000001 : (arg0) >>> 0);
     }
     /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.networkid_id(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    addressPrefix() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.networkid_addressPrefix(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
      * @param {any} value
      */
     constructor(value) {
@@ -1242,44 +1268,6 @@ export class NetworkId {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.networkid_id(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.networkid_id(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    addressPrefix() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.networkid_addressPrefix(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             deferred1_0 = r0;
@@ -1321,46 +1309,27 @@ export class PrivateKey {
         wasm.__wbg_privatekey_free(ptr, 0);
     }
     /**
-     * Create a new [`PrivateKey`] from a hex-encoded string.
-     * @param {string} key
+     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
+     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
+     * to determine the prefix of the address.
+     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
      */
-    constructor(key) {
+    toAddress(network) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.privatekey_try_new(retptr, ptr0, len0);
+            wasm.privatekey_toAddress(retptr, this.__wbg_ptr, addBorrowedObject(network));
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            this.__wbg_ptr = r0 >>> 0;
-            PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
-            return this;
+            return Address.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Returns the [`PrivateKey`] key encoded as a hex string.
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.privatekey_toString(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -1401,30 +1370,6 @@ export class PrivateKey {
         }
     }
     /**
-     * Get the [`Address`] of the PublicKey generated from this PrivateKey.
-     * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
-     * to determine the prefix of the address.
-     * JavaScript: `let address = privateKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddress(network) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.privatekey_toAddress(retptr, this.__wbg_ptr, addBorrowedObject(network));
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Address.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
-        }
-    }
-    /**
      * Get `ECDSA` [`Address`] of the PublicKey generated from this PrivateKey.
      * Receives a [`NetworkType`](kaspa_consensus_core::network::NetworkType)
      * to determine the prefix of the address.
@@ -1446,6 +1391,49 @@ export class PrivateKey {
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
             heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Returns the [`PrivateKey`] key encoded as a hex string.
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.privatekey_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Create a new [`PrivateKey`] from a hex-encoded string.
+     * @param {string} key
+     */
+    constructor(key) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.privatekey_try_new(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            PrivateKeyFinalization.register(this, this.__wbg_ptr, this);
+            return this;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
         }
     }
 }
@@ -1479,27 +1467,22 @@ export class PrivateKeyGenerator {
         wasm.__wbg_privatekeygenerator_free(ptr, 0);
     }
     /**
-     * @param {XPrv | string} xprv
-     * @param {boolean} is_multisig
-     * @param {bigint} account_index
-     * @param {number | null} [cosigner_index]
+     * @param {number} index
+     * @returns {PrivateKey}
      */
-    constructor(xprv, is_multisig, account_index, cosigner_index) {
+    changeKey(index) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.privatekeygenerator_new(retptr, addBorrowedObject(xprv), is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+            wasm.privatekeygenerator_changeKey(retptr, this.__wbg_ptr, index);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            this.__wbg_ptr = r0 >>> 0;
-            PrivateKeyGeneratorFinalization.register(this, this.__wbg_ptr, this);
-            return this;
+            return PrivateKey.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -1522,22 +1505,27 @@ export class PrivateKeyGenerator {
         }
     }
     /**
-     * @param {number} index
-     * @returns {PrivateKey}
+     * @param {XPrv | string} xprv
+     * @param {boolean} is_multisig
+     * @param {bigint} account_index
+     * @param {number | null} [cosigner_index]
      */
-    changeKey(index) {
+    constructor(xprv, is_multisig, account_index, cosigner_index) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.privatekeygenerator_changeKey(retptr, this.__wbg_ptr, index);
+            wasm.privatekeygenerator_new(retptr, addBorrowedObject(xprv), is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            return PrivateKey.__wrap(r0);
+            this.__wbg_ptr = r0 >>> 0;
+            PrivateKeyGeneratorFinalization.register(this, this.__wbg_ptr, this);
+            return this;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
         }
     }
 }
@@ -1572,46 +1560,13 @@ export class PublicKey {
         wasm.__wbg_publickey_free(ptr, 0);
     }
     /**
-     * Create a new [`PublicKey`] from a hex-encoded string.
-     * @param {string} key
+     * Compute a 4-byte key fingerprint for this public key as a hex string.
+     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
+     * @returns {HexString | undefined}
      */
-    constructor(key) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.publickey_try_new(retptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            this.__wbg_ptr = r0 >>> 0;
-            PublicKeyFinalization.register(this, this.__wbg_ptr, this);
-            return this;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickey_toString(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
+    fingerprint() {
+        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
+        return takeObject(ret);
     }
     /**
      * Get the [`Address`] of this PublicKey.
@@ -1634,6 +1589,25 @@ export class PublicKey {
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
             heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickey_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
     /**
@@ -1667,13 +1641,27 @@ export class PublicKey {
         return XOnlyPublicKey.__wrap(ret);
     }
     /**
-     * Compute a 4-byte key fingerprint for this public key as a hex string.
-     * Default implementation uses `RIPEMD160(SHA256(public_key))`.
-     * @returns {HexString | undefined}
+     * Create a new [`PublicKey`] from a hex-encoded string.
+     * @param {string} key
      */
-    fingerprint() {
-        const ret = wasm.publickey_fingerprint(this.__wbg_ptr);
-        return takeObject(ret);
+    constructor(key) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.publickey_try_new(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            PublicKeyFinalization.register(this, this.__wbg_ptr, this);
+            return this;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
 }
 
@@ -1712,59 +1700,57 @@ export class PublicKeyGenerator {
         wasm.__wbg_publickeygenerator_free(ptr, 0);
     }
     /**
-     * @param {XPub | string} kpub
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Public Key derivation at a given index.
+     * @param {number} index
+     * @returns {PublicKey}
      */
-    static fromXPub(kpub, cosigner_index) {
+    changePubkey(index) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_fromXPub(retptr, addBorrowedObject(kpub), isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+            wasm.publickeygenerator_changePubkey(retptr, this.__wbg_ptr, index);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            return PublicKeyGenerator.__wrap(r0);
+            return PublicKey.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
         }
     }
     /**
-     * @param {XPrv | string} xprv
-     * @param {boolean} is_multisig
-     * @param {bigint} account_index
-     * @param {number | null} [cosigner_index]
-     * @returns {PublicKeyGenerator}
+     * Generate a single Change Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
      */
-    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
+    changeAddress(networkType, index) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_fromMasterXPrv(retptr, addBorrowedObject(xprv), is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+            wasm.publickeygenerator_changeAddress(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            return PublicKeyGenerator.__wrap(r0);
+            return Address.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
             heap[stack_pointer++] = undefined;
         }
     }
     /**
-     * Generate Receive Public Key derivations for a given range.
+     * Generate Change Public Key derivations for a given range.
      * @param {number} start
      * @param {number} end
      * @returns {(PublicKey | string)[]}
      */
-    receivePubkeys(start, end) {
+    changePubkeys(start, end) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_receivePubkeys(retptr, this.__wbg_ptr, start, end);
+            wasm.publickeygenerator_changePubkeys(retptr, this.__wbg_ptr, start, end);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -1797,15 +1783,37 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate a range of Receive Public Key derivations and return them as strings.
-     * @param {number} start
-     * @param {number} end
-     * @returns {Array<string>}
+     * Generate a single Receive Address derivation at a given index.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {Address}
      */
-    receivePubkeysAsStrings(start, end) {
+    receiveAddress(networkType, index) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_receivePubkeysAsStrings(retptr, this.__wbg_ptr, start, end);
+            wasm.publickeygenerator_receiveAddress(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Generate Receive Public Key derivations for a given range.
+     * @param {number} start
+     * @param {number} end
+     * @returns {(PublicKey | string)[]}
+     */
+    receivePubkeys(start, end) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_receivePubkeys(retptr, this.__wbg_ptr, start, end);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -1815,6 +1823,135 @@ export class PublicKeyGenerator {
             return takeObject(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Generate Change Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    changeAddresses(networkType, start, end) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_changeAddresses(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * @param {XPrv | string} xprv
+     * @param {boolean} is_multisig
+     * @param {bigint} account_index
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromMasterXPrv(xprv, is_multisig, account_index, cosigner_index) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_fromMasterXPrv(retptr, addBorrowedObject(xprv), is_multisig, account_index, isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return PublicKeyGenerator.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Generate Receive Address derivations for a given range.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} start
+     * @param {number} end
+     * @returns {Address[]}
+     */
+    receiveAddresses(networkType, start, end) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_receiveAddresses(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return takeObject(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * Generate a single Change Public Key derivation at a given index and return it as a string.
+     * @param {number} index
+     * @returns {string}
+     */
+    changePubkeyAsString(index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_changePubkeyAsString(retptr, this.__wbg_ptr, index);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+            var ptr1 = r0;
+            var len1 = r1;
+            if (r3) {
+                ptr1 = 0; len1 = 0;
+                throw takeObject(r2);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * Generate a single Change Address derivation at a given index and return it as a string.
+     * @param {NetworkType | NetworkId | string} networkType
+     * @param {number} index
+     * @returns {string}
+     */
+    changeAddressAsString(networkType, index) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_changeAddressAsString(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+            var ptr1 = r0;
+            var len1 = r1;
+            if (r3) {
+                ptr1 = 0; len1 = 0;
+                throw takeObject(r2);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
         }
     }
     /**
@@ -1847,61 +1984,15 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Receive Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    receiveAddresses(networkType, start, end) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_receiveAddresses(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return takeObject(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
-        }
-    }
-    /**
-     * Generate a single Receive Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    receiveAddress(networkType, index) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_receiveAddress(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Address.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
-        }
-    }
-    /**
-     * Generate a range of Receive Address derivations and return them as strings.
-     * @param {NetworkType | NetworkId | string} networkType
+     * Generate a range of Change Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    receiveAddressAsStrings(networkType, start, end) {
+    changePubkeysAsStrings(start, end) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_receiveAddressAsStrings(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
+            wasm.publickeygenerator_changePubkeysAsStrings(retptr, this.__wbg_ptr, start, end);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -1911,7 +2002,6 @@ export class PublicKeyGenerator {
             return takeObject(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -1946,56 +2036,15 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate Change Public Key derivations for a given range.
-     * @param {number} start
-     * @param {number} end
-     * @returns {(PublicKey | string)[]}
-     */
-    changePubkeys(start, end) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changePubkeys(retptr, this.__wbg_ptr, start, end);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return takeObject(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index.
-     * @param {number} index
-     * @returns {PublicKey}
-     */
-    changePubkey(index) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changePubkey(retptr, this.__wbg_ptr, index);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return PublicKey.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Generate a range of Change Public Key derivations and return them as strings.
+     * Generate a range of Receive Public Key derivations and return them as strings.
      * @param {number} start
      * @param {number} end
      * @returns {Array<string>}
      */
-    changePubkeysAsStrings(start, end) {
+    receivePubkeysAsStrings(start, end) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changePubkeysAsStrings(retptr, this.__wbg_ptr, start, end);
+            wasm.publickeygenerator_receivePubkeysAsStrings(retptr, this.__wbg_ptr, start, end);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -2005,80 +2054,6 @@ export class PublicKeyGenerator {
             return takeObject(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Generate a single Change Public Key derivation at a given index and return it as a string.
-     * @param {number} index
-     * @returns {string}
-     */
-    changePubkeyAsString(index) {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changePubkeyAsString(retptr, this.__wbg_ptr, index);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-            var ptr1 = r0;
-            var len1 = r1;
-            if (r3) {
-                ptr1 = 0; len1 = 0;
-                throw takeObject(r2);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
-        }
-    }
-    /**
-     * Generate Change Address derivations for a given range.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} start
-     * @param {number} end
-     * @returns {Address[]}
-     */
-    changeAddresses(networkType, start, end) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changeAddresses(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return takeObject(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
-        }
-    }
-    /**
-     * Generate a single Change Address derivation at a given index.
-     * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {Address}
-     */
-    changeAddress(networkType, index) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changeAddress(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Address.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -2105,34 +2080,47 @@ export class PublicKeyGenerator {
         }
     }
     /**
-     * Generate a single Change Address derivation at a given index and return it as a string.
+     * Generate a range of Receive Address derivations and return them as strings.
      * @param {NetworkType | NetworkId | string} networkType
-     * @param {number} index
-     * @returns {string}
+     * @param {number} start
+     * @param {number} end
+     * @returns {Array<string>}
      */
-    changeAddressAsString(networkType, index) {
-        let deferred2_0;
-        let deferred2_1;
+    receiveAddressAsStrings(networkType, start, end) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.publickeygenerator_changeAddressAsString(retptr, this.__wbg_ptr, addBorrowedObject(networkType), index);
+            wasm.publickeygenerator_receiveAddressAsStrings(retptr, this.__wbg_ptr, addBorrowedObject(networkType), start, end);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-            var ptr1 = r0;
-            var len1 = r1;
-            if (r3) {
-                ptr1 = 0; len1 = 0;
-                throw takeObject(r2);
+            if (r2) {
+                throw takeObject(r1);
             }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
+            return takeObject(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
             heap[stack_pointer++] = undefined;
-            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @param {XPub | string} kpub
+     * @param {number | null} [cosigner_index]
+     * @returns {PublicKeyGenerator}
+     */
+    static fromXPub(kpub, cosigner_index) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.publickeygenerator_fromXPub(retptr, addBorrowedObject(kpub), isLikeNone(cosigner_index) ? 0x100000001 : (cosigner_index) >>> 0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return PublicKeyGenerator.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
         }
     }
     /**
@@ -2183,8 +2171,8 @@ export class ScriptPublicKey {
 
     toJSON() {
         return {
-            version: this.version,
             script: this.script,
+            version: this.version,
         };
     }
 
@@ -2202,19 +2190,6 @@ export class ScriptPublicKey {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_scriptpublickey_free(ptr, 0);
-    }
-    /**
-     * @returns {number}
-     */
-    get version() {
-        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @param {number} arg0
-     */
-    set version(arg0) {
-        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
     }
     /**
      * @param {number} version
@@ -2256,6 +2231,19 @@ export class ScriptPublicKey {
             wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
+    /**
+     * @returns {number}
+     */
+    get version() {
+        const ret = wasm.__wbg_get_scriptpublickey_version(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {number} arg0
+     */
+    set version(arg0) {
+        wasm.__wbg_set_scriptpublickey_version(this.__wbg_ptr, arg0);
+    }
 }
 
 const SigHashTypeFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -2295,6 +2283,7 @@ export class TransactionUtxoEntry {
             scriptPublicKey: this.scriptPublicKey,
             blockDaaScore: this.blockDaaScore,
             isCoinbase: this.isCoinbase,
+            covenantId: this.covenantId,
         };
     }
 
@@ -2367,6 +2356,24 @@ export class TransactionUtxoEntry {
     set isCoinbase(arg0) {
         wasm.__wbg_set_transactionutxoentry_isCoinbase(this.__wbg_ptr, arg0);
     }
+    /**
+     * @returns {Hash | undefined}
+     */
+    get covenantId() {
+        const ret = wasm.__wbg_get_transactionutxoentry_covenantId(this.__wbg_ptr);
+        return ret === 0 ? undefined : Hash.__wrap(ret);
+    }
+    /**
+     * @param {Hash | null} [arg0]
+     */
+    set covenantId(arg0) {
+        let ptr0 = 0;
+        if (!isLikeNone(arg0)) {
+            _assertClass(arg0, Hash);
+            ptr0 = arg0.__destroy_into_raw();
+        }
+        wasm.__wbg_set_transactionutxoentry_covenantId(this.__wbg_ptr, ptr0);
+    }
 }
 
 const XOnlyPublicKeyFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -2403,47 +2410,6 @@ export class XOnlyPublicKey {
         wasm.__wbg_xonlypublickey_free(ptr, 0);
     }
     /**
-     * @param {string} key
-     */
-    constructor(key) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.xonlypublickey_try_new(retptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            this.__wbg_ptr = r0 >>> 0;
-            XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
-            return this;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @returns {string}
-     */
-    toString() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xonlypublickey_toString(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * Get the [`Address`] of this XOnlyPublicKey.
      * Receives a [`NetworkType`] to determine the prefix of the address.
      * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
@@ -2454,29 +2420,6 @@ export class XOnlyPublicKey {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             wasm.xonlypublickey_toAddress(retptr, this.__wbg_ptr, addBorrowedObject(network));
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return Address.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            heap[stack_pointer++] = undefined;
-        }
-    }
-    /**
-     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
-     * Receives a [`NetworkType`] to determine the prefix of the address.
-     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
-     * @param {NetworkType | NetworkId | string} network
-     * @returns {Address}
-     */
-    toAddressECDSA(network) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xonlypublickey_toAddressECDSA(retptr, this.__wbg_ptr, addBorrowedObject(network));
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
@@ -2505,6 +2448,70 @@ export class XOnlyPublicKey {
                 throw takeObject(r1);
             }
             return XOnlyPublicKey.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    toString() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xonlypublickey_toString(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * Get `ECDSA` [`Address`] of this XOnlyPublicKey.
+     * Receives a [`NetworkType`] to determine the prefix of the address.
+     * JavaScript: `let address = xOnlyPublicKey.toAddress(NetworkType.MAINNET);`.
+     * @param {NetworkType | NetworkId | string} network
+     * @returns {Address}
+     */
+    toAddressECDSA(network) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xonlypublickey_toAddressECDSA(retptr, this.__wbg_ptr, addBorrowedObject(network));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return Address.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            heap[stack_pointer++] = undefined;
+        }
+    }
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(key, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.xonlypublickey_try_new(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            XOnlyPublicKeyFinalization.register(this, this.__wbg_ptr, this);
+            return this;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
@@ -2538,12 +2545,12 @@ export class XPrv {
 
     toJSON() {
         return {
-            xprv: this.xprv,
-            privateKey: this.privateKey,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            privateKey: this.privateKey,
+            parentFingerprint: this.parentFingerprint,
+            xprv: this.xprv,
+            depth: this.depth,
         };
     }
 
@@ -2561,68 +2568,6 @@ export class XPrv {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_xprv_free(ptr, 0);
-    }
-    /**
-     * @param {HexString} seed
-     */
-    constructor(seed) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_try_new(retptr, addHeapObject(seed));
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            this.__wbg_ptr = r0 >>> 0;
-            XPrvFinalization.register(this, this.__wbg_ptr, this);
-            return this;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * Create {@link XPrv} from `xprvxxxx..` string
-     * @param {string} xprv
-     * @returns {XPrv}
-     */
-    static fromXPrv(xprv) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.xprv_fromXPrv(retptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return XPrv.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @param {number} child_number
-     * @param {boolean | null} [hardened]
-     * @returns {XPrv}
-     */
-    deriveChild(child_number, hardened) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_deriveChild(retptr, this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return XPrv.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
     }
     /**
      * @param {any} path
@@ -2675,46 +2620,50 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
+     * @returns {number}
      */
-    toString() {
-        let deferred2_0;
-        let deferred2_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_toString(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-            var ptr1 = r0;
-            var len1 = r1;
-            if (r3) {
-                ptr1 = 0; len1 = 0;
-                throw takeObject(r2);
-            }
-            deferred2_0 = ptr1;
-            deferred2_1 = len1;
-            return getStringFromWasm0(ptr1, len1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
-        }
+    get childNumber() {
+        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
     }
     /**
-     * @returns {XPub}
+     * @param {number} child_number
+     * @param {boolean | null} [hardened]
+     * @returns {XPrv}
      */
-    toXPub() {
+    deriveChild(child_number, hardened) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_toXPub(retptr, this.__wbg_ptr);
+            wasm.xprv_deriveChild(retptr, this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
             if (r2) {
                 throw takeObject(r1);
             }
-            return XPub.__wrap(r0);
+            return XPrv.__wrap(r0);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * Create {@link XPrv} from `xprvxxxx..` string
+     * @param {string} xprv
+     * @returns {XPrv}
+     */
+    static fromXPrv(xprv) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passStringToWasm0(xprv, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.xprv_fromXPrv(retptr, ptr0, len0);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return XPrv.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
         }
@@ -2735,6 +2684,63 @@ export class XPrv {
             return PrivateKey.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xprv_chainCode(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get privateKey() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xprv_privateKey(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xprv_parentFingerprint(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
     /**
@@ -2765,25 +2771,6 @@ export class XPrv {
         }
     }
     /**
-     * @returns {string}
-     */
-    get privateKey() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_privateKey(retptr, this.__wbg_ptr);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
-        }
-    }
-    /**
      * @returns {number}
      */
     get depth() {
@@ -2791,48 +2778,68 @@ export class XPrv {
         return ret;
     }
     /**
-     * @returns {string}
+     * @returns {XPub}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
+    toXPub() {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_parentFingerprint(retptr, this.__wbg_ptr);
+            wasm.xprv_toXPub(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            return XPub.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
     /**
-     * @returns {number}
+     * @param {HexString} seed
      */
-    get childNumber() {
-        const ret = wasm.xprv_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
+    constructor(seed) {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xprv_try_new(retptr, addHeapObject(seed));
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            XPrvFinalization.register(this, this.__wbg_ptr, this);
+            return this;
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+        }
     }
     /**
      * @returns {string}
      */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
+    toString() {
+        let deferred2_0;
+        let deferred2_1;
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xprv_chainCode(retptr, this.__wbg_ptr);
+            wasm.xprv_toString(retptr, this.__wbg_ptr);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+            var ptr1 = r0;
+            var len1 = r1;
+            if (r3) {
+                ptr1 = 0; len1 = 0;
+                throw takeObject(r2);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_export_1(deferred2_0, deferred2_1, 1);
         }
     }
 }
@@ -2864,11 +2871,11 @@ export class XPub {
 
     toJSON() {
         return {
-            xpub: this.xpub,
-            depth: this.depth,
-            parentFingerprint: this.parentFingerprint,
             childNumber: this.childNumber,
             chainCode: this.chainCode,
+            parentFingerprint: this.parentFingerprint,
+            xpub: this.xpub,
+            depth: this.depth,
         };
     }
 
@@ -2888,46 +2895,11 @@ export class XPub {
         wasm.__wbg_xpub_free(ptr, 0);
     }
     /**
-     * @param {string} xpub
+     * @returns {PublicKey}
      */
-    constructor(xpub) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.xpub_try_new(retptr, ptr0, len0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            this.__wbg_ptr = r0 >>> 0;
-            XPubFinalization.register(this, this.__wbg_ptr, this);
-            return this;
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
-    }
-    /**
-     * @param {number} child_number
-     * @param {boolean | null} [hardened]
-     * @returns {XPub}
-     */
-    deriveChild(child_number, hardened) {
-        try {
-            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xpub_deriveChild(retptr, this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
-            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
-            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            if (r2) {
-                throw takeObject(r1);
-            }
-            return XPub.__wrap(r0);
-        } finally {
-            wasm.__wbindgen_add_to_stack_pointer(16);
-        }
+    toPublicKey() {
+        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
+        return PublicKey.__wrap(ret);
     }
     /**
      * @param {any} path
@@ -2950,41 +2922,69 @@ export class XPub {
         }
     }
     /**
-     * @param {string} prefix
-     * @returns {string}
+     * @returns {number}
      */
-    intoString(prefix) {
-        let deferred3_0;
-        let deferred3_1;
+    get childNumber() {
+        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @param {number} child_number
+     * @param {boolean | null} [hardened]
+     * @returns {XPub}
+     */
+    deriveChild(child_number, hardened) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
-            const len0 = WASM_VECTOR_LEN;
-            wasm.xpub_intoString(retptr, this.__wbg_ptr, ptr0, len0);
+            wasm.xpub_deriveChild(retptr, this.__wbg_ptr, child_number, isLikeNone(hardened) ? 0xFFFFFF : hardened ? 1 : 0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
             var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
-            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
-            var ptr2 = r0;
-            var len2 = r1;
-            if (r3) {
-                ptr2 = 0; len2 = 0;
-                throw takeObject(r2);
+            if (r2) {
+                throw takeObject(r1);
             }
-            deferred3_0 = ptr2;
-            deferred3_1 = len2;
-            return getStringFromWasm0(ptr2, len2);
+            return XPub.__wrap(r0);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred3_0, deferred3_1, 1);
         }
     }
     /**
-     * @returns {PublicKey}
+     * @returns {string}
      */
-    toPublicKey() {
-        const ret = wasm.xpub_toPublicKey(this.__wbg_ptr);
-        return PublicKey.__wrap(ret);
+    get chainCode() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xpub_chainCode(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get parentFingerprint() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.xpub_parentFingerprint(retptr, this.__wbg_ptr);
+            var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
+            var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
+            deferred1_0 = r0;
+            deferred1_1 = r1;
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+        }
     }
     /**
      * @returns {string}
@@ -3021,48 +3021,55 @@ export class XPub {
         return ret;
     }
     /**
+     * @param {string} prefix
      * @returns {string}
      */
-    get parentFingerprint() {
-        let deferred1_0;
-        let deferred1_1;
+    intoString(prefix) {
+        let deferred3_0;
+        let deferred3_1;
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xpub_parentFingerprint(retptr, this.__wbg_ptr);
+            const ptr0 = passStringToWasm0(prefix, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.xpub_intoString(retptr, this.__wbg_ptr, ptr0, len0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            var r3 = getDataViewMemory0().getInt32(retptr + 4 * 3, true);
+            var ptr2 = r0;
+            var len2 = r1;
+            if (r3) {
+                ptr2 = 0; len2 = 0;
+                throw takeObject(r2);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
+            wasm.__wbindgen_export_1(deferred3_0, deferred3_1, 1);
         }
     }
     /**
-     * @returns {number}
+     * @param {string} xpub
      */
-    get childNumber() {
-        const ret = wasm.xpub_childNumber(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * @returns {string}
-     */
-    get chainCode() {
-        let deferred1_0;
-        let deferred1_1;
+    constructor(xpub) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-            wasm.xpub_chainCode(retptr, this.__wbg_ptr);
+            const ptr0 = passStringToWasm0(xpub, wasm.__wbindgen_export_2, wasm.__wbindgen_export_3);
+            const len0 = WASM_VECTOR_LEN;
+            wasm.xpub_try_new(retptr, ptr0, len0);
             var r0 = getDataViewMemory0().getInt32(retptr + 4 * 0, true);
             var r1 = getDataViewMemory0().getInt32(retptr + 4 * 1, true);
-            deferred1_0 = r0;
-            deferred1_1 = r1;
-            return getStringFromWasm0(r0, r1);
+            var r2 = getDataViewMemory0().getInt32(retptr + 4 * 2, true);
+            if (r2) {
+                throw takeObject(r1);
+            }
+            this.__wbg_ptr = r0 >>> 0;
+            XPubFinalization.register(this, this.__wbg_ptr, this);
+            return this;
         } finally {
             wasm.__wbindgen_add_to_stack_pointer(16);
-            wasm.__wbindgen_export_1(deferred1_0, deferred1_1, 1);
         }
     }
 }
